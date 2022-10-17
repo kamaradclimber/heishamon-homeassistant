@@ -3,6 +3,7 @@ from __future__ import annotations
 from string import Template
 import logging
 
+from homeassistant.helpers.typing import UNDEFINED
 from homeassistant.components import mqtt
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.components.template.sensor import SensorTemplate
@@ -23,6 +24,7 @@ from homeassistant.util import slugify
 
 from .const import DOMAIN
 from .definitions import SENSORS, HeishaMonSensorEntityDescription
+from . import build_device_info
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,10 +38,10 @@ async def async_setup_entry(
 ) -> None:
     """Set up HeishaMon sensors from config entry."""
     real_sensors = [
-        HeishaMonSensor(description, config_entry) for description in SENSORS
+        HeishaMonSensor(hass, description, config_entry) for description in SENSORS
     ]
-    async_add_entities(real_sensors)
-    async_add_entities(build_virtual_sensors(hass, config_entry, real_sensors))
+    all_sensors = real_sensors + build_virtual_sensors(hass, config_entry, real_sensors)
+    async_add_entities(all_sensors)
 
 
 def build_virtual_sensors(
@@ -167,17 +169,23 @@ class HeishaMonSensor(SensorEntity):
     entity_description: HeishaMonSensorEntityDescription
 
     def __init__(
-        self, description: HeishaMonSensorEntityDescription, config_entry: ConfigEntry
+        self,
+        hass: HomeAssistant,
+        description: HeishaMonSensorEntityDescription,
+        config_entry: ConfigEntry,
     ) -> None:
         """Initialize the sensor."""
+        self.hass = hass
         self.entity_description = description
+        self.config_entry_entry_id = config_entry.entry_id
 
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"sensor.{slug}"
         self._attr_unique_id = f"{config_entry.entry_id}-{slug}"
 
     async def async_added_to_hass(self) -> None:
-        """Subscribe to MQTT events."""
+        """Subscribe to MQTT events"""
+        await super().async_added_to_hass()
 
         @callback
         def message_received(message):
@@ -187,8 +195,17 @@ class HeishaMonSensor(SensorEntity):
             else:
                 self._attr_native_value = message.payload
 
+            if self.entity_description.on_receive is not None:
+                self.entity_description.on_receive(
+                    self.hass, self, self.config_entry_entry_id, self._attr_native_value
+                )
+
             self.async_write_ha_state()
 
         await mqtt.async_subscribe(
             self.hass, self.entity_description.key, message_received, 1
         )
+
+    @property
+    def device_info(self):
+        return build_device_info()

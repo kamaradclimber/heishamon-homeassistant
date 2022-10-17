@@ -6,6 +6,9 @@ from dataclasses import dataclass
 from typing import Optional
 import logging
 
+from homeassistant.core import HomeAssistant
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
+from homeassistant.helpers import device_registry as dr
 from homeassistant.components.switch import SwitchEntityDescription, SwitchDeviceClass
 
 from homeassistant.components.sensor import (
@@ -24,6 +27,8 @@ from homeassistant.const import (
     POWER_KILO_WATT,
     VOLUME_CUBIC_METERS,
 )
+
+from .models import HEATPUMP_MODELS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,6 +66,9 @@ class HeishaMonSensorEntityDescription(SensorEntityDescription):
 
     # a method called when receiving a new value
     state: Callable | None = None
+
+    # a method called when receiving a new value. With a lot of context. Used to update device info for instance
+    on_receive: Callable | None = None
 
 
 @dataclass
@@ -100,6 +108,10 @@ def read_quiet_mode(value: str) -> Optional[bool]:
         return False
     _LOGGER.info(f"Reading unhandled quiet mode: '{value}'")
     return None
+
+
+def read_heatpump_model(value: str) -> str:
+    return HEATPUMP_MODELS.get(value, "Unknown model for HeishaMon")
 
 
 MQTT_SWITCHES: tuple[HeishaMonSwitchEntityDescription, ...] = (
@@ -165,6 +177,21 @@ BINARY_SENSORS: tuple[HeishaMonBinarySensorEntityDescription, ...] = (
         device_class=BinarySensorDeviceClass.HEAT,
     ),
 )
+
+
+def update_device_model(
+    hass: HomeAssistant, entity: SensorEntity, config_entry_id: str, model: str
+):
+    _LOGGER.debug("Set model")
+
+    device_registry = dr.async_get(hass)
+    identifiers = None
+    if entity.device_info is not None and "identifiers" in entity.device_info:
+        identifiers = entity.device_info["identifiers"]
+    device_registry.async_get_or_create(
+        config_entry_id=config_entry_id, identifiers=identifiers, model=model
+    )
+
 
 SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
     HeishaMonSensorEntityDescription(
@@ -376,5 +403,11 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Compressor Current",
         device_class=SensorDeviceClass.CURRENT,
         native_unit_of_measurement="A",
+    ),
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/main/Heat_Pump_Model",
+        name="Aquarea Heatpump model",
+        state=read_heatpump_model,
+        on_receive=update_device_model,
     ),
 )

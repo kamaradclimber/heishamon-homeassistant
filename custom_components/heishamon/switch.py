@@ -14,6 +14,7 @@ from homeassistant.util import slugify
 
 from .const import DOMAIN
 from .definitions import MQTT_SWITCHES, HeishaMonSwitchEntityDescription
+from . import build_device_info
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -96,3 +97,7 @@ class HeishaMonMQTTSwitch(SwitchEntity):
         await mqtt.async_subscribe(
             self.hass, self.entity_description.key, message_received, 1
         )
+
+    @property
+    def device_info(self):
+        return build_device_info()

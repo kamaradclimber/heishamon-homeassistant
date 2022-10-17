@@ -12,6 +12,7 @@ from homeassistant.util import slugify
 
 from .const import DOMAIN
 from .definitions import BINARY_SENSORS, HeishaMonSensorEntityDescription
+from . import build_device_info
 
 
 # async_setup_platform should be defined if one wants to support config via configuration.yaml
@@ -60,3 +61,7 @@ class HeishaMonBinarySensor(BinarySensorEntity):
         await mqtt.async_subscribe(
             self.hass, self.entity_description.key, message_received, 1
         )
+
+    @property
+    def device_info(self):
+        return build_device_info()
