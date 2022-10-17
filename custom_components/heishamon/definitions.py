@@ -507,7 +507,6 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.TOTAL_INCREASING,
     ),
-    # "voltage":3.33,"free memory":76,"free heap":30600,"wifi":64,"mqtt reconnects":1,
     HeishaMonSensorEntityDescription(
         key="panasonic_heat_pump/stats",
         name="HeishaMon voltage",
@@ -529,6 +528,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="HeishaMon free heap",
         state=partial(read_stats_json, "free heap"),
         unique_id_suffix="_freeheap",
+        state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     HeishaMonSensorEntityDescription(
