@@ -1,5 +1,5 @@
 {
-  "domain": "heishamon",
+  "domain": "aquarea",
   "name": "HeishaMon",
   "config_flow": true,
   "documentation": "https://github.com/kamaradclimber/heishamon-homeassistant",
@@ -8,5 +8,5 @@
   "mqtt": ["panasonic_heat_pump/#"],
   "codeowners": ["@kamaradclimber"],
   "iot_class": "local_push",
-  "version": "0.1.0"
+  "version": "0.3.0"
 }
