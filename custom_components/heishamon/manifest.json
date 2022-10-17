@@ -4,9 +4,9 @@
   "config_flow": true,
   "documentation": "https://github.com/kamaradclimber/heishamon-homeassistant",
   "issue_tracker": "https://github.com/kamaradclimber/heishamon-homeassistant/issues",
-  "dependencies": ["mqtt"],
+  "dependencies": ["mqtt", "template"],
   "mqtt": ["panasonic_heat_pump/#"],
-  "codeowners": ["kamaradclimber"],
+  "codeowners": ["@kamaradclimber"],
   "iot_class": "local_push",
   "version": "0.1.0"
 }
