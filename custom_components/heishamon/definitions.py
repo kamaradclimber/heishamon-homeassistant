@@ -1,5 +1,7 @@
 """Definitions for HeishaMon sensors added to MQTT."""
 from __future__ import annotations
+from functools import partial, reduce
+import json
 
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -70,6 +72,9 @@ class HeishaMonSensorEntityDescription(SensorEntityDescription):
 
     # a method called when receiving a new value. With a lot of context. Used to update device info for instance
     on_receive: Callable | None = None
+
+    # for fields using the same mqtt topic
+    unique_id_suffix: str | None = None
 
 
 @dataclass
@@ -192,6 +197,19 @@ def update_device_model(
     device_registry.async_get_or_create(
         config_entry_id=config_entry_id, identifiers=identifiers, model=model
     )
+
+
+def read_stats_json(field_name: str, json_doc: str) -> Optional[float]:
+    field_value = json.loads(json_doc).get(field_name, None)
+    if field_value:
+        return float(field_value)
+    return None
+
+
+def ms_to_secs(value: Optional[float]) -> Optional[float]:
+    if value:
+        return value / 1000
+    return None
 
 
 SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
@@ -415,5 +433,110 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Heatpump model",
         state=read_heatpump_model,
         on_receive=update_device_model,
+    ),
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/stats",
+        name="HeishaMon RSSI",
+        state=partial(read_stats_json, "wifi"),
+        native_unit_of_measurement="%",
+        unique_id_suffix="_rssi",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/stats",
+        name="HeishaMon Uptime",
+        state=lambda json_doc: ms_to_secs(read_stats_json("uptime", json_doc)),
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement="s",
+        unique_id_suffix="_uptime",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/stats",
+        name="HeishaMon Total reads",
+        state=partial(read_stats_json, "total reads"),
+        unique_id_suffix="_total_reads",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/stats",
+        name="HeishaMon Good reads",
+        state=partial(read_stats_json, "good reads"),
+        unique_id_suffix="_good_reads",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/stats",
+        name="HeishaMon bad CRC reads",
+        state=partial(read_stats_json, "bad crc reads"),
+        unique_id_suffix="_badcrc_reads",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/stats",
+        name="HeishaMon bad header reads",
+        state=partial(read_stats_json, "bad header reads"),
+        unique_id_suffix="_badheader_reads",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/stats",
+        name="HeishaMon too short reads",
+        state=partial(read_stats_json, "too short reads"),
+        unique_id_suffix="_tooshort_reads",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/stats",
+        name="HeishaMon too long reads",
+        state=partial(read_stats_json, "too long reads"),
+        unique_id_suffix="_toolong_reads",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/stats",
+        name="HeishaMon timeout reads",
+        state=partial(read_stats_json, "timeout reads"),
+        unique_id_suffix="_timeout_reads",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+    # "voltage":3.33,"free memory":76,"free heap":30600,"wifi":64,"mqtt reconnects":1,
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/stats",
+        name="HeishaMon voltage",
+        state=partial(read_stats_json, "voltage"),
+        unique_id_suffix="_voltage",
+        device_class=SensorDeviceClass.VOLTAGE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/stats",
+        name="HeishaMon free memory",
+        state=partial(read_stats_json, "free memory"),
+        unique_id_suffix="_freememory",
+        native_unit_of_measurement="%",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/stats",
+        name="HeishaMon free heap",
+        state=partial(read_stats_json, "free heap"),
+        unique_id_suffix="_freeheap",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    HeishaMonSensorEntityDescription(
+        key="panasonic_heat_pump/stats",
+        name="HeishaMon mqtt reconnects",
+        state=partial(read_stats_json, "mqtt reconnects"),
+        unique_id_suffix="_mqttreconnects",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
 )
