@@ -85,7 +85,7 @@ def build_virtual_sensors(
             .strip()
         ),
     }
-    production = SensorTemplate(
+    production = HeishaMonSensorTemplate(
         hass,
         production_config,
         f"{config_entry.entry_id}-heishamon_w_production",
@@ -116,7 +116,7 @@ def build_virtual_sensors(
             .strip()
         ),
     }
-    consumption = SensorTemplate(
+    consumption = HeishaMonSensorTemplate(
         hass,
         consumption_config,
         f"{config_entry.entry_id}-heishamon_w_consumption",
@@ -159,8 +159,16 @@ def build_virtual_sensors(
             .strip()
         ),
     }
-    cop = SensorTemplate(hass, cop_config, f"{config_entry.entry_id}-heishamon_cop")
+    cop = HeishaMonSensorTemplate(
+        hass, cop_config, f"{config_entry.entry_id}-heishamon_cop"
+    )
     return [production, consumption, cop]
+
+
+class HeishaMonSensorTemplate(SensorTemplate):
+    @property
+    def device_info(self):
+        return build_device_info()
 
 
 class HeishaMonSensor(SensorEntity):
