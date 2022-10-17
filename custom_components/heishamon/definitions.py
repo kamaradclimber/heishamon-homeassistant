@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Optional
 import logging
 
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.helpers import device_registry as dr
@@ -237,6 +238,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Compressor Frequency",
         device_class=SensorDeviceClass.FREQUENCY,
         native_unit_of_measurement="Hz",
+        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     HeishaMonSensorEntityDescription(
         key="panasonic_heat_pump/main/DHW_Target_Temp",
@@ -257,12 +259,14 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement="Hours",
         state_class=SensorStateClass.TOTAL_INCREASING,
+        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     HeishaMonSensorEntityDescription(
         key="panasonic_heat_pump/main/Operations_Counter",
         name="Aquarea Compressor Start/Stop Counter",
         device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.TOTAL_INCREASING,
+        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     HeishaMonSensorEntityDescription(
         key="panasonic_heat_pump/main/Outside_Temp",
@@ -330,6 +334,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
     HeishaMonSensorEntityDescription(
         key="panasonic_heat_pump/main/Error",
         name="Aquarea Last Error",
+        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     HeishaMonSensorEntityDescription(
         key="panasonic_heat_pump/main/Main_Hex_Outlet_Temp",
@@ -403,6 +408,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Compressor Current",
         device_class=SensorDeviceClass.CURRENT,
         native_unit_of_measurement="A",
+        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     HeishaMonSensorEntityDescription(
         key="panasonic_heat_pump/main/Heat_Pump_Model",

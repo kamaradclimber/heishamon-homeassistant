@@ -182,6 +182,8 @@ class HeishaMonSensor(SensorEntity):
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"sensor.{slug}"
         self._attr_unique_id = f"{config_entry.entry_id}-{slug}"
+        if description.entity_category is not None:
+            self._attr_entity_category = description.entity_category
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT events"""
