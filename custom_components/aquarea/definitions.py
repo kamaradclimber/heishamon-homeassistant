@@ -128,6 +128,7 @@ MQTT_SWITCHES: tuple[HeishaMonSwitchEntityDescription, ...] = (
         key="panasonic_heat_pump/main/Holiday_Mode_State",
         command_topic="panasonic_heat_pump/main/Holiday_Mode_State",
         name="Aquarea Holiday Mode",
+        entity_category=EntityCategory.CONFIG,
         state=bit_to_bool,  # FIXME: support this
     ),
     HeishaMonSwitchEntityDescription(
@@ -141,6 +142,7 @@ MQTT_SWITCHES: tuple[HeishaMonSwitchEntityDescription, ...] = (
         key="panasonic_heat_pump/main/Force_DHW_State",
         command_topic="panasonic_heat_pump/commands/SetForceDHW",
         name="Aquarea Force DHW Mode",
+        entity_category=EntityCategory.CONFIG,
         state=bit_to_bool,
     ),
 )
@@ -149,6 +151,7 @@ BINARY_SENSORS: tuple[HeishaMonBinarySensorEntityDescription, ...] = (
     HeishaMonBinarySensorEntityDescription(
         key="panasonic_heat_pump/main/Quiet_Mode_Level",
         name="Aquarea Quiet Mode",
+        entity_category=EntityCategory.CONFIG,
         state=read_quiet_mode,
         # state_class=SensorStateClass.MEASUREMENT,
         # icon= "mdi:on"
@@ -229,6 +232,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
     HeishaMonSensorEntityDescription(
         key="panasonic_heat_pump/main/Operating_Mode_State",
         name="Aquarea Mode",
+        entity_category=EntityCategory.CONFIG,
         # state_class=SensorStateClass.MEASUREMENT,
         # device_class=SensorDeviceClass.ENERGY,
         # icon= "mdi:on"
@@ -264,6 +268,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
     HeishaMonSensorEntityDescription(
         key="panasonic_heat_pump/main/DHW_Target_Temp",
         name="Aquarea Tank Set Temperature",
+        entity_category=EntityCategory.CONFIG,
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
     ),
