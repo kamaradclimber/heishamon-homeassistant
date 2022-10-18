@@ -1,6 +1,6 @@
 """Definitions for HeishaMon sensors added to MQTT."""
 from __future__ import annotations
-from functools import partial, reduce
+from functools import partial
 import json
 
 from collections.abc import Callable
@@ -12,7 +12,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.helpers import device_registry as dr
-from homeassistant.components.switch import SwitchEntityDescription, SwitchDeviceClass
+from homeassistant.components.switch import SwitchEntityDescription
 
 
 from homeassistant.components.sensor import (
@@ -23,13 +23,6 @@ from homeassistant.components.sensor import (
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntityDescription,
-)
-from homeassistant.const import (
-    ELECTRIC_CURRENT_AMPERE,
-    ELECTRIC_POTENTIAL_VOLT,
-    ENERGY_KILO_WATT_HOUR,
-    POWER_KILO_WATT,
-    VOLUME_CUBIC_METERS,
 )
 
 from .models import HEATPUMP_MODELS

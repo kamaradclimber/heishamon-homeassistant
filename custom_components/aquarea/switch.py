@@ -5,14 +5,11 @@ import logging
 from homeassistant.components import mqtt
 from homeassistant.components.mqtt.client import async_publish
 from homeassistant.components.switch import SwitchEntity
-from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.issue_registry import IssueSeverity, async_create_issue
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.util import slugify
 
-from .const import DOMAIN
 from .definitions import MQTT_SWITCHES, HeishaMonSwitchEntityDescription
 from . import build_device_info
 

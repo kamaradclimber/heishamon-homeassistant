@@ -3,7 +3,6 @@ from __future__ import annotations
 from string import Template
 import logging
 
-from homeassistant.helpers.typing import UNDEFINED
 from homeassistant.components import mqtt
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.components.template.sensor import SensorTemplate
@@ -15,14 +14,12 @@ from homeassistant.const import (
     CONF_UNIT_OF_MEASUREMENT,
 )
 from homeassistant.helpers.template_entity import CONF_AVAILABILITY
-from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.issue_registry import IssueSeverity, async_create_issue
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.util import slugify
 
-from .const import DOMAIN, DeviceType
+from .const import DeviceType
 from .definitions import SENSORS, HeishaMonSensorEntityDescription
 from . import build_device_info
 

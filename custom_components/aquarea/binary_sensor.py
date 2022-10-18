@@ -3,14 +3,11 @@ from __future__ import annotations
 
 from homeassistant.components import mqtt
 from homeassistant.components.binary_sensor import BinarySensorEntity
-from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.issue_registry import IssueSeverity, async_create_issue
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.util import slugify
 
-from .const import DOMAIN
 from .definitions import BINARY_SENSORS, HeishaMonBinarySensorEntityDescription
 from . import build_device_info
 
