@@ -1,0 +1,13 @@
+custom_components/aquarea/__pycache__/
+
+# those files are ignored, they are added when running home assistant from this repository for quick testing
+home-assistant_v2.db*
+home-assistant.log*
+.HA_VERSION
+.storage/
+automations.yaml
+blueprints/
+configuration.yaml
+scenes.yaml
+scripts.yaml
+secrets.yaml
