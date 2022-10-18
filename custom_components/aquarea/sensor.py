@@ -22,7 +22,7 @@ from homeassistant.helpers.issue_registry import IssueSeverity, async_create_iss
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.util import slugify
 
-from .const import DOMAIN
+from .const import DOMAIN, DeviceType
 from .definitions import SENSORS, HeishaMonSensorEntityDescription
 from . import build_device_info
 
@@ -168,7 +168,7 @@ def build_virtual_sensors(
 class HeishaMonSensorTemplate(SensorTemplate):
     @property
     def device_info(self):
-        return build_device_info()
+        return build_device_info(DeviceType.HEATPUMP)
 
 
 class HeishaMonSensor(SensorEntity):
@@ -220,4 +220,4 @@ class HeishaMonSensor(SensorEntity):
 
     @property
     def device_info(self):
-        return build_device_info()
+        return build_device_info(self.entity_description.device)

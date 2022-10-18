@@ -100,4 +100,4 @@ class HeishaMonMQTTSwitch(SwitchEntity):
 
     @property
     def device_info(self):
-        return build_device_info()
+        return build_device_info(self.entity_description.device)

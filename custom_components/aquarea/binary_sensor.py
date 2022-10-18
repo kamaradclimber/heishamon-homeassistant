@@ -11,7 +11,7 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.util import slugify
 
 from .const import DOMAIN
-from .definitions import BINARY_SENSORS, HeishaMonSensorEntityDescription
+from .definitions import BINARY_SENSORS, HeishaMonBinarySensorEntityDescription
 from . import build_device_info
 
 
@@ -33,10 +33,12 @@ async def async_setup_entry(
 class HeishaMonBinarySensor(BinarySensorEntity):
     """Representation of a HeishaMon sensor that is updated via MQTT."""
 
-    entity_description: HeishaMonSensorEntityDescription
+    entity_description: HeishaMonBinarySensorEntityDescription
 
     def __init__(
-        self, description: HeishaMonSensorEntityDescription, config_entry: ConfigEntry
+        self,
+        description: HeishaMonBinarySensorEntityDescription,
+        config_entry: ConfigEntry,
     ) -> None:
         """Initialize the sensor."""
         self.entity_description = description
@@ -64,4 +66,4 @@ class HeishaMonBinarySensor(BinarySensorEntity):
 
     @property
     def device_info(self):
-        return build_device_info()
+        return build_device_info(self.entity_description.device)

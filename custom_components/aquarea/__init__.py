@@ -4,7 +4,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN
+from .const import DOMAIN, DeviceType
 
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.SWITCH]
 
@@ -21,15 +21,25 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
-def build_device_info() -> dict:
-    return {
-        "identifiers": {
-            (
-                DOMAIN,
-                "panasonic_heat_pump",
-            )  # we use the mqtt topic used. TODO: inject it
-        },
-        "name": "Aquarea HeatPump",
-        "manufacturer": "Aquarea",
-        "via_device": ("mqtt", "panasonic_heat_pump"),
-    }
+def build_device_info(device_type: DeviceType) -> dict:
+    """
+    This method returns the correct device based
+    """
+    if device_type == DeviceType.HEATPUMP:
+        return {
+            "identifiers": {
+                (
+                    DOMAIN,
+                    "panasonic_heat_pump",
+                )
+            },
+            "name": "Aquarea HeatPump Indoor Unit",
+            "manufacturer": "Aquarea",
+            "via_device": ("aquarea", "heishamon"),
+        }
+    elif device_type == DeviceType.HEISHAMON:
+        return {
+            "identifiers": {(DOMAIN, "heishamon")},
+            "name": "HeishaMon",
+        }
+    assert False, f"{device_type} management has not been implemented"

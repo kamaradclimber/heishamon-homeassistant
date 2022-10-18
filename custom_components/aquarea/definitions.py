@@ -14,6 +14,7 @@ from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.helpers import device_registry as dr
 from homeassistant.components.switch import SwitchEntityDescription, SwitchDeviceClass
 
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntityDescription,
@@ -32,6 +33,7 @@ from homeassistant.const import (
 )
 
 from .models import HEATPUMP_MODELS
+from .const import DeviceType
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -76,6 +78,9 @@ class HeishaMonSensorEntityDescription(SensorEntityDescription):
     # for fields using the same mqtt topic
     unique_id_suffix: str | None = None
 
+    # device sensor belong to
+    device: DeviceType = DeviceType.HEATPUMP
+
 
 @dataclass
 class HeishaMonSwitchEntityDescription(SwitchEntityDescription):
@@ -89,6 +94,8 @@ class HeishaMonSwitchEntityDescription(SwitchEntityDescription):
     encoding: str = "utf-8"
     # a method called when receiving a new value
     state: Callable | None = None
+    # device sensor belong to
+    device: DeviceType = DeviceType.HEATPUMP
 
 
 @dataclass
@@ -96,6 +103,9 @@ class HeishaMonBinarySensorEntityDescription(BinarySensorEntityDescription):
     """Binary sensor entity description for HeishaMon."""
 
     state: Callable | None = None
+
+    # device sensor belong to
+    device: DeviceType = DeviceType.HEATPUMP
 
 
 def bit_to_bool(value: str) -> Optional[bool]:
@@ -438,6 +448,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         key="panasonic_heat_pump/stats",
         name="HeishaMon RSSI",
         state=partial(read_stats_json, "wifi"),
+        device=DeviceType.HEISHAMON,
         native_unit_of_measurement="%",
         unique_id_suffix="_rssi",
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -446,6 +457,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         key="panasonic_heat_pump/stats",
         name="HeishaMon Uptime",
         state=lambda json_doc: ms_to_secs(read_stats_json("uptime", json_doc)),
+        device=DeviceType.HEISHAMON,
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement="s",
         unique_id_suffix="_uptime",
@@ -455,6 +467,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         key="panasonic_heat_pump/stats",
         name="HeishaMon Total reads",
         state=partial(read_stats_json, "total reads"),
+        device=DeviceType.HEISHAMON,
         unique_id_suffix="_total_reads",
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -463,6 +476,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         key="panasonic_heat_pump/stats",
         name="HeishaMon Good reads",
         state=partial(read_stats_json, "good reads"),
+        device=DeviceType.HEISHAMON,
         unique_id_suffix="_good_reads",
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -471,6 +485,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         key="panasonic_heat_pump/stats",
         name="HeishaMon bad CRC reads",
         state=partial(read_stats_json, "bad crc reads"),
+        device=DeviceType.HEISHAMON,
         unique_id_suffix="_badcrc_reads",
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -479,6 +494,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         key="panasonic_heat_pump/stats",
         name="HeishaMon bad header reads",
         state=partial(read_stats_json, "bad header reads"),
+        device=DeviceType.HEISHAMON,
         unique_id_suffix="_badheader_reads",
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -487,6 +503,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         key="panasonic_heat_pump/stats",
         name="HeishaMon too short reads",
         state=partial(read_stats_json, "too short reads"),
+        device=DeviceType.HEISHAMON,
         unique_id_suffix="_tooshort_reads",
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -495,6 +512,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         key="panasonic_heat_pump/stats",
         name="HeishaMon too long reads",
         state=partial(read_stats_json, "too long reads"),
+        device=DeviceType.HEISHAMON,
         unique_id_suffix="_toolong_reads",
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -503,6 +521,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         key="panasonic_heat_pump/stats",
         name="HeishaMon timeout reads",
         state=partial(read_stats_json, "timeout reads"),
+        device=DeviceType.HEISHAMON,
         unique_id_suffix="_timeout_reads",
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -511,6 +530,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         key="panasonic_heat_pump/stats",
         name="HeishaMon voltage",
         state=partial(read_stats_json, "voltage"),
+        device=DeviceType.HEISHAMON,
         unique_id_suffix="_voltage",
         device_class=SensorDeviceClass.VOLTAGE,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -519,6 +539,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         key="panasonic_heat_pump/stats",
         name="HeishaMon free memory",
         state=partial(read_stats_json, "free memory"),
+        device=DeviceType.HEISHAMON,
         unique_id_suffix="_freememory",
         native_unit_of_measurement="%",
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -528,6 +549,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="HeishaMon free heap",
         state=partial(read_stats_json, "free heap"),
         unique_id_suffix="_freeheap",
+        device=DeviceType.HEISHAMON,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -535,6 +557,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         key="panasonic_heat_pump/stats",
         name="HeishaMon mqtt reconnects",
         state=partial(read_stats_json, "mqtt reconnects"),
+        device=DeviceType.HEISHAMON,
         unique_id_suffix="_mqttreconnects",
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.TOTAL_INCREASING,
