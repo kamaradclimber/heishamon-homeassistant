@@ -61,6 +61,26 @@ def read_operating_mode_state(value):
     return OPERATING_MODE_TO_STRING.get(value, f"Unknown operating mode value: {value}")
 
 
+ZONE_STATES_STRING = {
+    "0": "Zone 1",
+    "1": "Zone 2",
+    "2": "Zones 1 + 2",
+}
+
+
+def read_zones_state(value):
+    return ZONE_STATES_STRING.get(value, f"Unknown zone state value: {value}")
+
+
+def zone_state_to_mqtt(value: str) -> Optional[str]:
+    options = [
+        state for (state, string) in ZONE_STATES_STRING.items() if string == value
+    ]
+    if len(options) == 0:
+        return None
+    return options[0]
+
+
 def read_power_mode_time(value):
     return int(value) * 30
 
@@ -169,6 +189,12 @@ def read_heatpump_model(value: str) -> str:
     return HEATPUMP_MODELS.get(value, "Unknown model for HeishaMon")
 
 
+def read_solar_mode(value: str) -> str:
+    return {"0": "Disabled", "1": "Buffer", "2": "DHW"}.get(
+        value, f"Unknown solar mode: {value}"
+    )
+
+
 def write_quiet_mode(selected_value: str):
     if selected_value == "Off":
         return 0
@@ -213,6 +239,15 @@ SELECTS: tuple[HeishaMonSelectEntityDescription, ...] = (
         state=read_operating_mode_state,
         state_to_mqtt=operating_mode_to_state,
         options=list(OPERATING_MODE_TO_STRING.values()),
+    ),
+    HeishaMonSelectEntityDescription(
+        heishamon_topic_id="SET17",  # also TOP94
+        key="panasonic_heat_pump/main/Zones_State",
+        command_topic="panasonic_heat_pump/commands/SetZones",
+        name="Active zones",
+        state=read_zones_state,
+        state_to_mqtt=zone_state_to_mqtt,
+        options=list(ZONE_STATES_STRING.values()),
     ),
 )
 
@@ -294,6 +329,39 @@ BINARY_SENSORS: tuple[HeishaMonBinarySensorEntityDescription, ...] = (
         state=bit_to_bool,
         device_class=BinarySensorDeviceClass.HEAT,
     ),
+    HeishaMonBinarySensorEntityDescription(
+        heishamon_topic_id="TOP68",
+        key="panasonic_heat_pump/main/Force_Heater_State",
+        name="Aquarea Force heater status",
+        state=bit_to_bool,
+        device_class=BinarySensorDeviceClass.RUNNING,
+    ),
+    HeishaMonBinarySensorEntityDescription(
+        heishamon_topic_id="TOP69",
+        key="panasonic_heat_pump/main/Sterilization_State",
+        name="Aquarea Sterilization State",
+        state=bit_to_bool,
+        device_class=BinarySensorDeviceClass.RUNNING,
+    ),
+    HeishaMonBinarySensorEntityDescription(
+        heishamon_topic_id="TOP93",
+        key="panasonic_heat_pump/main/Pump_Duty",
+        name="Aquarea Pump Running",
+        state=bit_to_bool,
+        device_class=BinarySensorDeviceClass.RUNNING,
+    ),
+    HeishaMonBinarySensorEntityDescription(
+        heishamon_topic_id="TOP99",
+        key="panasonic_heat_pump/main/Buffer_Installed",
+        name="Aquarea Buffer Installed",
+        state=bit_to_bool,
+    ),
+    HeishaMonBinarySensorEntityDescription(
+        heishamon_topic_id="TOP100",
+        key="panasonic_heat_pump/main/DHW_Installed",
+        name="Aquarea DHW Installed",
+        state=bit_to_bool,
+    ),
 )
 
 
@@ -309,6 +377,14 @@ def update_device_model(
     device_registry.async_get_or_create(
         config_entry_id=config_entry_id, identifiers=identifiers, model=model
     )
+
+
+def read_heating_mode(value: str) -> Optional[str]:
+    if value == "0":
+        return "compensation curve"
+    elif value == "1":
+        return "direct"
+    return None
 
 
 def read_stats_json(field_name: str, json_doc: str) -> Optional[float]:
@@ -747,11 +823,174 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP70",
+        key="panasonic_heat_pump/main/Sterilization_Temp",
+        name="Aquarea Sterilization Temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP71",
+        key="panasonic_heat_pump/main/Sterilization_Max_Time",
+        name="Aquarea Sterilization maximum time",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement="min",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP72",
+        key="panasonic_heat_pump/main/Z1_Cool_Curve_Target_High_Temp",
+        name="Aquarea Zone 1 Target temperature at highest point on cool curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP73",
+        key="panasonic_heat_pump/main/Z1_Cool_Curve_Target_Low_Temp",
+        name="Aquarea Zone 1 Target temperature at lowest point on heating curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP74",
+        key="panasonic_heat_pump/main/Z1_Cool_Curve_Outside_High_Temp",
+        name="Aquarea Zone 1 Highest outside temperature on the cooling curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP75",
+        key="panasonic_heat_pump/main/Z1_Cool_Curve_Outside_Low_Temp",
+        name="Aquarea Zone 1 Lowest outside temperature on the cooling curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP76",
+        key="panasonic_heat_pump/main/Heating_Mode",
+        name="Aquarea Heating Mode",
+        state=read_heating_mode,
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP77",
+        key="panasonic_heat_pump/main/Heating_Off_Outdoor_Temp",
+        name="Aquarea Outdoor temperature heating cutoff",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP78",
+        key="panasonic_heat_pump/main/Heater_On_Outdoor_Temp",
+        name="Aquarea Outdoor temperature backup heater power on",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP79",
+        key="panasonic_heat_pump/main/Heat_To_Cool_Temp",
+        name="Aquarea Outdoor temperature heat->cool threshold",  # when in "auto" mode
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP80",
+        key="panasonic_heat_pump/main/Cool_To_Heat_Temp",
+        name="Aquarea Outdoor temperature cool->heat threshold",  # when in "auto" mode
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP81",
+        key="panasonic_heat_pump/main/Cooling_Mode",
+        name="Aquarea Cooling Mode",
+        state=read_heating_mode,
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP82",
+        key="panasonic_heat_pump/main/Z2_Heat_Curve_Target_High_Temp",
+        name="Aquarea Zone 2 Target temperature at lowest point on heating curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP83",
+        key="panasonic_heat_pump/main/Z2_Heat_Curve_Target_Low_Temp",
+        name="Aquarea Zone 2 Target temperature at highest point on heating curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP84",
+        key="panasonic_heat_pump/main/Z2_Heat_Curve_Outside_High_Temp",
+        name="Aquarea Zone 2 Lowest outside temperature on the heating curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP85",
+        key="panasonic_heat_pump/main/Z2_Heat_Curve_Outside_Low_Temp",
+        name="Aquarea Zone 2 Highest outside temperature on the heating curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP86",
+        key="panasonic_heat_pump/main/Z2_Cool_Curve_Target_High_Temp",
+        name="Aquarea Zone 2 Target temperature at highest point on cool curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP87",
+        key="panasonic_heat_pump/main/Z2_Cool_Curve_Target_Low_Temp",
+        name="Aquarea Zone 2 Target temperature at lowest point on heating curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP88",
+        key="panasonic_heat_pump/main/Z2_Cool_Curve_Outside_High_Temp",
+        name="Aquarea Zone 2 Highest outside temperature on the cooling curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP89",
+        key="panasonic_heat_pump/main/Z2_Cool_Curve_Outside_Low_Temp",
+        name="Aquarea Zone 2 Lowest outside temperature on the cooling curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP90",
+        key="panasonic_heat_pump/main/Room_Heater_Operations_Hours",
+        name="Aquarea Electric heater operating time for Room",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement="h",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP91",
+        key="panasonic_heat_pump/main/DHW_Heater_Operations_Hours",
+        name="Aquarea Electric heater operating time for DHW",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement="h",
+    ),
+    HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP92",
         key="panasonic_heat_pump/main/Heat_Pump_Model",
         name="Aquarea Heatpump model",
         state=read_heatpump_model,
         on_receive=update_device_model,
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP95",
+        key="panasonic_heat_pump/main/Max_Pump_Duty",
+        name="Aquarea Max pump duty configured",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP101",
+        key="panasonic_heat_pump/main/Solar_Mode",
+        name="Aquarea Solar Mode",
+        state=read_solar_mode,
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="STAT1_rssi",
