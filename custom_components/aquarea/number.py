@@ -43,6 +43,7 @@ class HeishaMonMQTTNumber(NumberEntity):
         """Initialize the sensor."""
         self.entity_description = description
         self.hass = hass
+        self.config_entry_entry_id = config_entry.entry_id
 
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"number.{slug}"
@@ -82,6 +83,11 @@ class HeishaMonMQTTNumber(NumberEntity):
                 self._attr_native_value = message.payload
 
             self.async_write_ha_state()
+
+            if self.entity_description.on_receive is not None:
+                self.entity_description.on_receive(
+                    self.hass, self, self.config_entry_entry_id, self._attr_native_value
+                )
 
         await mqtt.async_subscribe(
             self.hass, self.entity_description.key, message_received, 1

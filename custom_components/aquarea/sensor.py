@@ -204,12 +204,11 @@ class HeishaMonSensor(SensorEntity):
             else:
                 self._attr_native_value = message.payload
 
+            self.async_write_ha_state()
             if self.entity_description.on_receive is not None:
                 self.entity_description.on_receive(
                     self.hass, self, self.config_entry_entry_id, self._attr_native_value
                 )
-
-            self.async_write_ha_state()
 
         await mqtt.async_subscribe(
             self.hass, self.entity_description.key, message_received, 1

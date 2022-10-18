@@ -106,6 +106,9 @@ class HeishaMonEntityDescription:
     # device sensor belong to
     device: DeviceType = DeviceType.HEATPUMP
 
+    # a method called when receiving a new value. With a lot of context. Used to update device info for instance
+    on_receive: Callable | None = None
+
 
 @dataclass
 class HeishaMonSensorEntityDescription(
@@ -113,8 +116,7 @@ class HeishaMonSensorEntityDescription(
 ):
     """Sensor entity description for HeishaMon."""
 
-    # a method called when receiving a new value. With a lot of context. Used to update device info for instance
-    on_receive: Callable | None = None
+    pass
 
 
 @dataclass

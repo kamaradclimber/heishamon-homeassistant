@@ -43,6 +43,7 @@ class HeishaMonMQTTSwitch(SwitchEntity):
     ) -> None:
         """Initialize the switch."""
         self.entity_description = description
+        self.config_entry_entry_id = config_entry.entry_id
         self.hass = hass
 
         slug = slugify(description.key.replace("/", "_"))
@@ -92,6 +93,10 @@ class HeishaMonMQTTSwitch(SwitchEntity):
                 self._attr_is_on = message.payload
 
             self.async_write_ha_state()
+            if self.entity_description.on_receive is not None:
+                self.entity_description.on_receive(
+                    self.hass, self, self.config_entry_entry_id, self._attr_is_on
+                )
 
         await mqtt.async_subscribe(
             self.hass, self.entity_description.key, message_received, 1
