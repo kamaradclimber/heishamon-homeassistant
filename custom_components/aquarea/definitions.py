@@ -10,12 +10,13 @@ import logging
 
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.helpers import device_registry as dr
 from homeassistant.components.switch import SwitchEntityDescription
+from homeassistant.components.select import SelectEntityDescription
 
 
 from homeassistant.components.sensor import (
+    SensorEntity,
     SensorDeviceClass,
     SensorEntityDescription,
     SensorStateClass,
@@ -57,6 +58,7 @@ def read_threeway_valve(value: str) -> Optional[str]:
         _LOGGER.info(f"Reading unhandled value for ThreeWay Valve state: '{value}'")
         return None
 
+
 @dataclass
 class HeishaMonEntityDescription:
     # a method called when receiving a new value
@@ -65,9 +67,13 @@ class HeishaMonEntityDescription:
     # device sensor belong to
     device: DeviceType = DeviceType.HEATPUMP
 
+
 @dataclass
-class HeishaMonSensorEntityDescription(HeishaMonEntityDescription, SensorEntityDescription):
+class HeishaMonSensorEntityDescription(
+    HeishaMonEntityDescription, SensorEntityDescription
+):
     """Sensor entity description for HeishaMon."""
+
     # a method called when receiving a new value. With a lot of context. Used to update device info for instance
     on_receive: Callable | None = None
 
@@ -75,10 +81,12 @@ class HeishaMonSensorEntityDescription(HeishaMonEntityDescription, SensorEntityD
     unique_id_suffix: str | None = None
 
 
-
 @dataclass
-class HeishaMonSwitchEntityDescription(HeishaMonEntityDescription, SwitchEntityDescription):
+class HeishaMonSwitchEntityDescription(
+    HeishaMonEntityDescription, SwitchEntityDescription
+):
     """Switch entity description for HeishaMon."""
+
     command_topic: str = "void/topic"
     qos: int = 0
     payload_on: str = "1"
@@ -88,9 +96,27 @@ class HeishaMonSwitchEntityDescription(HeishaMonEntityDescription, SwitchEntityD
 
 
 @dataclass
-class HeishaMonBinarySensorEntityDescription(HeishaMonEntityDescription, BinarySensorEntityDescription):
+class HeishaMonBinarySensorEntityDescription(
+    HeishaMonEntityDescription, BinarySensorEntityDescription
+):
     """Binary sensor entity description for HeishaMon."""
+
     pass
+
+
+@dataclass
+class HeishaMonSelectEntityDescription(
+    HeishaMonEntityDescription, SelectEntityDescription
+):
+    """Select entity description for HeishaMon"""
+
+    command_topic: str = "void/topic"
+    retain: bool = False
+    encoding: str = "utf-8"
+    qos: int = 0
+    # function to transform selected option in value sent via mqtt
+    state_to_mqtt: Optional[Callable] = None
+
 
 def bit_to_bool(value: str) -> Optional[bool]:
     if value == "1":
@@ -101,17 +127,39 @@ def bit_to_bool(value: str) -> Optional[bool]:
         return None
 
 
-def read_quiet_mode(value: str) -> Optional[bool]:
+def read_quiet_mode(value: str) -> str:
+    # values range from 0 to 4
     if value == "4":
-        return True  # Scheduled
+        return "Scheduled"
     elif value == "0":
-        return False
-    _LOGGER.info(f"Reading unhandled quiet mode: '{value}'")
-    return None
+        return "Off"
+    return value
 
 
 def read_heatpump_model(value: str) -> str:
     return HEATPUMP_MODELS.get(value, "Unknown model for HeishaMon")
+
+
+def write_quiet_mode(selected_value: str):
+    if selected_value == "Off":
+        return 0
+    elif selected_value == "Scheduled":
+        return 4
+    else:
+        return int(selected_value)
+
+
+SELECTS: tuple[HeishaMonSelectEntityDescription, ...] = (
+    HeishaMonSelectEntityDescription(
+        key="panasonic_heat_pump/main/Quiet_Mode_Level",
+        command_topic="panasonic_heat_pump/commands/SetQuietMode",
+        name="Aquarea Quiet Mode",
+        entity_category=EntityCategory.CONFIG,
+        state=read_quiet_mode,
+        state_to_mqtt=write_quiet_mode,
+        options=["Off", "1", "2", "3", "Scheduled"],
+    ),
+)
 
 
 MQTT_SWITCHES: tuple[HeishaMonSwitchEntityDescription, ...] = (
@@ -139,16 +187,6 @@ MQTT_SWITCHES: tuple[HeishaMonSwitchEntityDescription, ...] = (
 )
 
 BINARY_SENSORS: tuple[HeishaMonBinarySensorEntityDescription, ...] = (
-    HeishaMonBinarySensorEntityDescription(
-        key="panasonic_heat_pump/main/Quiet_Mode_Level",
-        name="Aquarea Quiet Mode",
-        entity_category=EntityCategory.CONFIG,
-        state=read_quiet_mode,
-        # state_class=SensorStateClass.MEASUREMENT,
-        # icon= "mdi:on"
-        # entity_registry_enabled_default=True,
-        # native_unit_of_measurement="L/min",
-    ),
     HeishaMonBinarySensorEntityDescription(
         key="panasonic_heat_pump/main/Defrosting_State",
         name="Aquarea Defrost State",
