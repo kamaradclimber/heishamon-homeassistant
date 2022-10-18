@@ -13,6 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.components.switch import SwitchEntityDescription
 from homeassistant.components.select import SelectEntityDescription
+from homeassistant.components.number import NumberEntityDescription
 
 
 from homeassistant.components.sensor import (
@@ -133,6 +134,20 @@ class HeishaMonSelectEntityDescription(
     state_to_mqtt: Optional[Callable] = None
 
 
+@dataclass
+class HeishaMonNumberEntityDescription(
+    HeishaMonEntityDescription, NumberEntityDescription
+):
+    """Number entity description for HeishaMon"""
+
+    command_topic: str = "void/topic"
+    retain: bool = False
+    encoding: str = "utf-8"
+    qos: int = 0
+    # function to transform selected option in value sent via mqtt
+    state_to_mqtt: Optional[Callable] = None
+
+
 def bit_to_bool(value: str) -> Optional[bool]:
     if value == "1":
         return True
@@ -163,6 +178,21 @@ def write_quiet_mode(selected_value: str):
     else:
         return int(selected_value)
 
+
+NUMBERS: tuple[HeishaMonNumberEntityDescription, ...] = (
+    HeishaMonNumberEntityDescription(
+        key="panasonic_heat_pump/main/DHW_Target_Temp",
+        command_topic="panasonic_heat_pump/commands/SetDHWTemp",
+        name="DHW Target Temperature",
+        entity_category=EntityCategory.CONFIG,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+        native_min_value=48,
+        native_max_value=60,
+        state=int,
+        state_to_mqtt=int,
+    ),
+)
 
 SELECTS: tuple[HeishaMonSelectEntityDescription, ...] = (
     HeishaMonSelectEntityDescription(
