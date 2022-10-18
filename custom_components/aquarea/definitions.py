@@ -196,7 +196,7 @@ NUMBERS: tuple[HeishaMonNumberEntityDescription, ...] = (
 
 SELECTS: tuple[HeishaMonSelectEntityDescription, ...] = (
     HeishaMonSelectEntityDescription(
-        heishamon_topic_id="SET3",
+        heishamon_topic_id="SET3",  # also corresponds to TOP18
         key="panasonic_heat_pump/main/Quiet_Mode_Level",
         command_topic="panasonic_heat_pump/commands/SetQuietMode",
         name="Aquarea Quiet Mode",
@@ -242,9 +242,23 @@ MQTT_SWITCHES: tuple[HeishaMonSwitchEntityDescription, ...] = (
         entity_category=EntityCategory.CONFIG,
         state=bit_to_bool,
     ),
+    HeishaMonSwitchEntityDescription(
+        heishamon_topic_id="SET24",  # corresponds to "TOP13"
+        key="panasonic_heat_pump/main/Main_Schedule_State",
+        command_topic="panasonic_heat_pump/commands/SetMainSchedule",
+        name="Aquarea Main thermosthat schedule",
+        entity_category=EntityCategory.CONFIG,
+        state=bit_to_bool,
+    ),
 )
 
 BINARY_SENSORS: tuple[HeishaMonBinarySensorEntityDescription, ...] = (
+    HeishaMonBinarySensorEntityDescription(
+        heishamon_topic_id="TOP3",
+        key="panasonic_heat_pump/main/Quiet_Mode_Schedule",
+        name="Aquarea Quiet Mode Schedule",
+        state=bit_to_bool,
+    ),
     HeishaMonBinarySensorEntityDescription(
         heishamon_topic_id="TOP26",
         key="panasonic_heat_pump/main/Defrosting_State",
@@ -443,11 +457,127 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         native_unit_of_measurement="°C",
     ),
     HeishaMonSensorEntityDescription(
-        heishamon_topic_id="TOP27",
-        key="panasonic_heat_pump/main/Z1_Heat_Request_Temp",
-        name="Aquarea Heatshift Temperature",
+        heishamon_topic_id="TOP22",
+        key="panasonic_heat_pump/main/DHW_Heat_Delta",
+        name="Aquarea DHW heating delta",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP23",
+        key="panasonic_heat_pump/main/Heat_Delta",
+        name="Aquarea Heat delta",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP24",
+        key="panasonic_heat_pump/main/Cool_Delta",
+        name="Aquarea Cool delta",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP25",
+        key="panasonic_heat_pump/main/DHW_Holiday_Shift_Temp",
+        name="Aquarea DHW Holiday shift temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP27",
+        key="panasonic_heat_pump/main/Z1_Heat_Request_Temp",
+        # it can be relative (-5 -> +5, or absolute [20, ..[)
+        name="Aquarea Zone 1 Heat Requested shift",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP28",
+        # it can be relative (-5 -> +5, or absolute [5, 20])
+        key="panasonic_heat_pump/main/Z1_Cool_Request_Temp",
+        name="Aquarea Zone 1 Cool Requested shift",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP29",
+        key="panasonic_heat_pump/main/Z1_Heat_Curve_Target_High_Temp",
+        name="Aquarea Zone 1 Target temperature at lowest point on heating curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP30",
+        key="panasonic_heat_pump/main/Z1_Heat_Curve_Target_Low_Temp",
+        name="Aquarea Zone 1 Target temperature at highest point on heating curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP31",
+        key="panasonic_heat_pump/main/Z1_Heat_Curve_Outside_High_Temp",
+        name="Aquarea Zone 1 Lowest outside temperature on the heating curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP32",
+        key="panasonic_heat_pump/main/Z1_Heat_Curve_Outside_Low_Temp",
+        name="Aquarea Zone 1 Highest outside temperature on the heating curve",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP33",
+        key="panasonic_heat_pump/main/Room_Thermostat_Temp",
+        name="Aquarea Remote control thermosthat temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP34",
+        key="panasonic_heat_pump/main/Z2_Heat_Request_Temp",
+        # it can be relative (-5 -> +5, or absolute [20, ..[)
+        name="Aquarea Zone 2 Heat Requested shift",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP35",
+        # it can be relative (-5 -> +5, or absolute [5, 20])
+        key="panasonic_heat_pump/main/Z2_Cool_Request_Temp",
+        name="Aquarea Zone 2 Cool Requested shift",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP36",
+        key="panasonic_heat_pump/main/Z1_Water_Temp",
+        name="Aquarea Zone 1 water outlet temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP37",
+        key="panasonic_heat_pump/main/Z2_Water_Temp",
+        name="Aquarea Zone 2 water outlet temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP38",
+        key="panasonic_heat_pump/main/Cool_Energy_Production",
+        name="Aquarea Thermal Cooling power production",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement="W",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP39",
+        key="panasonic_heat_pump/main/Cool_Energy_Consumption",
+        name="Aquarea Thermal Cooling power consumption",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement="W",
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP40",
@@ -468,10 +598,52 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         # original template states "force_update" FIXME
     ),
     HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP42",
+        key="panasonic_heat_pump/main/Z1_Water_Target_Temp",
+        name="Aquarea Zone 1 water target temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP43",
+        key="panasonic_heat_pump/main/Z2_Water_Target_Temp",
+        name="Aquarea Zone 2 water target temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP44",
         key="panasonic_heat_pump/main/Error",
         name="Aquarea Last Error",
         entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP45",
+        key="panasonic_heat_pump/main/Room_Holiday_Shift_Temp",
+        name="Aquarea Room heating Holiday shift temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP46",
+        key="panasonic_heat_pump/main/Buffer_Temp",
+        name="Aquarea Actual Buffer temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP47",
+        key="panasonic_heat_pump/main/Solar_Temp",
+        name="Aquarea Actual Solar temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP48",
+        key="panasonic_heat_pump/main/Pool_Temp",
+        name="Aquarea Actual Pool temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP49",
@@ -519,6 +691,20 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         heishamon_topic_id="TOP55",
         key="panasonic_heat_pump/main/Ipm_Temp",
         name="Aquarea Ipm Temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP56",
+        key="panasonic_heat_pump/main/Z1_Temp",
+        name="Aquarea Zone1: Actual Temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP57",
+        key="panasonic_heat_pump/main/Z2_Temp",
+        name="Aquarea Zone1: Actual Temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
     ),
