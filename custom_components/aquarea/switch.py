@@ -23,7 +23,7 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up HeishaMon sensors from config entry."""
+    """Set up HeishaMon switches from config entry."""
     async_add_entities(
         HeishaMonMQTTSwitch(hass, description, config_entry)
         for description in MQTT_SWITCHES
@@ -31,7 +31,7 @@ async def async_setup_entry(
 
 
 class HeishaMonMQTTSwitch(SwitchEntity):
-    """Representation of a HeishaMon sensor that is updated via MQTT."""
+    """Representation of a HeishaMon switch that is updated via MQTT."""
 
     entity_description: HeishaMonSwitchEntityDescription
 
@@ -41,12 +41,12 @@ class HeishaMonMQTTSwitch(SwitchEntity):
         description: HeishaMonSwitchEntityDescription,
         config_entry: ConfigEntry,
     ) -> None:
-        """Initialize the sensor."""
+        """Initialize the switch."""
         self.entity_description = description
         self.hass = hass
 
         slug = slugify(description.key.replace("/", "_"))
-        self.entity_id = f"sensor.{slug}"
+        self.entity_id = f"switch.{slug}"
         self._attr_unique_id = f"{config_entry.entry_id}-{slug}"
         self._optimistic = True  # for now we hardcode this
 

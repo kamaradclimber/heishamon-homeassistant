@@ -20,7 +20,7 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up HeishaMon sensors from config entry."""
+    """Set up HeishaMon binary sensors from config entry."""
     async_add_entities(
         HeishaMonBinarySensor(description, config_entry)
         for description in BINARY_SENSORS
@@ -28,7 +28,7 @@ async def async_setup_entry(
 
 
 class HeishaMonBinarySensor(BinarySensorEntity):
-    """Representation of a HeishaMon sensor that is updated via MQTT."""
+    """Representation of a HeishaMon binary sensor that is updated via MQTT."""
 
     entity_description: HeishaMonBinarySensorEntityDescription
 
@@ -37,7 +37,7 @@ class HeishaMonBinarySensor(BinarySensorEntity):
         description: HeishaMonBinarySensorEntityDescription,
         config_entry: ConfigEntry,
     ) -> None:
-        """Initialize the sensor."""
+        """Initialize the binary sensor."""
         self.entity_description = description
 
         slug = slugify(description.key.replace("/", "_"))
