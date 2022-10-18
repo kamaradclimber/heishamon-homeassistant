@@ -31,18 +31,31 @@ from .const import DeviceType
 
 _LOGGER = logging.getLogger(__name__)
 
+OPERATING_MODE_TO_STRING = {
+    "0": "Heat",
+    "1": "Cool",
+    "2": "Auto",
+    "3": "DHW",
+    "4": "Heat+DWH",
+    "5": "Cool+DHW",
+    "6": "Auto+DHW",
+}
+
+
+def operating_mode_to_state(value):
+    """
+    We intentionally don't support all modes for now
+    """
+    options = [
+        mode for (mode, string) in OPERATING_MODE_TO_STRING.items() if string == value
+    ]
+    if len(options) == 0:
+        return None
+    return options[0]
+
 
 def read_operating_mode_state(value):
-    values = {
-        "0": "Heat",
-        "1": "Cool",
-        "2": "Auto",
-        "3": "DHW",
-        "4": "Heat+DWH",
-        "5": "Cool+DHW",
-        "6": "Auto+DHW",
-    }
-    return values.get(value, f"Unknown operating mode value")
+    return OPERATING_MODE_TO_STRING.get(value, f"Unknown operating mode value")
 
 
 def read_power_mode_time(value):
@@ -159,6 +172,15 @@ SELECTS: tuple[HeishaMonSelectEntityDescription, ...] = (
         state_to_mqtt=write_quiet_mode,
         options=["Off", "1", "2", "3", "Scheduled"],
     ),
+    HeishaMonSelectEntityDescription(
+        key="panasonic_heat_pump/main/Operating_Mode_State",
+        command_topic="panasonic_heat_pump/commands/SetOperationMode",
+        name="Aquarea Mode",
+        state=read_operating_mode_state,
+        state_to_mqtt=operating_mode_to_state,
+        # TODO: prevent user to select dangerous options (are some options dangerous?)
+        options=list(OPERATING_MODE_TO_STRING.values()),
+    ),
 )
 
 
@@ -261,7 +283,6 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
     HeishaMonSensorEntityDescription(
         key="panasonic_heat_pump/main/Operating_Mode_State",
         name="Aquarea Mode",
-        entity_category=EntityCategory.CONFIG,
         # state_class=SensorStateClass.MEASUREMENT,
         # device_class=SensorDeviceClass.ENERGY,
         # icon= "mdi:on"
