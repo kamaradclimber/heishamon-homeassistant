@@ -46,7 +46,9 @@ class HeishaMonMQTTSelect(SelectEntity):
 
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"select.{slug}"
-        self._attr_unique_id = f"{config_entry.entry_id}-{slug}"
+        self._attr_unique_id = (
+            f"{config_entry.entry_id}-{description.heishamon_topic_id}"
+        )
         self._attr_current_option = None
 
     async def async_select_option(self, option: str) -> None:

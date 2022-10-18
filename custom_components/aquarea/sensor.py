@@ -187,7 +187,7 @@ class HeishaMonSensor(SensorEntity):
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"sensor.{slug}"
         self._attr_unique_id = (
-            f"{config_entry.entry_id}-{slug}{description.unique_id_suffix or ''}"
+            f"{config_entry.entry_id}-{description.heishamon_topic_id}"
         )
         if description.entity_category is not None:
             self._attr_entity_category = description.entity_category

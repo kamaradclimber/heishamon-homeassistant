@@ -47,7 +47,9 @@ class HeishaMonMQTTSwitch(SwitchEntity):
 
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"switch.{slug}"
-        self._attr_unique_id = f"{config_entry.entry_id}-{slug}"
+        self._attr_unique_id = (
+            f"{config_entry.entry_id}-{description.heishamon_topic_id}"
+        )
         self._optimistic = True  # for now we hardcode this
 
     async def async_turn_on(self) -> None:

@@ -42,7 +42,9 @@ class HeishaMonBinarySensor(BinarySensorEntity):
 
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"sensor.{slug}"
-        self._attr_unique_id = f"{config_entry.entry_id}-{slug}"
+        self._attr_unique_id = (
+            f"{config_entry.entry_id}-{description.heishamon_topic_id}"
+        )
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT events."""

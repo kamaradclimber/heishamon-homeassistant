@@ -46,7 +46,9 @@ class HeishaMonMQTTNumber(NumberEntity):
 
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"number.{slug}"
-        self._attr_unique_id = f"{config_entry.entry_id}-{slug}"
+        self._attr_unique_id = (
+            f"{config_entry.entry_id}-{description.heishamon_topic_id}"
+        )
 
     async def async_set_native_value(self, value: float) -> None:
         _LOGGER.debug(
