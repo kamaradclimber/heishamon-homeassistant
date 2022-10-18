@@ -57,49 +57,40 @@ def read_threeway_valve(value: str) -> Optional[str]:
         _LOGGER.info(f"Reading unhandled value for ThreeWay Valve state: '{value}'")
         return None
 
-
 @dataclass
-class HeishaMonSensorEntityDescription(SensorEntityDescription):
-    """Sensor entity description for HeishaMon."""
-
+class HeishaMonEntityDescription:
     # a method called when receiving a new value
     state: Callable | None = None
 
+    # device sensor belong to
+    device: DeviceType = DeviceType.HEATPUMP
+
+@dataclass
+class HeishaMonSensorEntityDescription(HeishaMonEntityDescription, SensorEntityDescription):
+    """Sensor entity description for HeishaMon."""
     # a method called when receiving a new value. With a lot of context. Used to update device info for instance
     on_receive: Callable | None = None
 
     # for fields using the same mqtt topic
     unique_id_suffix: str | None = None
 
-    # device sensor belong to
-    device: DeviceType = DeviceType.HEATPUMP
 
 
 @dataclass
-class HeishaMonSwitchEntityDescription(SwitchEntityDescription):
+class HeishaMonSwitchEntityDescription(HeishaMonEntityDescription, SwitchEntityDescription):
     """Switch entity description for HeishaMon."""
-
     command_topic: str = "void/topic"
     qos: int = 0
     payload_on: str = "1"
     payload_off: str = "0"
     retain: bool = False
     encoding: str = "utf-8"
-    # a method called when receiving a new value
-    state: Callable | None = None
-    # device sensor belong to
-    device: DeviceType = DeviceType.HEATPUMP
 
 
 @dataclass
-class HeishaMonBinarySensorEntityDescription(BinarySensorEntityDescription):
+class HeishaMonBinarySensorEntityDescription(HeishaMonEntityDescription, BinarySensorEntityDescription):
     """Binary sensor entity description for HeishaMon."""
-
-    state: Callable | None = None
-
-    # device sensor belong to
-    device: DeviceType = DeviceType.HEATPUMP
-
+    pass
 
 def bit_to_bool(value: str) -> Optional[bool]:
     if value == "1":
