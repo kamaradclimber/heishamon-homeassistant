@@ -267,6 +267,7 @@ NUMBERS: tuple[HeishaMonNumberEntityDescription, ...] = (
         on_receive=partial(
             guess_shift_or_direct_and_clamp_min_max_values, range(-5, 6), range(5, 21)
         ),
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonNumberEntityDescription(
         heishamon_topic_id="SET7",  # also TOP34
@@ -301,6 +302,7 @@ NUMBERS: tuple[HeishaMonNumberEntityDescription, ...] = (
         on_receive=partial(
             guess_shift_or_direct_and_clamp_min_max_values, range(-5, 6), range(5, 21)
         ),
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonNumberEntityDescription(
         heishamon_topic_id="SET11",  # TOP9
@@ -340,6 +342,7 @@ NUMBERS: tuple[HeishaMonNumberEntityDescription, ...] = (
         native_max_value=15,
         state=int,
         state_to_mqtt=int,
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonNumberEntityDescription(
         heishamon_topic_id="SET20",  # also corresponds to TOP22
@@ -557,7 +560,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         # state_class=SensorStateClass.MEASUREMENT,
         # device_class=SensorDeviceClass.ENERGY,
         # icon= "mdi:on"
-        # entity_registry_enabled_default=True,
+        # entity_registry_enabled_default = False, # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         # native_unit_of_measurement="L/min",
     ),
     HeishaMonSensorEntityDescription(
@@ -666,6 +669,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Cool delta",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP25",
@@ -729,6 +733,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Thermal Cooling power production",
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement="W",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP39",
@@ -736,6 +741,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Thermal Cooling power consumption",
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement="W",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP40",
@@ -788,6 +794,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Actual Buffer temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP47",
@@ -795,6 +802,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Actual Solar temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP48",
@@ -802,6 +810,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Actual Pool temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP49",
@@ -924,6 +933,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Zone 1 Target temperature at highest point on cool curve",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP73",
@@ -931,6 +941,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Zone 1 Target temperature at lowest point on heating curve",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP74",
@@ -938,6 +949,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Zone 1 Highest outside temperature on the cooling curve",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP75",
@@ -945,6 +957,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Zone 1 Lowest outside temperature on the cooling curve",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP76",
@@ -972,6 +985,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Outdoor temperature heat->cool threshold",  # when in "auto" mode
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP80",
@@ -979,12 +993,14 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Outdoor temperature cool->heat threshold",  # when in "auto" mode
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP81",
         key="panasonic_heat_pump/main/Cooling_Mode",
         name="Aquarea Cooling Mode",
         state=read_heating_mode,
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP82",
@@ -1020,6 +1036,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Zone 2 Target temperature at highest point on cool curve",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP87",
@@ -1027,6 +1044,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Zone 2 Target temperature at lowest point on heating curve",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP88",
@@ -1034,6 +1052,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Zone 2 Highest outside temperature on the cooling curve",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP89",
@@ -1041,6 +1060,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         name="Aquarea Zone 2 Lowest outside temperature on the cooling curve",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP90",
@@ -1073,6 +1093,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         key="panasonic_heat_pump/main/Solar_Mode",
         name="Aquarea Solar Mode",
         state=read_solar_mode,
+        entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="STAT1_rssi",
