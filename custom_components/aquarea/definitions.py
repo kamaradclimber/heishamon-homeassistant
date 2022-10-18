@@ -871,7 +871,7 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP57",
         key="panasonic_heat_pump/main/Z2_Temp",
-        name="Aquarea Zone1: Actual Temperature",
+        name="Aquarea Zone2: Actual Temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
     ),
