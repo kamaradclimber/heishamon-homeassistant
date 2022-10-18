@@ -207,6 +207,32 @@ def write_quiet_mode(selected_value: str):
         return int(selected_value)
 
 
+def guess_shift_or_direct_and_clamp_min_max_values(
+    range1,
+    range2,
+    hass: HomeAssistant,
+    entity: SensorEntity,
+    config_entry_id: str,
+    native_value: int,
+):
+    """
+    This method clamp min/max values based on the current value.
+    It relies on the fact that range1 and range2 are not intersecting.
+    ^^^ is false because Cool mode value '5' can mean +5 or 5°.
+    """
+    # FIXME: we assume entity is of type HeishMonNumberEntity. We should find a way to properly use the type system
+    if native_value in range1:  # we always favor range1
+        entity.entity_description.native_min_value = min(range1)
+        entity.entity_description.native_max_value = max(range1)
+    elif native_value in range2:
+        entity.entity_description.native_min_value = min(range2)
+        entity.entity_description.native_max_value = max(range2)
+    else:
+        _LOGGER.warn(
+            "Impossible to know if we are using 'shift' mode or 'direct' mode, ignoring"
+        )
+
+
 NUMBERS: tuple[HeishaMonNumberEntityDescription, ...] = (
     HeishaMonNumberEntityDescription(
         heishamon_topic_id="SET5",  # also TOP27
@@ -221,6 +247,9 @@ NUMBERS: tuple[HeishaMonNumberEntityDescription, ...] = (
         native_max_value=20,
         state=int,
         state_to_mqtt=int,
+        on_receive=partial(
+            guess_shift_or_direct_and_clamp_min_max_values, range(-5, 6), range(20, 30)
+        ),
     ),
     HeishaMonNumberEntityDescription(
         heishamon_topic_id="SET6",  # also TOP28
@@ -235,6 +264,9 @@ NUMBERS: tuple[HeishaMonNumberEntityDescription, ...] = (
         native_max_value=20,
         state=int,
         state_to_mqtt=int,
+        on_receive=partial(
+            guess_shift_or_direct_and_clamp_min_max_values, range(-5, 6), range(5, 21)
+        ),
     ),
     HeishaMonNumberEntityDescription(
         heishamon_topic_id="SET7",  # also TOP34
@@ -249,6 +281,9 @@ NUMBERS: tuple[HeishaMonNumberEntityDescription, ...] = (
         native_max_value=20,
         state=int,
         state_to_mqtt=int,
+        on_receive=partial(
+            guess_shift_or_direct_and_clamp_min_max_values, range(-5, 6), range(20, 30)
+        ),
     ),
     HeishaMonNumberEntityDescription(
         heishamon_topic_id="SET8",  # also TOP35
@@ -263,6 +298,9 @@ NUMBERS: tuple[HeishaMonNumberEntityDescription, ...] = (
         native_max_value=20,
         state=int,
         state_to_mqtt=int,
+        on_receive=partial(
+            guess_shift_or_direct_and_clamp_min_max_values, range(-5, 6), range(5, 21)
+        ),
     ),
     HeishaMonNumberEntityDescription(
         heishamon_topic_id="SET11",
