@@ -46,15 +46,7 @@ OPERATING_MODE_TO_STRING = {
 
 
 def operating_mode_to_state(value):
-    """
-    We intentionally don't support all modes for now
-    """
-    options = [
-        mode for (mode, string) in OPERATING_MODE_TO_STRING.items() if string == value
-    ]
-    if len(options) == 0:
-        return None
-    return options[0]
+    return lookup_by_value(OPERATING_MODE_TO_STRING, value)
 
 
 def read_operating_mode_state(value):
@@ -73,16 +65,25 @@ def read_zones_state(value):
 
 
 def zone_state_to_mqtt(value: str) -> Optional[str]:
-    options = [
-        state for (state, string) in ZONE_STATES_STRING.items() if string == value
-    ]
-    if len(options) == 0:
-        return None
-    return options[0]
+    return lookup_by_value(ZONE_STATES_STRING, value)
+
+
+POWERFUL_MODE_TIMES = {"0": "Off", "1": "30 min", "2": "60 min", "3": "90 min"}
 
 
 def read_power_mode_time(value):
-    return int(value) * 30
+    return POWERFUL_MODE_TIMES.get(value, f"Unknown powerful mode: {value}")
+
+
+def set_power_mode_time(value: str):
+    return lookup_by_value(POWERFUL_MODE_TIMES, value)
+
+
+def lookup_by_value(hash: dict[str, str], value: str) -> Optional[str]:
+    options = [key for (key, string) in hash.items() if string == value]
+    if len(options) == 0:
+        return None
+    return options[0]
 
 
 def read_threeway_valve(value: str) -> Optional[str]:
@@ -206,6 +207,62 @@ def write_quiet_mode(selected_value: str):
 
 NUMBERS: tuple[HeishaMonNumberEntityDescription, ...] = (
     HeishaMonNumberEntityDescription(
+        heishamon_topic_id="SET5",  # also TOP27
+        key="panasonic_heat_pump/main/Z1_Heat_Request_Temp",
+        command_topic="panasonic_heat_pump/commands/SetZ1HeatRequestTemperature",
+        # it can be relative (-5 -> +5, or absolute [20, ..[)
+        name="Aquarea Zone 1 Heat Requested shift",
+        entity_category=EntityCategory.CONFIG,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+        native_min_value=-5,
+        native_max_value=20,
+        state=int,
+        state_to_mqtt=int,
+    ),
+    HeishaMonNumberEntityDescription(
+        heishamon_topic_id="SET6",  # also TOP28
+        key="panasonic_heat_pump/main/Z1_Cool_Request_Temp",
+        command_topic="panasonic_heat_pump/commands/SetZ1CoolRequestTemperature",
+        # it can be relative (-5 -> +5, or absolute [20, ..[)
+        name="Aquarea Zone 1 Cool Requested shift",
+        entity_category=EntityCategory.CONFIG,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+        native_min_value=-5,
+        native_max_value=20,
+        state=int,
+        state_to_mqtt=int,
+    ),
+    HeishaMonNumberEntityDescription(
+        heishamon_topic_id="SET7",  # also TOP34
+        key="panasonic_heat_pump/main/Z2_Heat_Request_Temp",
+        command_topic="panasonic_heat_pump/commands/SetZ2HeatRequestTemperature",
+        # it can be relative (-5 -> +5, or absolute [20, ..[)
+        name="Aquarea Zone 2 Heat Requested shift",
+        entity_category=EntityCategory.CONFIG,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+        native_min_value=-5,
+        native_max_value=20,
+        state=int,
+        state_to_mqtt=int,
+    ),
+    HeishaMonNumberEntityDescription(
+        heishamon_topic_id="SET8",  # also TOP35
+        key="panasonic_heat_pump/main/Z2_Cool_Request_Temp",
+        command_topic="panasonic_heat_pump/commands/SetZ2CoolRequestTemperature",
+        # it can be relative (-5 -> +5, or absolute [20, ..[)
+        name="Aquarea Zone 2 Cool Requested shift",
+        entity_category=EntityCategory.CONFIG,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+        native_min_value=-5,
+        native_max_value=20,
+        state=int,
+        state_to_mqtt=int,
+    ),
+    HeishaMonNumberEntityDescription(
         heishamon_topic_id="SET11",
         key="panasonic_heat_pump/main/DHW_Target_Temp",
         command_topic="panasonic_heat_pump/commands/SetDHWTemp",
@@ -232,6 +289,14 @@ SELECTS: tuple[HeishaMonSelectEntityDescription, ...] = (
         options=["Off", "1", "2", "3", "Scheduled"],
     ),
     HeishaMonSelectEntityDescription(
+        heishamon_topic_id="SET4",  # also corresponds to TOP17
+        key="panasonic_heat_pump/main/Powerful_Mode_Time",
+        name="Aquarea Powerful Mode",
+        state=read_power_mode_time,
+        state_to_mqtt=set_power_mode_time,
+        options=list(POWERFUL_MODE_TIMES.values()),
+    ),
+    HeishaMonSelectEntityDescription(
         heishamon_topic_id="SET9",
         key="panasonic_heat_pump/main/Operating_Mode_State",
         command_topic="panasonic_heat_pump/commands/SetOperationMode",
@@ -254,9 +319,9 @@ SELECTS: tuple[HeishaMonSelectEntityDescription, ...] = (
 
 MQTT_SWITCHES: tuple[HeishaMonSwitchEntityDescription, ...] = (
     HeishaMonSwitchEntityDescription(
-        heishamon_topic_id="TOP19",
+        heishamon_topic_id="SET2",  # TOP19
         key="panasonic_heat_pump/main/Holiday_Mode_State",
-        command_topic="panasonic_heat_pump/main/Holiday_Mode_State",
+        command_topic="panasonic_heat_pump/main/SetHolidayMode",
         name="Aquarea Holiday Mode",
         entity_category=EntityCategory.CONFIG,
         state=bit_to_bool,
@@ -512,14 +577,6 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         # original template states "force_update" FIXME
     ),
     HeishaMonSensorEntityDescription(
-        heishamon_topic_id="TOP17",
-        key="panasonic_heat_pump/main/Powerful_Mode_Time",
-        name="Aquarea Powerful Mode",
-        device_class=SensorDeviceClass.DURATION,
-        native_unit_of_measurement="Min",
-        state=read_power_mode_time,
-    ),
-    HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP20",
         key="panasonic_heat_pump/main/ThreeWay_Valve_State",
         name="Aquarea 3-way Valve",
@@ -561,22 +618,6 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         native_unit_of_measurement="°C",
     ),
     HeishaMonSensorEntityDescription(
-        heishamon_topic_id="TOP27",
-        key="panasonic_heat_pump/main/Z1_Heat_Request_Temp",
-        # it can be relative (-5 -> +5, or absolute [20, ..[)
-        name="Aquarea Zone 1 Heat Requested shift",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement="°C",
-    ),
-    HeishaMonSensorEntityDescription(
-        heishamon_topic_id="TOP28",
-        # it can be relative (-5 -> +5, or absolute [5, 20])
-        key="panasonic_heat_pump/main/Z1_Cool_Request_Temp",
-        name="Aquarea Zone 1 Cool Requested shift",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement="°C",
-    ),
-    HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP29",
         key="panasonic_heat_pump/main/Z1_Heat_Curve_Target_High_Temp",
         name="Aquarea Zone 1 Target temperature at lowest point on heating curve",
@@ -608,22 +649,6 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         heishamon_topic_id="TOP33",
         key="panasonic_heat_pump/main/Room_Thermostat_Temp",
         name="Aquarea Remote control thermosthat temperature",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement="°C",
-    ),
-    HeishaMonSensorEntityDescription(
-        heishamon_topic_id="TOP34",
-        key="panasonic_heat_pump/main/Z2_Heat_Request_Temp",
-        # it can be relative (-5 -> +5, or absolute [20, ..[)
-        name="Aquarea Zone 2 Heat Requested shift",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement="°C",
-    ),
-    HeishaMonSensorEntityDescription(
-        heishamon_topic_id="TOP35",
-        # it can be relative (-5 -> +5, or absolute [5, 20])
-        key="panasonic_heat_pump/main/Z2_Cool_Request_Temp",
-        name="Aquarea Zone 2 Cool Requested shift",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
     ),
