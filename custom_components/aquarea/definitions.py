@@ -303,7 +303,7 @@ NUMBERS: tuple[HeishaMonNumberEntityDescription, ...] = (
         ),
     ),
     HeishaMonNumberEntityDescription(
-        heishamon_topic_id="SET11",
+        heishamon_topic_id="SET11",  # TOP9
         key="panasonic_heat_pump/main/DHW_Target_Temp",
         command_topic="panasonic_heat_pump/commands/SetDHWTemp",
         name="DHW Target Temperature",
@@ -312,6 +312,45 @@ NUMBERS: tuple[HeishaMonNumberEntityDescription, ...] = (
         native_unit_of_measurement="°C",
         native_min_value=48,
         native_max_value=60,
+        state=int,
+        state_to_mqtt=int,
+    ),
+    HeishaMonNumberEntityDescription(
+        heishamon_topic_id="SET18",  # also corresponds to TOP23
+        key="panasonic_heat_pump/main/Heat_Delta",
+        command_topic="panasonic_heat_pump/commands/SetFloorHeatDelta",
+        name="Aquarea Room heating delta",
+        entity_category=EntityCategory.CONFIG,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+        native_min_value=1,
+        native_max_value=15,
+        state=int,
+        state_to_mqtt=int,
+    ),
+    HeishaMonNumberEntityDescription(
+        heishamon_topic_id="SET19",  # also corresponds to TOP24
+        key="panasonic_heat_pump/main/Cool_Delta",
+        command_topic="panasonic_heat_pump/commands/SetFloorCoolDelta",
+        name="Aquarea Room Cooling delta",
+        entity_category=EntityCategory.CONFIG,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+        native_min_value=1,
+        native_max_value=15,
+        state=int,
+        state_to_mqtt=int,
+    ),
+    HeishaMonNumberEntityDescription(
+        heishamon_topic_id="SET20",  # also corresponds to TOP22
+        key="panasonic_heat_pump/main/DHW_Heat_Delta",
+        command_topic="panasonic_heat_pump/commands/SetDHWHeatDelta",
+        name="Aquarea DHW heating delta",
+        entity_category=EntityCategory.CONFIG,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement="°C",
+        native_min_value=-12,
+        native_max_value=-2,
         state=int,
         state_to_mqtt=int,
     ),
@@ -337,7 +376,7 @@ SELECTS: tuple[HeishaMonSelectEntityDescription, ...] = (
         options=list(POWERFUL_MODE_TIMES.values()),
     ),
     HeishaMonSelectEntityDescription(
-        heishamon_topic_id="SET9",
+        heishamon_topic_id="SET9",  # also corresponds to TOP4
         key="panasonic_heat_pump/main/Operating_Mode_State",
         command_topic="panasonic_heat_pump/commands/SetOperationMode",
         name="Aquarea Mode",
@@ -359,6 +398,14 @@ SELECTS: tuple[HeishaMonSelectEntityDescription, ...] = (
 
 MQTT_SWITCHES: tuple[HeishaMonSwitchEntityDescription, ...] = (
     HeishaMonSwitchEntityDescription(
+        heishamon_topic_id="SET1",  # also corresponds to TOP0
+        key="panasonic_heat_pump/main/Heatpump_State",
+        command_topic="panasonic_heat_pump/commands/SetHeatpump",
+        name="Aquarea Main Power",
+        state=bit_to_bool,
+        device_class=BinarySensorDeviceClass.RUNNING,
+    ),
+    HeishaMonSwitchEntityDescription(
         heishamon_topic_id="SET2",  # TOP19
         key="panasonic_heat_pump/main/Holiday_Mode_State",
         command_topic="panasonic_heat_pump/main/SetHolidayMode",
@@ -367,19 +414,29 @@ MQTT_SWITCHES: tuple[HeishaMonSwitchEntityDescription, ...] = (
         state=bit_to_bool,
     ),
     HeishaMonSwitchEntityDescription(
-        heishamon_topic_id="TOP0",
-        key="panasonic_heat_pump/main/Heatpump_State",
-        command_topic="panasonic_heat_pump/commands/SetHeatpump",
-        name="Aquarea Main Power",
-        state=bit_to_bool,
-        device_class=BinarySensorDeviceClass.RUNNING,
-    ),
-    HeishaMonSwitchEntityDescription(
-        heishamon_topic_id="TOP2",
+        heishamon_topic_id="SET10",  # also corresponds to TOP2
         key="panasonic_heat_pump/main/Force_DHW_State",
         command_topic="panasonic_heat_pump/commands/SetForceDHW",
         name="Aquarea Force DHW Mode",
         entity_category=EntityCategory.CONFIG,
+        state=bit_to_bool,
+    ),
+    HeishaMonSwitchEntityDescription(
+        heishamon_topic_id="SET12",  # corresponds to TOP26
+        key="panasonic_heat_pump/main/Defrosting_State",
+        command_topic="panasonic_heat_pump/commands/SetForceDefrost",
+        name="Aquarea Defrost routine",
+        entity_category=EntityCategory.CONFIG,
+        device_class=BinarySensorDeviceClass.HEAT,
+        state=bit_to_bool,
+    ),
+    HeishaMonSwitchEntityDescription(
+        heishamon_topic_id="SET13",  # corresponds to TOP69
+        key="panasonic_heat_pump/main/Sterilization_State",
+        command_topic="panasonic_heat_pump/commands/SetForceSterilization",
+        name="Aquarea Force Sterilization",
+        entity_category=EntityCategory.CONFIG,
+        device_class=BinarySensorDeviceClass.RUNNING,
         state=bit_to_bool,
     ),
     HeishaMonSwitchEntityDescription(
@@ -398,13 +455,6 @@ BINARY_SENSORS: tuple[HeishaMonBinarySensorEntityDescription, ...] = (
         key="panasonic_heat_pump/main/Quiet_Mode_Schedule",
         name="Aquarea Quiet Mode Schedule",
         state=bit_to_bool,
-    ),
-    HeishaMonBinarySensorEntityDescription(
-        heishamon_topic_id="TOP26",
-        key="panasonic_heat_pump/main/Defrosting_State",
-        name="Aquarea Defrost State",
-        state=bit_to_bool,
-        device_class=BinarySensorDeviceClass.HEAT,
     ),
     HeishaMonBinarySensorEntityDescription(
         heishamon_topic_id="TOP58",
@@ -438,13 +488,6 @@ BINARY_SENSORS: tuple[HeishaMonBinarySensorEntityDescription, ...] = (
         heishamon_topic_id="TOP68",
         key="panasonic_heat_pump/main/Force_Heater_State",
         name="Aquarea Force heater status",
-        state=bit_to_bool,
-        device_class=BinarySensorDeviceClass.RUNNING,
-    ),
-    HeishaMonBinarySensorEntityDescription(
-        heishamon_topic_id="TOP69",
-        key="panasonic_heat_pump/main/Sterilization_State",
-        name="Aquarea Sterilization State",
         state=bit_to_bool,
         device_class=BinarySensorDeviceClass.RUNNING,
     ),
@@ -518,17 +561,6 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         # native_unit_of_measurement="L/min",
     ),
     HeishaMonSensorEntityDescription(
-        heishamon_topic_id="TOP4",
-        key="panasonic_heat_pump/main/Operating_Mode_State",
-        name="Aquarea Mode",
-        # state_class=SensorStateClass.MEASUREMENT,
-        # device_class=SensorDeviceClass.ENERGY,
-        # icon= "mdi:on"
-        # entity_registry_enabled_default=True,
-        # native_unit_of_measurement="L/min",
-        state=read_operating_mode_state,
-    ),
-    HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP5",
         key="panasonic_heat_pump/main/Main_Inlet_Temp",
         name="Aquarea Inlet Temperature",
@@ -556,14 +588,6 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.FREQUENCY,
         native_unit_of_measurement="Hz",
         entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    HeishaMonSensorEntityDescription(
-        heishamon_topic_id="TOP9",
-        key="panasonic_heat_pump/main/DHW_Target_Temp",
-        name="Aquarea Tank Set Temperature",
-        entity_category=EntityCategory.CONFIG,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement="°C",
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP10",
@@ -626,13 +650,6 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         heishamon_topic_id="TOP21",
         key="panasonic_heat_pump/main/Outside_Pipe_Temp",
         name="Aquarea Outdoor Pipe Temperature",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement="°C",
-    ),
-    HeishaMonSensorEntityDescription(
-        heishamon_topic_id="TOP22",
-        key="panasonic_heat_pump/main/DHW_Heat_Delta",
-        name="Aquarea DHW heating delta",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement="°C",
     ),
