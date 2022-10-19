@@ -155,6 +155,8 @@ class HeishaMonSelectEntityDescription(
     # function to transform selected option in value sent via mqtt
     state_to_mqtt: Optional[Callable] = None
 
+    options: Optional[list[str]] = None
+
 
 @dataclass
 class HeishaMonNumberEntityDescription(

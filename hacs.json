@@ -1,5 +1,4 @@
 {
   "name": "HeishaMon",
-  "render_readme": true,
-  "homeassistant": "2022.11.0b0"
+  "render_readme": true
 }
