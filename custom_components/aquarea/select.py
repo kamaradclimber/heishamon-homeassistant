@@ -101,11 +101,3 @@ class HeishaMonMQTTSelect(SelectEntity):
     @property
     def device_info(self):
         return build_device_info(self.entity_description.device)
-
-    @property
-    def options(self) -> list[str]:
-        if self.entity_description.options is None:
-            raise Exception(
-                f"Option list should be filled in entity description for {self.name}"
-            )
-        return self.entity_description.options
