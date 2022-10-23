@@ -11,6 +11,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
 )
 from homeassistant.components.template.sensor import SensorTemplate
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers import template as template_helper
 from homeassistant.const import (
     CONF_NAME,
@@ -47,14 +48,16 @@ async def async_setup_entry(
     # this special sensor will listen to 1wire topics and create new sensors accordingly
     dallas_list_config = SensorEntityDescription(
         key="panasonic_heat_pump/1wire/+",
-        name="HeishaMon 1wire sensors",
+        name="HeishaMon detected 1wire sensors",
+        entity_category=EntityCategory.DIAGNOSTIC,
     )
     dallas_listing = DallasListSensor(
         hass, dallas_list_config, config_entry, async_add_entities
     )
     s0_list_config = SensorEntityDescription(
         key="panasonic_heat_pump/s0/Watt/+",
-        name="HeishaMon s0 sensors",
+        name="HeishaMon detected s0 sensors",
+        entity_category=EntityCategory.DIAGNOSTIC,
     )
     s0_listing = S0Detector(hass, s0_list_config, config_entry, async_add_entities)
     async_add_entities([dallas_listing, s0_listing])
