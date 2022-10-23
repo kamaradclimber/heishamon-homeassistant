@@ -6,6 +6,7 @@ import logging
 from homeassistant.components import mqtt
 from homeassistant.components.sensor import (
     SensorEntity,
+    SensorStateClass,
     SensorDeviceClass,
     SensorEntityDescription,
 )
@@ -42,16 +43,21 @@ async def async_setup_entry(
         HeishaMonSensor(hass, description, config_entry) for description in SENSORS
     ]
     all_sensors = real_sensors + build_virtual_sensors(hass, config_entry, real_sensors)
+    async_add_entities(all_sensors)
+    # this special sensor will listen to 1wire topics and create new sensors accordingly
     dallas_list_config = SensorEntityDescription(
         key="panasonic_heat_pump/1wire/+",
         name="HeishaMon 1wire sensors",
     )
-    async_add_entities(all_sensors)
-    # this special sensor will listen to 1wire topics and create new sensors accordingly
     dallas_listing = DallasListSensor(
         hass, dallas_list_config, config_entry, async_add_entities
     )
-    async_add_entities([dallas_listing])
+    s0_list_config = SensorEntityDescription(
+        key="panasonic_heat_pump/s0/Watt/+",
+        name="HeishaMon s0 sensors",
+    )
+    s0_listing = S0Detector(hass, s0_list_config, config_entry, async_add_entities)
+    async_add_entities([dallas_listing, s0_listing])
 
 
 def build_virtual_sensors(
@@ -179,6 +185,89 @@ class HeishaMonSensorTemplate(SensorTemplate):
     @property
     def device_info(self):
         return build_device_info(DeviceType.HEATPUMP)
+
+
+class S0Detector(SensorEntity):
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        description: SensorEntityDescription,
+        config_entry: ConfigEntry,
+        async_add_entities: AddEntitiesCallback,
+    ) -> None:
+        self.hass = hass
+        self.entity_description = description
+        self.config_entry = config_entry
+        self.config_entry_entry_id = config_entry.entry_id
+
+        slug = slugify(description.key.replace("/", "_"))
+        self.entity_id = f"sensor.{slug}"
+        self._attr_unique_id = (
+            f"{config_entry.entry_id}-s0-listing"  # ⚠ we can't have two of this
+        )
+        self.async_add_entities = async_add_entities
+        self._known_s0_sensors = []
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe to MQTT events"""
+        await super().async_added_to_hass()
+
+        @callback
+        def message_received(message):
+            base, s0, sensor_type, device_id = message.topic.split("/")
+            if device_id not in self._known_s0_sensors:
+                description = HeishaMonSensorEntityDescription(
+                    heishamon_topic_id=f"s0-{device_id}-watthour",
+                    key="/".join([base, s0, "WattHour", device_id]),
+                    name=f"HeishaMon s0 {device_id} WattHour",
+                    device_class=SensorDeviceClass.ENERGY,
+                    state_class=SensorStateClass.MEASUREMENT,
+                    native_unit_of_measurement="Wh",
+                    device=DeviceType.HEISHAMON,
+                )
+                watt_hour_sensor = HeishaMonSensor(
+                    self.hass, description, self.config_entry
+                )
+                description = HeishaMonSensorEntityDescription(
+                    heishamon_topic_id=f"s0-{device_id}-totalwatthour",
+                    key="/".join([base, s0, "WattHourTotal", device_id]),
+                    name=f"HeishaMon s0 {device_id} WattHourTotal",
+                    device_class=SensorDeviceClass.ENERGY,
+                    native_unit_of_measurement="Wh",
+                    state_class=SensorStateClass.TOTAL_INCREASING,
+                    device=DeviceType.HEISHAMON,
+                )
+                total_watt_hour_sensor = HeishaMonSensor(
+                    self.hass, description, self.config_entry
+                )
+                description = HeishaMonSensorEntityDescription(
+                    heishamon_topic_id=f"s0-{device_id}-watt",
+                    key="/".join([base, s0, "Watt", device_id]),
+                    name=f"HeishaMon s0 {device_id} Watt",
+                    device_class=SensorDeviceClass.POWER,
+                    native_unit_of_measurement="W",
+                    state_class=SensorStateClass.MEASUREMENT,
+                    device=DeviceType.HEISHAMON,
+                )
+                watt_sensor = HeishaMonSensor(self.hass, description, self.config_entry)
+                _LOGGER.info(
+                    f"Detected new s0 sensor with id {device_id}, creating new sensors"
+                )
+                self.async_add_entities(
+                    [watt_hour_sensor, total_watt_hour_sensor, watt_sensor]
+                )
+                self._known_s0_sensors.append(device_id)
+                self._known_s0_sensors.sort()
+                self._attr_native_value = ", ".join(self._known_s0_sensors)
+                self.async_write_ha_state()
+
+        await mqtt.async_subscribe(
+            self.hass, self.entity_description.key, message_received, 1
+        )
+
+    @property
+    def device_info(self):
+        return build_device_info(DeviceType.HEISHAMON)
 
 
 class DallasListSensor(SensorEntity):
