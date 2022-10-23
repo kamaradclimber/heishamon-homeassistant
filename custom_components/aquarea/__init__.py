@@ -12,6 +12,7 @@ PLATFORMS = [
     Platform.SWITCH,
     Platform.SELECT,
     Platform.NUMBER,
+    Platform.CLIMATE,
 ]
 
 
