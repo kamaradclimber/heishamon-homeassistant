@@ -221,7 +221,7 @@ class S0Detector(SensorEntity):
             if device_id not in self._known_s0_sensors:
                 description = HeishaMonSensorEntityDescription(
                     heishamon_topic_id=f"s0-{device_id}-watthour",
-                    key="/".join([base, s0, "WattHour", device_id]),
+                    key="/".join([base, s0, "Watthour", device_id]),
                     name=f"HeishaMon s0 {device_id} WattHour",
                     device_class=SensorDeviceClass.ENERGY,
                     state_class=SensorStateClass.MEASUREMENT,
@@ -233,7 +233,7 @@ class S0Detector(SensorEntity):
                 )
                 description = HeishaMonSensorEntityDescription(
                     heishamon_topic_id=f"s0-{device_id}-totalwatthour",
-                    key="/".join([base, s0, "WattHourTotal", device_id]),
+                    key="/".join([base, s0, "WatthourTotal", device_id]),
                     name=f"HeishaMon s0 {device_id} WattHourTotal",
                     device_class=SensorDeviceClass.ENERGY,
                     native_unit_of_measurement="Wh",
