@@ -2,10 +2,11 @@
 from __future__ import annotations
 from functools import partial
 import json
+from enum import Flag, auto
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, TypeVar
 import logging
 
 from homeassistant.helpers.entity import EntityCategory
@@ -32,25 +33,80 @@ from .const import DeviceType
 
 _LOGGER = logging.getLogger(__name__)
 
-OPERATING_MODE_TO_STRING = {
-    "0": "Heat only",
-    # "1": "Cool only",
-    "2": "Auto(Heat)",
-    "3": "DHW only",
-    "4": "Heat+DWH",
-    # "5": "Cool+DHW",
-    "6": "Auto(Heat)+DHW",
-    # "7": "Auto(Cool)",
-    # "8": "Auto(Cool)+DHW",
-}
+
+class OperatingMode(Flag):
+    HEAT = auto()
+    COOL = auto()
+    DHW = auto()
+    AUTO = auto()
+
+    @staticmethod
+    def modes_to_str():
+        return {
+            OperatingMode.HEAT: "Heat only",
+            OperatingMode.COOL: "Cool only",
+            (OperatingMode.HEAT | OperatingMode.AUTO): "Auto(Heat)",
+            OperatingMode.DHW: "DHW only",
+            (OperatingMode.HEAT | OperatingMode.DHW): "Heat+DWH",
+            (OperatingMode.COOL | OperatingMode.DHW): "Cool+DHW",
+            (
+                OperatingMode.HEAT | OperatingMode.AUTO | OperatingMode.DHW
+            ): "Auto(Heat)+DHW",
+            (OperatingMode.COOL | OperatingMode.AUTO): "Auto(Cool)",
+            (
+                OperatingMode.COOL | OperatingMode.AUTO | OperatingMode.DHW
+            ): "Auto(Cool)+DHW",
+        }
+
+    def __str__(self) -> str:
+        return self.modes_to_str().get(self, f"Unknown mode")
+
+    @staticmethod
+    def modes_to_int():
+        return {
+            OperatingMode.HEAT: 0,
+            OperatingMode.COOL: 1,
+            (OperatingMode.HEAT | OperatingMode.AUTO): 2,
+            OperatingMode.DHW: 3,
+            (OperatingMode.HEAT | OperatingMode.DHW): 4,
+            (OperatingMode.COOL | OperatingMode.DHW): 5,
+            (OperatingMode.HEAT | OperatingMode.AUTO | OperatingMode.DHW): 6,
+            (OperatingMode.COOL | OperatingMode.AUTO): 7,
+            (OperatingMode.COOL | OperatingMode.AUTO | OperatingMode.DHW): 8,
+        }
+
+    def __int__(self) -> int:
+        return self.modes_to_int()[self]
+
+    @staticmethod
+    def from_str(str_repr: str) -> OperatingMode:
+        operating_mode = lookup_by_value(OperatingMode.modes_to_str(), str_repr)
+        if operating_mode is None:
+            raise Exception(
+                f"Unable to find the operating mode corresponding to {str_repr}"
+            )
+        return operating_mode
+
+    @staticmethod
+    def from_mqtt(value: str) -> OperatingMode:
+        operating_mode = lookup_by_value(OperatingMode.modes_to_int(), int(value))
+        if operating_mode is None:
+            raise Exception(
+                f"Unable to find the operating mode corresponding to {value}"
+            )
+        return operating_mode
+
+    def to_mqtt(self) -> str:
+        return str(int(self))
 
 
-def operating_mode_to_state(value):
-    return lookup_by_value(OPERATING_MODE_TO_STRING, value)
+def operating_mode_to_state(str_repr: str):
+    return str(int(OperatingMode.from_str(str_repr)))
 
 
-def read_operating_mode_state(value):
-    return OPERATING_MODE_TO_STRING.get(value, f"Unknown operating mode value: {value}")
+def read_operating_mode_state(value: str) -> str:
+    mode = OperatingMode.from_mqtt(value)
+    return str(mode)
 
 
 ZONE_STATES_STRING = {
@@ -79,8 +135,12 @@ def set_power_mode_time(value: str):
     return lookup_by_value(POWERFUL_MODE_TIMES, value)
 
 
-def lookup_by_value(hash: dict[str, str], value: str) -> Optional[str]:
-    options = [key for (key, string) in hash.items() if string == value]
+Key = TypeVar("Key")
+Value = TypeVar("Value")
+
+
+def lookup_by_value(hash: dict[Key, Value], value: Value) -> Optional[Key]:
+    options = [key for (key, v) in hash.items() if v == value]
     if len(options) == 0:
         return None
     return options[0]
@@ -387,7 +447,7 @@ SELECTS: tuple[HeishaMonSelectEntityDescription, ...] = (
         name="Aquarea Mode",
         state=read_operating_mode_state,
         state_to_mqtt=operating_mode_to_state,
-        options=list(OPERATING_MODE_TO_STRING.values()),
+        options=list(OperatingMode.modes_to_str().values()),
     ),
     HeishaMonSelectEntityDescription(
         heishamon_topic_id="SET17",  # also TOP94
