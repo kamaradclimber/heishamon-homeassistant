@@ -118,6 +118,8 @@ class HeishaMonDHWClimate(ClimateEntity):
         self._attr_preset_modes = [PRESET_ECO, PRESET_COMFORT]
         self._attr_preset_mode = PRESET_ECO
 
+        self._heatpump_state = False
+
     async def async_set_temperature(self, **kwargs) -> None:
         temperature = kwargs.get("temperature")
         _LOGGER.debug(f"Changing {self.name} target temperature to {temperature})")
@@ -170,13 +172,29 @@ class HeishaMonDHWClimate(ClimateEntity):
             1,
         )
 
+        def guess_hvac_mode() -> HVACMode:
+            if OperatingMode.DHW in self._operating_mode and self._heatpump_state:
+                return HVACMode.HEAT
+            else:
+                return HVACMode.OFF
+
+        @callback
+        def heatpump_state_message_received(message):
+            self._heatpump_state = bool(int(message.payload))
+            self._attr_hvac_mode = guess_hvac_mode()
+            self.async_write_ha_state()
+
+        await mqtt.async_subscribe(
+            self.hass,
+            "panasonic_heat_pump/main/Heatpump_State",
+            heatpump_state_message_received,
+            1,
+        )
+
         @callback
         def operating_state_message_received(message):
             self._operating_mode = OperatingMode.from_mqtt(message.payload)
-            if OperatingMode.DHW in self._operating_mode:
-                self._attr_hvac_mode = HVACMode.HEAT
-            else:
-                self._attr_hvac_mode = HVACMode.OFF
+            self._attr_hvac_mode = guess_hvac_mode()
             self.async_write_ha_state()
 
         await mqtt.async_subscribe(
@@ -187,29 +205,39 @@ class HeishaMonDHWClimate(ClimateEntity):
         )
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
+        new_heatpump_state = self._heatpump_state
         if hvac_mode == HVACMode.HEAT:
-            value = self._operating_mode | OperatingMode.DHW
+            new_operating_mode = self._operating_mode | OperatingMode.DHW
+            new_heatpump_state = True
         elif hvac_mode == HVACMode.OFF:
-            value = self._operating_mode & ~OperatingMode.DHW
-            if value == OperatingMode(0):  # i.e "none"
-                _LOGGER.warn(
-                    f"Impossible to set {hvac_mode} on this heatpump, we can't disable water heater when heating/cooling is already disabled"
-                )
-                raise NotImplemented(
-                    f"Powering off heatpump entirely has not been implemented by this entity"
-                )
+            new_operating_mode = self._operating_mode & ~OperatingMode.DHW
+            if new_operating_mode == OperatingMode(0):  # i.e "none"
+                new_heatpump_state = False
         else:
             raise NotImplemented(
                 f"Mode {hvac_mode} has not been implemented by this entity"
             )
-        await async_publish(
-            self.hass,
-            "panasonic_heat_pump/commands/SetOperationMode",
-            value.to_mqtt(),
-            0,
-            False,
-            "utf-8",
-        )
+        if (
+            new_operating_mode != OperatingMode(0)
+            and new_operating_mode != self._operating_mode
+        ):
+            await async_publish(
+                self.hass,
+                "panasonic_heat_pump/commands/SetOperationMode",
+                new_operating_mode.to_mqtt(),
+                0,
+                False,
+                "utf-8",
+            )
+        if new_heatpump_state != self._heatpump_state:
+            await async_publish(
+                self.hass,
+                "panasonic_heat_pump/commands/SetHeatpump",
+                str(int(new_heatpump_state)),
+                0,
+                False,
+                "utf-8",
+            )
         self._attr_hvac_mode = hvac_mode  # let's be optimistic
         self.async_write_ha_state()
 
