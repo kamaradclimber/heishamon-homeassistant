@@ -114,6 +114,7 @@ class HeishaMonDHWClimate(ClimateEntity):
         self._attr_hvac_mode = HVACMode.OFF
         self._attr_min_temp = 40
         self._attr_max_temp = 65
+        self._attr_target_temperature_step = 1
         self._operating_mode = OperatingMode(0)  # i.e None
         self._attr_preset_modes = [PRESET_ECO, PRESET_COMFORT]
         self._attr_preset_mode = PRESET_ECO
