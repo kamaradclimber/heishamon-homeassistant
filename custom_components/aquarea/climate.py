@@ -275,21 +275,21 @@ class HeishaMonZoneClimate(ClimateEntity):
         self.entity_id = f"climate.{slug}"
         self._attr_unique_id = f"{config_entry.entry_id}-{self.zone_id}"
 
-        self._mode = ZoneClimateMode.COMPENSATION
-        self.change_mode(ZoneClimateMode.COMPENSATION)
-
         self._attr_temperature_unit = "°C"
         self._attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
         self._attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
         self._attr_hvac_mode = HVACMode.OFF
 
-        self._attr_min_temp = -5
-        self._attr_max_temp = 5
         self._zone_state = ZoneState(0)  # i.e None
         self._operating_mode = OperatingMode(0)  # i.e None
 
+        self._mode = ZoneClimateMode.DIRECT
+        # this line should be last since it leads to write state so object must be completely ready
+        self.change_mode(ZoneClimateMode.DIRECT)
+
+
     def change_mode(self, mode: ZoneClimateMode):
-        _LOGGER.info(f"Changing mode to {mode} for zone {self.zone_id}")
+        _LOGGER.warn(f"Changing mode to {mode} for zone {self.zone_id}")
         self._mode = mode
         if mode == ZoneClimateMode.COMPENSATION:
             self._attr_min_temp = -5
@@ -299,16 +299,17 @@ class HeishaMonZoneClimate(ClimateEntity):
             self._attr_min_temp = 15
             self._attr_max_temp = 25
             self._attr_target_temperature_step = 1
+        self.async_write_ha_state()
 
     async def async_set_temperature(self, **kwargs) -> None:
         temperature = kwargs.get("temperature")
 
         if self._mode == ZoneClimateMode.COMPENSATION:
-            _LOGGER.debug(
+            _LOGGER.info(
                 f"Changing {self.name} temperature offset to {temperature} for zone {self.zone_id}"
             )
         elif self._mode == ZoneClimateMode.DIRECT:
-            _LOGGER.debug(
+            _LOGGER.info(
                 f"Changing {self.name} target temperature to {temperature} for zone {self.zone_id}"
             )
         else:
@@ -343,7 +344,7 @@ class HeishaMonZoneClimate(ClimateEntity):
 
         await mqtt.async_subscribe(
             self.hass,
-            f"panasonic_heat_pump/main/Heating_mode",
+            f"panasonic_heat_pump/main/Heating_Mode",
             mode_received,
             1,
         )
@@ -363,11 +364,12 @@ class HeishaMonZoneClimate(ClimateEntity):
         @callback
         def target_temperature_message_received(message):
             self._attr_target_temperature = float(message.payload)
+            _LOGGER.debug(f"Received target temperature for {self.zone_id}: {self._attr_target_temperature}")
             self.async_write_ha_state()
 
         await mqtt.async_subscribe(
             self.hass,
-            f"panasonic_heat_pump/main/main/Z{self.zone_id}_Heat_Request_Temp",
+            f"panasonic_heat_pump/main/Z{self.zone_id}_Heat_Request_Temp",
             target_temperature_message_received,
             1,
         )
