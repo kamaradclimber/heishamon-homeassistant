@@ -80,10 +80,12 @@ def build_virtual_sensors(
     dhw_power_produced = find_sensor(
         "panasonic_heat_pump/main/DHW_Energy_Production"
     ).entity_id
-    power_produced = find_sensor(
+    heat_power_produced = find_sensor(
         "panasonic_heat_pump/main/Heat_Energy_Production"
     ).entity_id
-
+    cool_power_produced = find_sensor(
+        "panasonic_heat_pump/main/Cool_Energy_Production"
+    ).entity_id
     production_config = {
         CONF_DEVICE_CLASS: SensorDeviceClass.POWER,
         CONF_NAME: template_helper.Template("Aquarea Energy Production"),
@@ -91,15 +93,11 @@ def build_virtual_sensors(
         CONF_STATE: template_helper.Template(
             Template(
                 """
-{%- if states('$dhw_power_produced') != "0" -%}
-  {{ states('$dhw_power_produced') }}
-{%- else -%}
-  {{ states('$power_produced') }}
-{%- endif -%}
+{{ states('$dhw_power_produced') | int(0) + states('$heat_power_produced') | int(0) + states('$cool_power_produced') | int(0) }}
     """
             )
             .substitute(
-                dhw_power_produced=dhw_power_produced, power_produced=power_produced
+                dhw_power_produced=dhw_power_produced, heat_power_produced=heat_power_produced, cool_power_produced=cool_power_produced
             )
             .strip()
         ),
@@ -109,11 +107,15 @@ def build_virtual_sensors(
         production_config,
         f"{config_entry.entry_id}-heishamon_w_production",
     )
+
     dhw_power_consumed = find_sensor(
         "panasonic_heat_pump/main/DHW_Energy_Consumption"
     ).entity_id
-    power_consumed = find_sensor(
+    heat_power_consumed = find_sensor(
         "panasonic_heat_pump/main/Heat_Energy_Consumption"
+    ).entity_id
+    cool_power_consumed = find_sensor(
+        "panasonic_heat_pump/main/Cool_Energy_Consumption"
     ).entity_id
     consumption_config = {
         CONF_DEVICE_CLASS: SensorDeviceClass.POWER,
@@ -122,15 +124,11 @@ def build_virtual_sensors(
         CONF_STATE: template_helper.Template(
             Template(
                 """
-{%- if states('$dhw_power_consumed') != "0" -%}
-  {{ states('$dhw_power_consumed') }}
-{%- else -%}
-  {{ states('$power_consumed') }}
-{%- endif -%}
+{{ states('$dhw_power_consumed') | int(0) + states('$heat_power_consumed') | int(0) + states('$cool_power_consumed') | int(0) }}
     """
             )
             .substitute(
-                dhw_power_consumed=dhw_power_consumed, power_consumed=power_consumed
+                dhw_power_consumed=dhw_power_consumed, heat_power_consumed=heat_power_consumed, cool_power_consumed=cool_power_consumed
             )
             .strip()
         ),
@@ -140,6 +138,7 @@ def build_virtual_sensors(
         consumption_config,
         f"{config_entry.entry_id}-heishamon_w_consumption",
     )
+
     cop_config = {
         CONF_NAME: template_helper.Template("Aquarea COP"),
         CONF_UNIT_OF_MEASUREMENT: "x",
@@ -181,6 +180,12 @@ def build_virtual_sensors(
     cop = HeishaMonSensorTemplate(
         hass, cop_config, f"{config_entry.entry_id}-heishamon_cop"
     )
+
+    #DHW Energy
+    #Heat Energy
+    #Coll Energy
+    #Total Energy
+
     return [production, consumption, cop]
 
 

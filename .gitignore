@@ -11,3 +11,6 @@ configuration.yaml
 scenes.yaml
 scripts.yaml
 secrets.yaml
+
+#ignore vscode folder
+.vscode/*
