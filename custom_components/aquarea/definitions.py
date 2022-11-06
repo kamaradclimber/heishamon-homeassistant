@@ -557,7 +557,9 @@ BINARY_SENSORS: tuple[HeishaMonBinarySensorEntityDescription, ...] = (
     HeishaMonBinarySensorEntityDescription(
         heishamon_topic_id="TOP93",
         key="panasonic_heat_pump/main/Pump_Duty",
-        name="Aquarea Pump Duty",
+        name="Aquarea Pump Running",
+        state=bit_to_bool,
+        device_class=BinarySensorDeviceClass.RUNNING,
     ),
     HeishaMonBinarySensorEntityDescription(
         heishamon_topic_id="TOP99",
@@ -1145,6 +1147,11 @@ SENSORS: tuple[HeishaMonSensorEntityDescription, ...] = (
         heishamon_topic_id="TOP95",
         key="panasonic_heat_pump/main/Max_Pump_Duty",
         name="Aquarea Max pump duty configured",
+    ),
+    HeishaMonSensorEntityDescription(
+        heishamon_topic_id="TOP93",
+        key="panasonic_heat_pump/main/Pump_Duty",
+        name="Aquarea Pump Duty",
     ),
     HeishaMonSensorEntityDescription(
         heishamon_topic_id="TOP101",
