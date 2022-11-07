@@ -1,5 +1,6 @@
 """Support for HeishaMon controlled heatpumps through MQTT."""
 from __future__ import annotations
+import logging
 
 from homeassistant.components import mqtt
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -8,9 +9,10 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
-from .definitions import BINARY_SENSORS, HeishaMonBinarySensorEntityDescription
+from .definitions import build_binary_sensors, HeishaMonBinarySensorEntityDescription
 from . import build_device_info
 
+_LOGGER = logging.getLogger(__name__)
 
 # async_setup_platform should be defined if one wants to support config via configuration.yaml
 
@@ -21,9 +23,15 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up HeishaMon binary sensors from config entry."""
+    discovery_prefix = config_entry.data[
+        "discovery_prefix"
+    ]  # TODO: handle migration of entities
+    _LOGGER.debug(
+        f"Starting bootstrap of binary sensors with prefix '{discovery_prefix}'"
+    )
     async_add_entities(
         HeishaMonBinarySensor(description, config_entry)
-        for description in BINARY_SENSORS
+        for description in build_binary_sensors(discovery_prefix)
     )
 
 
@@ -40,6 +48,9 @@ class HeishaMonBinarySensor(BinarySensorEntity):
         """Initialize the binary sensor."""
         self.entity_description = description
         self.config_entry_entry_id = config_entry.entry_id
+        self.discovery_prefix = config_entry.data[
+            "discovery_prefix"
+        ]  # TODO: handle migration of entities
 
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"sensor.{slug}"
@@ -70,4 +81,4 @@ class HeishaMonBinarySensor(BinarySensorEntity):
 
     @property
     def device_info(self):
-        return build_device_info(self.entity_description.device)
+        return build_device_info(self.entity_description.device, self.discovery_prefix)

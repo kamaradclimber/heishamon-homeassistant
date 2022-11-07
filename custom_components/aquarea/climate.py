@@ -62,21 +62,27 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
+    discovery_prefix = config_entry.data[
+        "discovery_prefix"
+    ]  # TODO: handle migration of entities
+    _LOGGER.debug(
+        f"Starting bootstrap of climate entities with prefix '{discovery_prefix}'"
+    )
     """Set up HeishaMon climates from config entry."""
     description = ClimateEntityDescription(
-        key="panasonic_heat_pump/main/DHW_Target_Temp",
+        key=f"{discovery_prefix}main/DHW_Target_Temp",
         name="Aquarea Domestic Water Heater",
     )
     async_add_entities([HeishaMonDHWClimate(hass, description, config_entry)])
     description_zone1 = ZoneClimateEntityDescription(
-        key="panasonic_heat_pump/main/Z1_Temp",
+        key=f"{discovery_prefix}main/Z1_Temp",
         name="Aquarea Zone 1 climate",
         zone_id=1,
     )
     zone1_climate = HeishaMonZoneClimate(hass, description_zone1, config_entry)
     description_zone2 = ZoneClimateEntityDescription(
         name="Aquarea Zone 2 climate",
-        key="panasonic_heat_pump/main/Z2_Temp",
+        key=f"{discovery_prefix}main/Z2_Temp",
         zone_id=2,
     )
     zone2_climate = HeishaMonZoneClimate(hass, description_zone2, config_entry)
@@ -101,6 +107,9 @@ class HeishaMonDHWClimate(ClimateEntity):
         self.config_entry_entry_id = config_entry.entry_id
         self.entity_description = description
         self.hass = hass
+        self.discovery_prefix = config_entry.data[
+            "discovery_prefix"
+        ]  # TODO: handle migration of entities
 
         slug = slugify(self.entity_description.key.replace("/", "_"))
         self.entity_id = f"climate.{slug}"
@@ -127,7 +136,7 @@ class HeishaMonDHWClimate(ClimateEntity):
         payload = str(temperature)
         await async_publish(
             self.hass,
-            "panasonic_heat_pump/commands/SetDHWTemp",
+            f"{self.discovery_prefix}commands/SetDHWTemp",
             payload,
             0,
             False,
@@ -153,7 +162,7 @@ class HeishaMonDHWClimate(ClimateEntity):
 
         await mqtt.async_subscribe(
             self.hass,
-            "panasonic_heat_pump/main/DHW_Temp",
+            f"{self.discovery_prefix}main/DHW_Temp",
             current_temperature_message_received,
             1,
         )
@@ -168,7 +177,7 @@ class HeishaMonDHWClimate(ClimateEntity):
 
         await mqtt.async_subscribe(
             self.hass,
-            "panasonic_heat_pump/main/DHW_Target_Temp",
+            f"{self.discovery_prefix}main/DHW_Target_Temp",
             target_temperature_message_received,
             1,
         )
@@ -187,7 +196,7 @@ class HeishaMonDHWClimate(ClimateEntity):
 
         await mqtt.async_subscribe(
             self.hass,
-            "panasonic_heat_pump/main/Heatpump_State",
+            f"{self.discovery_prefix}main/Heatpump_State",
             heatpump_state_message_received,
             1,
         )
@@ -200,7 +209,7 @@ class HeishaMonDHWClimate(ClimateEntity):
 
         await mqtt.async_subscribe(
             self.hass,
-            "panasonic_heat_pump/main/Operating_Mode_State",
+            f"{self.discovery_prefix}main/Operating_Mode_State",
             operating_state_message_received,
             1,
         )
@@ -224,7 +233,7 @@ class HeishaMonDHWClimate(ClimateEntity):
         ):
             await async_publish(
                 self.hass,
-                "panasonic_heat_pump/commands/SetOperationMode",
+                f"{self.discovery_prefix}commands/SetOperationMode",
                 new_operating_mode.to_mqtt(),
                 0,
                 False,
@@ -233,7 +242,7 @@ class HeishaMonDHWClimate(ClimateEntity):
         if new_heatpump_state != self._heatpump_state:
             await async_publish(
                 self.hass,
-                "panasonic_heat_pump/commands/SetHeatpump",
+                f"{self.discovery_prefix}commands/SetHeatpump",
                 str(int(new_heatpump_state)),
                 0,
                 False,
@@ -244,7 +253,7 @@ class HeishaMonDHWClimate(ClimateEntity):
 
     @property
     def device_info(self):
-        return build_device_info(DeviceType.HEATPUMP)
+        return build_device_info(DeviceType.HEATPUMP, self.discovery_prefix)
 
 
 @dataclass
@@ -270,6 +279,9 @@ class HeishaMonZoneClimate(ClimateEntity):
         self.config_entry_entry_id = config_entry.entry_id
         self.entity_description = description
         self.hass = hass
+        self.discovery_prefix = config_entry.data[
+            "discovery_prefix"
+        ]  # TODO: handle migration of entities
 
         self.zone_id = description.zone_id
         slug = slugify(self.entity_description.key.replace("/", "_"))
@@ -287,7 +299,6 @@ class HeishaMonZoneClimate(ClimateEntity):
         self._mode = ZoneClimateMode.DIRECT
         # this line should be last since it leads to write state so object must be completely ready
         self.change_mode(ZoneClimateMode.DIRECT)
-
 
     def change_mode(self, mode: ZoneClimateMode):
         _LOGGER.warn(f"Changing mode to {mode} for zone {self.zone_id}")
@@ -322,7 +333,7 @@ class HeishaMonZoneClimate(ClimateEntity):
         )
         await async_publish(
             self.hass,
-            f"panasonic_heat_pump/commands/SetZ{self.zone_id}HeatRequestTemperature",
+            f"{self.discovery_prefix}commands/SetZ{self.zone_id}HeatRequestTemperature",
             payload,
             0,
             False,
@@ -345,7 +356,7 @@ class HeishaMonZoneClimate(ClimateEntity):
 
         await mqtt.async_subscribe(
             self.hass,
-            f"panasonic_heat_pump/main/Heating_Mode",
+            f"{self.discovery_prefix}main/Heating_Mode",
             mode_received,
             1,
         )
@@ -357,7 +368,7 @@ class HeishaMonZoneClimate(ClimateEntity):
 
         await mqtt.async_subscribe(
             self.hass,
-            f"panasonic_heat_pump/main/Z{self.zone_id}_Temp",
+            f"{self.discovery_prefix}main/Z{self.zone_id}_Temp",
             current_temperature_message_received,
             1,
         )
@@ -365,12 +376,14 @@ class HeishaMonZoneClimate(ClimateEntity):
         @callback
         def target_temperature_message_received(message):
             self._attr_target_temperature = float(message.payload)
-            _LOGGER.debug(f"Received target temperature for {self.zone_id}: {self._attr_target_temperature}")
+            _LOGGER.debug(
+                f"Received target temperature for {self.zone_id}: {self._attr_target_temperature}"
+            )
             self.async_write_ha_state()
 
         await mqtt.async_subscribe(
             self.hass,
-            f"panasonic_heat_pump/main/Z{self.zone_id}_Heat_Request_Temp",
+            f"{self.discovery_prefix}main/Z{self.zone_id}_Heat_Request_Temp",
             target_temperature_message_received,
             1,
         )
@@ -385,22 +398,22 @@ class HeishaMonZoneClimate(ClimateEntity):
 
         @callback
         def heating_conf_message_received(message):
-            if message.topic == "panasonic_heat_pump/main/Zones_State":
+            if message.topic == f"{self.discovery_prefix}main/Zones_State":
                 self._zone_state = ZoneState.from_mqtt(message.payload)
-            elif message.topic == "panasonic_heat_pump/main/Operating_Mode_State":
+            elif message.topic == f"{self.discovery_prefix}main/Operating_Mode_State":
                 self._operating_mode = OperatingMode.from_mqtt(message.payload)
             self._attr_hvac_mode = guess_hvac_mode()
             self.async_write_ha_state()
 
         await mqtt.async_subscribe(
             self.hass,
-            "panasonic_heat_pump/main/Zones_State",
+            f"{self.discovery_prefix}main/Zones_State",
             heating_conf_message_received,
             1,
         )
         await mqtt.async_subscribe(
             self.hass,
-            "panasonic_heat_pump/main/Operating_Mode_State",
+            f"{self.discovery_prefix}main/Operating_Mode_State",
             heating_conf_message_received,
             1,
         )
@@ -424,7 +437,7 @@ class HeishaMonZoneClimate(ClimateEntity):
             )
             await async_publish(
                 self.hass,
-                "panasonic_heat_pump/commands/SetOperationMode",
+                f"{self.discovery_prefix}commands/SetOperationMode",
                 new_operating_mode.to_mqtt(),
                 0,
                 False,
@@ -436,7 +449,7 @@ class HeishaMonZoneClimate(ClimateEntity):
             )
             await async_publish(
                 self.hass,
-                "panasonic_heat_pump/commands/SetZones",
+                f"{self.discovery_prefix}commands/SetZones",
                 new_zone_state.to_mqtt(),
                 0,
                 False,
@@ -447,4 +460,4 @@ class HeishaMonZoneClimate(ClimateEntity):
 
     @property
     def device_info(self):
-        return build_device_info(DeviceType.HEATPUMP)
+        return build_device_info(DeviceType.HEATPUMP, self.discovery_prefix)

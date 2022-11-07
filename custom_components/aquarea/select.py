@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
-from .definitions import SELECTS, HeishaMonSelectEntityDescription
+from .definitions import build_selects, HeishaMonSelectEntityDescription
 from . import build_device_info
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,8 +24,13 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up HeishaMon sensors from config entry."""
+    discovery_prefix = config_entry.data[
+        "discovery_prefix"
+    ]  # TODO: handle migration of entities
+    _LOGGER.debug(f"Starting bootstrap of select with prefix '{discovery_prefix}'")
     async_add_entities(
-        HeishaMonMQTTSelect(hass, description, config_entry) for description in SELECTS
+        HeishaMonMQTTSelect(hass, description, config_entry)
+        for description in build_selects(discovery_prefix)
     )
 
 
@@ -44,6 +49,9 @@ class HeishaMonMQTTSelect(SelectEntity):
         self.entity_description = description
         self.config_entry_entry_id = config_entry.entry_id
         self.hass = hass
+        self.discovery_prefix = config_entry.data[
+            "discovery_prefix"
+        ]  # TODO: handle migration of entities
 
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"select.{slug}"
@@ -100,4 +108,4 @@ class HeishaMonMQTTSelect(SelectEntity):
 
     @property
     def device_info(self):
-        return build_device_info(self.entity_description.device)
+        return build_device_info(self.entity_description.device, self.discovery_prefix)

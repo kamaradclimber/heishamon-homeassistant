@@ -3,11 +3,12 @@ from __future__ import annotations
 
 from collections.abc import Awaitable
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.config_entry_flow import DiscoveryFlowHandler
+from homeassistant.helpers.service_info.mqtt import MqttServiceInfo
 
 from .const import DOMAIN
 
@@ -22,19 +23,38 @@ async def _async_has_devices(_: HomeAssistant) -> bool:
 class HeishaMonFlowHandler(DiscoveryFlowHandler[Awaitable[bool]], domain=DOMAIN):
     """Handle HeishaMon config flow. The MQTT step is inherited from the parent class."""
 
-    VERSION = 1
+    VERSION = 2
 
     def __init__(self) -> None:
         """Set up the config flow."""
+        self._prefix: Optional[str] = None
         super().__init__(DOMAIN, "HeishaMon", _async_has_devices)
+
+    async def async_step_mqtt(self, discovery_info: MqttServiceInfo) -> FlowResult:
+        """Handle a flow initialized by MQTT discovery"""
+        _LOGGER.info(
+            f"Starting MQTT discovery for heishamon with {discovery_info.topic}"
+        )
+        if not discovery_info.topic.endswith("main/Heatpump_State"):
+            # not a heishamon message
+            return self.async_abort(reason="invalid_discovery_info")
+        self._prefix = discovery_info.topic.replace("main/Heatpump_State", "")
+        _LOGGER.debug(f"The integration will use prefix '{self._prefix}'")
+        return await super().async_step_mqtt(discovery_info)
 
     async def async_step_confirm(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Confirm setup."""
+        """Confirm setup to user and create the entry"""
+
+        data = {"discovery_prefix": self._prefix}
+
         if user_input is None:
             return self.async_show_form(
                 step_id="confirm",
+                description_placeholders={
+                    "discovery_topic": self._prefix,
+                },
             )
 
-        return await super().async_step_confirm(user_input)
+        return self.async_create_entry(title="HeishaMon", data=data)

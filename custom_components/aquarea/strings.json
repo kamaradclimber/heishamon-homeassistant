@@ -5,7 +5,7 @@
     },
     "step": {
       "confirm": {
-        "description": "Make sure to configure 'panasonic_heat_pump' in HeishaMon configuration."
+        "description": "All configured!"
       }
     }
   }

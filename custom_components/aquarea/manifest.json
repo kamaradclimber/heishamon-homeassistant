@@ -5,7 +5,7 @@
   "documentation": "https://github.com/kamaradclimber/heishamon-homeassistant",
   "issue_tracker": "https://github.com/kamaradclimber/heishamon-homeassistant/issues",
   "dependencies": ["mqtt", "template"],
-  "mqtt": ["panasonic_heat_pump/#"],
+  "mqtt": ["+/main/Heatpump_State"],
   "integration_type": "hub",
   "codeowners": ["@kamaradclimber"],
   "iot_class": "local_push",

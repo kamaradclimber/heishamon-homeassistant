@@ -8,7 +8,9 @@ Installation should be done using https://hacs.xyz/ as a custom repository.
 
 ## Configuration
 
-Just make sure you have an MQTT integration configured. Heishamon mqtt messages should quickly lead to auto-discovery.
+Just make sure you have an MQTT integration configured. Heishamon mqtt messages should quickly lead to auto-discovery. There is no way to configure one manually.
+
+ℹ This integration support any heishamon MQTT topic prefix (defaults to `panasonic_heat_pump`) but does not support multiple heatpump yet.
 
 ⚠ By default, all sensors related to less common setups (cooling, buffer, solar or pool) are disabled by default. They can easily enabled when looking at the "Aquarea HeatPump Indoor Unit" device under "entities not shown".
 

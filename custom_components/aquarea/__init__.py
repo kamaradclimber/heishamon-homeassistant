@@ -1,5 +1,7 @@
 """The HeishaMon component."""
 
+import logging
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
@@ -14,6 +16,7 @@ PLATFORMS = [
     Platform.NUMBER,
     Platform.CLIMATE,
 ]
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -28,25 +31,45 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
-def build_device_info(device_type: DeviceType) -> dict:
+DEFAULT_MQTT_TOPIC = "panasonic_heat_pump/"
+
+
+def build_device_info(device_type: DeviceType, mqtt_topic: str) -> dict:
     """
     This method returns the correct device based
     """
+    if mqtt_topic == DEFAULT_MQTT_TOPIC:  # backward compatibility
+        heatpump_id = (DOMAIN, "panasonic_heat_pump")
+        heishamon_id = (DOMAIN, "heishamon")
+    else:
+        heatpump_id = (DOMAIN, mqtt_topic)
+        heishamon_id = (DOMAIN, f"heishamon-{mqtt_topic}")
     if device_type == DeviceType.HEATPUMP:
         return {
-            "identifiers": {
-                (
-                    DOMAIN,
-                    "panasonic_heat_pump",
-                )
-            },
+            "identifiers": {heatpump_id},
             "name": "Aquarea HeatPump Indoor Unit",
             "manufacturer": "Aquarea",
-            "via_device": ("aquarea", "heishamon"),
+            "via_device": heishamon_id,
         }
     elif device_type == DeviceType.HEISHAMON:
         return {
-            "identifiers": {(DOMAIN, "heishamon")},
+            "identifiers": {heishamon_id},
             "name": "HeishaMon",
         }
     assert False, f"{device_type} management has not been implemented"
+
+
+async def async_migrate_entry(hass, config_entry: ConfigEntry):
+    if config_entry.version == 1:
+        _LOGGER.warn(
+            f"config_entry version is {config_entry.version}, migrating to version 2"
+        )
+        # we need to add the discovery prefix
+        new = {**config_entry.data}
+        new[
+            "discovery_prefix"
+        ] = DEFAULT_MQTT_TOPIC  # it was hardcoded in version 1 of the config_entry schema
+        config_entry.version = 2
+        hass.config_entries.async_update_entry(config_entry, data=new)
+        _LOGGER.info("Migration to version {config_entry.version} successful")
+    return True

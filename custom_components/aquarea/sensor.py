@@ -2,6 +2,7 @@
 from __future__ import annotations
 from string import Template
 import logging
+from typing import Any, Optional
 
 from homeassistant.components import mqtt
 from homeassistant.components.sensor import (
@@ -26,7 +27,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
 from .const import DeviceType
-from .definitions import SENSORS, HeishaMonSensorEntityDescription
+from .definitions import build_sensors, HeishaMonSensorEntityDescription
 from . import build_device_info
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,14 +41,21 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up HeishaMon sensors from config entry."""
+    discovery_prefix = config_entry.data[
+        "discovery_prefix"
+    ]  # TODO: handle migration of entities
+    _LOGGER.debug(f"Starting bootstrap of sensors with prefix '{discovery_prefix}'")
     real_sensors = [
-        HeishaMonSensor(hass, description, config_entry) for description in SENSORS
+        HeishaMonSensor(hass, description, config_entry)
+        for description in build_sensors(discovery_prefix)
     ]
-    all_sensors = real_sensors + build_virtual_sensors(hass, config_entry, real_sensors)
+    all_sensors = real_sensors + build_virtual_sensors(
+        hass, config_entry, real_sensors, discovery_prefix
+    )
     async_add_entities(all_sensors)
     # this special sensor will listen to 1wire topics and create new sensors accordingly
     dallas_list_config = SensorEntityDescription(
-        key="panasonic_heat_pump/1wire/+",
+        key=f"{discovery_prefix}1wire/+",
         name="HeishaMon detected 1wire sensors",
         entity_category=EntityCategory.DIAGNOSTIC,
     )
@@ -55,7 +63,7 @@ async def async_setup_entry(
         hass, dallas_list_config, config_entry, async_add_entities
     )
     s0_list_config = SensorEntityDescription(
-        key="panasonic_heat_pump/s0/Watt/+",
+        key=f"{discovery_prefix}s0/Watt/+",
         name="HeishaMon detected s0 sensors",
         entity_category=EntityCategory.DIAGNOSTIC,
     )
@@ -67,6 +75,7 @@ def build_virtual_sensors(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
     sensors: list[HeishaMonSensor],
+    discovery_prefix: str,
 ) -> list[SensorEntity]:
 
     # small helper function
@@ -78,13 +87,13 @@ def build_virtual_sensors(
         )
 
     dhw_power_produced = find_sensor(
-        "panasonic_heat_pump/main/DHW_Energy_Production"
+        f"{discovery_prefix}main/DHW_Energy_Production"
     ).entity_id
     heat_power_produced = find_sensor(
-        "panasonic_heat_pump/main/Heat_Energy_Production"
+        f"{discovery_prefix}main/Heat_Energy_Production"
     ).entity_id
     cool_power_produced = find_sensor(
-        "panasonic_heat_pump/main/Cool_Energy_Production"
+        f"{discovery_prefix}main/Cool_Energy_Production"
     ).entity_id
     production_config = {
         CONF_DEVICE_CLASS: SensorDeviceClass.POWER,
@@ -97,7 +106,9 @@ def build_virtual_sensors(
     """
             )
             .substitute(
-                dhw_power_produced=dhw_power_produced, heat_power_produced=heat_power_produced, cool_power_produced=cool_power_produced
+                dhw_power_produced=dhw_power_produced,
+                heat_power_produced=heat_power_produced,
+                cool_power_produced=cool_power_produced,
             )
             .strip()
         ),
@@ -106,16 +117,17 @@ def build_virtual_sensors(
         hass,
         production_config,
         f"{config_entry.entry_id}-heishamon_w_production",
+        config_entry,
     )
 
     dhw_power_consumed = find_sensor(
-        "panasonic_heat_pump/main/DHW_Energy_Consumption"
+        f"{discovery_prefix}main/DHW_Energy_Consumption"
     ).entity_id
     heat_power_consumed = find_sensor(
-        "panasonic_heat_pump/main/Heat_Energy_Consumption"
+        f"{discovery_prefix}main/Heat_Energy_Consumption"
     ).entity_id
     cool_power_consumed = find_sensor(
-        "panasonic_heat_pump/main/Cool_Energy_Consumption"
+        f"{discovery_prefix}main/Cool_Energy_Consumption"
     ).entity_id
     consumption_config = {
         CONF_DEVICE_CLASS: SensorDeviceClass.POWER,
@@ -128,7 +140,9 @@ def build_virtual_sensors(
     """
             )
             .substitute(
-                dhw_power_consumed=dhw_power_consumed, heat_power_consumed=heat_power_consumed, cool_power_consumed=cool_power_consumed
+                dhw_power_consumed=dhw_power_consumed,
+                heat_power_consumed=heat_power_consumed,
+                cool_power_consumed=cool_power_consumed,
             )
             .strip()
         ),
@@ -137,6 +151,7 @@ def build_virtual_sensors(
         hass,
         consumption_config,
         f"{config_entry.entry_id}-heishamon_w_consumption",
+        config_entry,
     )
 
     cop_config = {
@@ -178,21 +193,34 @@ def build_virtual_sensors(
         ),
     }
     cop = HeishaMonSensorTemplate(
-        hass, cop_config, f"{config_entry.entry_id}-heishamon_cop"
+        hass, cop_config, f"{config_entry.entry_id}-heishamon_cop", config_entry,
     )
 
-    #DHW Energy
-    #Heat Energy
-    #Coll Energy
-    #Total Energy
+    # DHW Energy
+    # Heat Energy
+    # Coll Energy
+    # Total Energy
 
     return [production, consumption, cop]
 
 
 class HeishaMonSensorTemplate(SensorTemplate):
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        config: dict[str, Any],
+        unique_id: Optional[str],
+        config_entry: ConfigEntry,
+    ):
+        super().__init__(hass=hass, config=config, unique_id=unique_id)
+        self.discovery_prefix = config_entry.data[
+            "discovery_prefix"
+        ]  # TODO: handle migration of entities
+
+
     @property
     def device_info(self):
-        return build_device_info(DeviceType.HEATPUMP)
+        return build_device_info(DeviceType.HEATPUMP, self.discovery_prefix)
 
 
 class S0Detector(SensorEntity):
@@ -207,6 +235,9 @@ class S0Detector(SensorEntity):
         self.entity_description = description
         self.config_entry = config_entry
         self.config_entry_entry_id = config_entry.entry_id
+        self.discovery_prefix = config_entry.data[
+            "discovery_prefix"
+        ]  # TODO: handle migration of entities
 
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"sensor.{slug}"
@@ -275,7 +306,7 @@ class S0Detector(SensorEntity):
 
     @property
     def device_info(self):
-        return build_device_info(DeviceType.HEISHAMON)
+        return build_device_info(DeviceType.HEISHAMON, self.discovery_prefix)
 
 
 class DallasListSensor(SensorEntity):
@@ -290,6 +321,9 @@ class DallasListSensor(SensorEntity):
         self.entity_description = description
         self.config_entry = config_entry
         self.config_entry_entry_id = config_entry.entry_id
+        self.discovery_prefix = config_entry.data[
+            "discovery_prefix"
+        ]  # TODO: handle migration of entities
 
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"sensor.{slug}"
@@ -334,7 +368,7 @@ class DallasListSensor(SensorEntity):
 
     @property
     def device_info(self):
-        return build_device_info(DeviceType.HEISHAMON)
+        return build_device_info(DeviceType.HEISHAMON, self.discovery_prefix)
 
 
 class HeishaMonSensor(SensorEntity):
@@ -352,6 +386,9 @@ class HeishaMonSensor(SensorEntity):
         self.hass = hass
         self.entity_description = description
         self.config_entry_entry_id = config_entry.entry_id
+        self.discovery_prefix = config_entry.data[
+            "discovery_prefix"
+        ]  # TODO: handle migration of entities
 
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"sensor.{slug}"
@@ -385,4 +422,4 @@ class HeishaMonSensor(SensorEntity):
 
     @property
     def device_info(self):
-        return build_device_info(self.entity_description.device)
+        return build_device_info(self.entity_description.device, self.discovery_prefix)

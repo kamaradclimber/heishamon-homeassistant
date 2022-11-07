@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
-from .definitions import NUMBERS, HeishaMonNumberEntityDescription
+from .definitions import build_numbers, HeishaMonNumberEntityDescription
 from . import build_device_info
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,8 +24,13 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up HeishaMon numbers from config entry."""
+    discovery_prefix = config_entry.data[
+        "discovery_prefix"
+    ]  # TODO: handle migration of entities
+    _LOGGER.debug(f"Starting bootstrap of numbers with prefix '{discovery_prefix}'")
     async_add_entities(
-        HeishaMonMQTTNumber(hass, description, config_entry) for description in NUMBERS
+        HeishaMonMQTTNumber(hass, description, config_entry)
+        for description in build_numbers(discovery_prefix)
     )
 
 
@@ -43,6 +48,9 @@ class HeishaMonMQTTNumber(NumberEntity):
         """Initialize the sensor."""
         self.entity_description = description
         self.hass = hass
+        self.discovery_prefix = config_entry.data[
+            "discovery_prefix"
+        ]  # TODO: handle migration of entities
         self.config_entry_entry_id = config_entry.entry_id
 
         slug = slugify(description.key.replace("/", "_"))
@@ -95,4 +103,4 @@ class HeishaMonMQTTNumber(NumberEntity):
 
     @property
     def device_info(self):
-        return build_device_info(self.entity_description.device)
+        return build_device_info(self.entity_description.device, self.discovery_prefix)
