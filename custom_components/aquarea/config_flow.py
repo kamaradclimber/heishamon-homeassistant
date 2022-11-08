@@ -67,4 +67,4 @@ class HeishaMonFlowHandler(DiscoveryFlowHandler[Awaitable[bool]], domain=DOMAIN)
                 },
             )
 
-        return self.async_create_entry(title="HeishaMon", data=data)
+        return self.async_create_entry(title=f"HeishaMon via {self._prefix} topic", data=data)
