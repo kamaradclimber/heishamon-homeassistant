@@ -27,12 +27,13 @@ class HeishaMonFlowHandler(DiscoveryFlowHandler[Awaitable[bool]], domain=DOMAIN)
 
     def __init__(self) -> None:
         """Set up the config flow."""
+
         self._prefix: Optional[str] = None
         super().__init__(DOMAIN, "HeishaMon", _async_has_devices)
 
     async def async_step_mqtt(self, discovery_info: MqttServiceInfo) -> FlowResult:
         """Handle a flow initialized by MQTT discovery"""
-        _LOGGER.info(
+        _LOGGER.debug(
             f"Starting MQTT discovery for heishamon with {discovery_info.topic}"
         )
         if not discovery_info.topic.endswith("main/Heatpump_State"):
@@ -40,7 +41,16 @@ class HeishaMonFlowHandler(DiscoveryFlowHandler[Awaitable[bool]], domain=DOMAIN)
             return self.async_abort(reason="invalid_discovery_info")
         self._prefix = discovery_info.topic.replace("main/Heatpump_State", "")
         _LOGGER.debug(f"The integration will use prefix '{self._prefix}'")
-        return await super().async_step_mqtt(discovery_info)
+
+        unique_id = f"{DOMAIN}-{self._prefix}"
+        if unique_id in self._async_current_ids():
+            _LOGGER.debug(
+                f"[{self._prefix}] ignoring because it has already been configured"
+            )
+            return self.async_abort(reason="instance_already_configured")
+
+        await self.async_set_unique_id(unique_id)
+        return await self.async_step_confirm()
 
     async def async_step_confirm(
         self, user_input: dict[str, Any] | None = None

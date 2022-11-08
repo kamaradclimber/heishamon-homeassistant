@@ -193,7 +193,10 @@ def build_virtual_sensors(
         ),
     }
     cop = HeishaMonSensorTemplate(
-        hass, cop_config, f"{config_entry.entry_id}-heishamon_cop", config_entry,
+        hass,
+        cop_config,
+        f"{config_entry.entry_id}-heishamon_cop",
+        config_entry,
     )
 
     # DHW Energy
@@ -216,7 +219,6 @@ class HeishaMonSensorTemplate(SensorTemplate):
         self.discovery_prefix = config_entry.data[
             "discovery_prefix"
         ]  # TODO: handle migration of entities
-
 
     @property
     def device_info(self):
