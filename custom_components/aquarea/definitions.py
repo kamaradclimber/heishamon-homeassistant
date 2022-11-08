@@ -592,6 +592,21 @@ def build_binary_sensors(
     ]
 
 
+def update_device_ip(
+    hass: HomeAssistant, entity: SensorEntity, config_entry_id: str, ip: str
+):
+    _LOGGER.debug(f"Received ip address: {ip}")
+    device_registry = dr.async_get(hass)
+    identifiers = None
+    if entity.device_info is not None and "identifiers" in entity.device_info:
+        identifiers = entity.device_info["identifiers"]
+    device_registry.async_get_or_create(
+        config_entry_id=config_entry_id,
+        identifiers=identifiers,
+        configuration_url=f"http://{ip}",
+    )
+
+
 def update_device_model(
     hass: HomeAssistant, entity: SensorEntity, config_entry_id: str, model: str
 ):
@@ -1295,5 +1310,13 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device=DeviceType.HEISHAMON,
             entity_category=EntityCategory.DIAGNOSTIC,
             state_class=SensorStateClass.TOTAL_INCREASING,
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="INFO_ip",
+            key=f"{mqtt_prefix}ip",
+            name="HeishaMon IP Address",
+            device=DeviceType.HEISHAMON,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            on_receive=update_device_ip,
         ),
     ]
