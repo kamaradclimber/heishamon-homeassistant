@@ -43,7 +43,11 @@ class HeishaMonFlowHandler(DiscoveryFlowHandler[Awaitable[bool]], domain=DOMAIN)
         _LOGGER.debug(f"The integration will use prefix '{self._prefix}'")
 
         unique_id = f"{DOMAIN}-{self._prefix}"
-        if unique_id in self._async_current_ids():
+        existing_ids = self._async_current_ids()
+        # backward compatibility with < 0.9.0
+        if "aquarea" in existing_ids and unique_id == "aquarea-panasonic_heat_pump/":
+            existing_ids.add("aquarea-panasonic_heat_pump/")
+        if unique_id in existing_ids:
             _LOGGER.debug(
                 f"[{self._prefix}] ignoring because it has already been configured"
             )
@@ -67,4 +71,6 @@ class HeishaMonFlowHandler(DiscoveryFlowHandler[Awaitable[bool]], domain=DOMAIN)
                 },
             )
 
-        return self.async_create_entry(title=f"HeishaMon via {self._prefix} topic", data=data)
+        return self.async_create_entry(
+            title=f"HeishaMon via {self._prefix} topic", data=data
+        )
