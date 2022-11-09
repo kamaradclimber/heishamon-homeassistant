@@ -1,7 +1,6 @@
 # heishamon-homeassistant
 
 An integration for heatpumps handled by [heishamon](https://github.com/Egyras/HeishaMon).
-It's currently in development, expect sensors to be renamed.
 
 ## Installation
 Installation should be done using https://hacs.xyz/ as a custom repository.
