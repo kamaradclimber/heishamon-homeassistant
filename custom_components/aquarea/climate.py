@@ -297,10 +297,9 @@ class HeishaMonZoneClimate(ClimateEntity):
         self._operating_mode = OperatingMode(0)  # i.e None
 
         self._mode = ZoneClimateMode.DIRECT
-        # this line should be last since it leads to write state so object must be completely ready
-        self.change_mode(ZoneClimateMode.DIRECT)
+        self.change_mode(ZoneClimateMode.DIRECT, initialization=True)
 
-    def change_mode(self, mode: ZoneClimateMode):
+    def change_mode(self, mode: ZoneClimateMode, initialization:bool=False):
         _LOGGER.warn(f"Changing mode to {mode} for zone {self.zone_id}")
         self._mode = mode
         if mode == ZoneClimateMode.COMPENSATION:
@@ -311,7 +310,10 @@ class HeishaMonZoneClimate(ClimateEntity):
             self._attr_min_temp = 15
             self._attr_max_temp = 25
             self._attr_target_temperature_step = 1
-        self.async_write_ha_state()
+        if not initialization:
+            # during initialization we cannot write HA state because entities are not registered yet.
+            # Otherwise it triggers https://github.com/kamaradclimber/heishamon-homeassistant/issues/47
+            self.async_write_ha_state()
 
     async def async_set_temperature(self, **kwargs) -> None:
         temperature = kwargs.get("temperature")
