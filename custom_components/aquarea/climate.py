@@ -300,7 +300,10 @@ class HeishaMonZoneClimate(ClimateEntity):
         self.change_mode(ZoneClimateMode.DIRECT, initialization=True)
 
     def change_mode(self, mode: ZoneClimateMode, initialization:bool=False):
-        _LOGGER.warn(f"Changing mode to {mode} for zone {self.zone_id}")
+        if self._mode == mode:
+            _LOGGER.debug(f"Enforcing mode to {mode} for zone {self.zone_id}")
+        else:
+            _LOGGER.info(f"Changing mode to {mode} for zone {self.zone_id}")
         self._mode = mode
         if mode == ZoneClimateMode.COMPENSATION:
             self._attr_min_temp = -5
