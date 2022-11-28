@@ -14,3 +14,6 @@ secrets.yaml
 
 #ignore vscode folder
 .vscode/*
+.devenv*
+devenv.local.nix
+devenv.lock
