@@ -47,7 +47,7 @@ class OperatingMode(Flag):
             OperatingMode.COOL: "Cool only",
             (OperatingMode.HEAT | OperatingMode.AUTO): "Auto(Heat)",
             OperatingMode.DHW: "DHW only",
-            (OperatingMode.HEAT | OperatingMode.DHW): "Heat+DWH",
+            (OperatingMode.HEAT | OperatingMode.DHW): "Heat+DHW",
             (OperatingMode.COOL | OperatingMode.DHW): "Cool+DHW",
             (
                 OperatingMode.HEAT | OperatingMode.AUTO | OperatingMode.DHW
