@@ -289,7 +289,7 @@ def guess_shift_or_direct_and_clamp_min_max_values(
         entity.entity_description.native_max_value = max(range2)
     else:
         _LOGGER.warn(
-            "Impossible to know if we are using 'shift' mode or 'direct' mode, ignoring"
+            f"Received value {native_value} for {entity.entity_description.name}. Impossible to know if we are using 'shift' mode or 'direct' mode, ignoring"
         )
 
 
