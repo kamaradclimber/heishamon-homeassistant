@@ -1237,11 +1237,13 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             heishamon_topic_id="TOP95",
             key=f"{mqtt_prefix}main/Max_Pump_Duty",
             name="Aquarea Max pump duty configured",
+            native_unit_of_measurement="Count",
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP93",
             key=f"{mqtt_prefix}main/Pump_Duty",
             name="Aquarea Pump Duty",
+            native_unit_of_measurement="Count",
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP101",
