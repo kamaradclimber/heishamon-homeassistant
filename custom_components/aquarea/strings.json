@@ -1,7 +1,8 @@
 {
   "config": {
     "abort": {
-      "single_instance_allowed": "[%key:common::config_flow::abort::single_instance_allowed%]"
+      "single_instance_allowed": "[%key:common::config_flow::abort::single_instance_allowed%]",
+      "unsupported_manual_setup": "Configuration is only supported via auto-discovery. Check HeishaMon is connected to your MQTT server and sending messages. Also check that Home Assistant is connected to the MQTT server. The integration will then be discovered automatically."
     },
     "step": {
       "confirm": {
