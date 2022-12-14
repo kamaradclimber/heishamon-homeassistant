@@ -525,10 +525,27 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
     ]
 
 
+def online_to_bool(value: str) -> Optional[bool]:
+    if value == "Online":
+        return True
+    elif value == "Offline":
+        return False
+    else:
+        return None
+
+
 def build_binary_sensors(
     mqtt_prefix: str,
 ) -> list[HeishaMonBinarySensorEntityDescription]:
     return [
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="LWT",
+            key=f"{mqtt_prefix}LWT",
+            name="HeatPump online",
+            entity_category=EntityCategory.DIAGNOSTIC,
+            device=DeviceType.HEISHAMON,
+            state=online_to_bool,
+        ),
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP3",
             key=f"{mqtt_prefix}main/Quiet_Mode_Schedule",
