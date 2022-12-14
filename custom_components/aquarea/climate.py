@@ -311,7 +311,7 @@ class HeishaMonZoneClimate(ClimateEntity):
             self._attr_target_temperature_step = 1
         else:
             self._attr_min_temp = 15
-            self._attr_max_temp = 25
+            self._attr_max_temp = 45
             self._attr_target_temperature_step = 1
         if not initialization:
             # during initialization we cannot write HA state because entities are not registered yet.
