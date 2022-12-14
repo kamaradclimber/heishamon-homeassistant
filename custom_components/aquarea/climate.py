@@ -299,7 +299,7 @@ class HeishaMonZoneClimate(ClimateEntity):
         self._mode = ZoneClimateMode.DIRECT
         self.change_mode(ZoneClimateMode.DIRECT, initialization=True)
 
-    def change_mode(self, mode: ZoneClimateMode, initialization:bool=False):
+    def change_mode(self, mode: ZoneClimateMode, initialization: bool = False):
         if self._mode == mode:
             _LOGGER.debug(f"Enforcing mode to {mode} for zone {self.zone_id}")
         else:

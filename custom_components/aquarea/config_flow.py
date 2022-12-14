@@ -62,7 +62,7 @@ class HeishaMonFlowHandler(DiscoveryFlowHandler[Awaitable[bool]], domain=DOMAIN)
         """Confirm setup to user and create the entry"""
 
         if not self._prefix:
-             return self.async_abort(reason="unsupported_manual_setup")
+            return self.async_abort(reason="unsupported_manual_setup")
 
         data = {"discovery_prefix": self._prefix}
 
