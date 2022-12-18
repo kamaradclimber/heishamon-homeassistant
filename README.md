@@ -3,7 +3,9 @@
 An integration for heatpumps handled by [heishamon](https://github.com/Egyras/HeishaMon).
 
 ## Installation
-Installation should be done using https://hacs.xyz/ as a custom repository.
+
+Installation should be done using [hacs](https://hacs.xyz/).
+1-click: [![Open in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=kamaradclimber&repository=heishamon-homeassistant&category=integration)
 
 ## Configuration
 
