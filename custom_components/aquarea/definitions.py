@@ -483,7 +483,7 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
         HeishaMonSwitchEntityDescription(
             heishamon_topic_id="SET2",  # TOP19
             key=f"{mqtt_prefix}main/Holiday_Mode_State",
-            command_topic=f"{mqtt_prefix}main/SetHolidayMode",
+            command_topic=f"{mqtt_prefix}commands/SetHolidayMode",
             name="Aquarea Holiday Mode",
             entity_category=EntityCategory.CONFIG,
             state=bit_to_bool,
