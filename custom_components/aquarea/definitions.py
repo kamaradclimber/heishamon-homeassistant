@@ -426,6 +426,20 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             state=int,
             state_to_mqtt=int,
         ),
+        HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET27",  # also corresponds to TOP113
+            key=f"{mqtt_prefix}main/Buffer_Tank_Delta",
+            command_topic=f"{mqtt_prefix}commands/SetBufferDelta",
+            name="Aquarea Buffer tank delta",
+            entity_category=EntityCategory.CONFIG,
+            device_class=SensorDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="°C",
+            native_min_value=0,
+            native_max_value=10,
+            state=int,
+            state_to_mqtt=int,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
     ]
 
 
@@ -1267,6 +1281,15 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             key=f"{mqtt_prefix}main/Solar_Mode",
             name="Aquarea Solar Mode",
             state=read_solar_mode,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP113",
+            key=f"{mqtt_prefix}main/Buffer_Tank_Delta",
+            state_class=SensorStateClass.MEASUREMENT,
+            name="Aquarea Buffer tank delta",
+            device_class=SensorDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="°C",
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
         HeishaMonSensorEntityDescription(
