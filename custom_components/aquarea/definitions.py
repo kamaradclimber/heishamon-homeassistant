@@ -458,6 +458,7 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
         HeishaMonSelectEntityDescription(
             heishamon_topic_id="SET4",  # also corresponds to TOP17
             key=f"{mqtt_prefix}main/Powerful_Mode_Time",
+            command_topic=f"{mqtt_prefix}commands/SetPowerfulMode",
             name="Aquarea Powerful Mode",
             state=read_power_mode_time,
             state_to_mqtt=set_power_mode_time,
