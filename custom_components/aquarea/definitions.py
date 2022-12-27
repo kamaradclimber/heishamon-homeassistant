@@ -229,7 +229,6 @@ class HeishaMonNumberEntityDescription(
     # function to transform selected option in value sent via mqtt
     state_to_mqtt: Optional[Callable] = None
 
-
 def bit_to_bool(value: str) -> Optional[bool]:
     if value == "1":
         return True
@@ -485,6 +484,17 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
     ]
 
 
+def read_holiday_status(value: str) -> str:
+    if value == "0":
+        return "Off"
+    elif value == "1":
+        return "Scheduled"
+    else:
+        return "Active"
+
+def read_holiday_status_to_bool(value: str) -> bool:
+    return value != "0"
+
 def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
     return [
         HeishaMonSwitchEntityDescription(
@@ -501,7 +511,7 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             command_topic=f"{mqtt_prefix}commands/SetHolidayMode",
             name="Aquarea Holiday Mode",
             entity_category=EntityCategory.CONFIG,
-            state=bit_to_bool,
+            state=read_holiday_status_to_bool,
         ),
         HeishaMonSwitchEntityDescription(
             heishamon_topic_id="SET10",  # also corresponds to TOP2
@@ -770,6 +780,13 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="W",
             state_class=SensorStateClass.MEASUREMENT,
             # original template states "force_update" FIXME
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP19",
+            key=f"{mqtt_prefix}main/Holiday_Mode_State",
+            name="Aquarea Holiday Mode",
+            entity_category=EntityCategory.CONFIG,
+            state=read_holiday_status,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP20",
