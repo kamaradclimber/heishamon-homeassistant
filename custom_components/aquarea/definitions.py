@@ -751,7 +751,6 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             heishamon_topic_id="TOP12",
             key=f"{mqtt_prefix}main/Operations_Counter",
             name="Aquarea Compressor Start/Stop Counter",
-            device_class=SensorDeviceClass.DURATION,
             state_class=SensorStateClass.TOTAL_INCREASING,
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
