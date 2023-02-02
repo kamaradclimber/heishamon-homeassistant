@@ -265,6 +265,7 @@ class S0Detector(SensorEntity):
                     state_class=SensorStateClass.MEASUREMENT,
                     unit_of_measurement="kWh",
                     native_unit_of_measurement="Wh",
+                    native_precision=0,
                     device=DeviceType.HEISHAMON,
                 )
                 watt_hour_sensor = HeishaMonSensor(
@@ -277,6 +278,7 @@ class S0Detector(SensorEntity):
                     device_class=SensorDeviceClass.ENERGY,
                     unit_of_measurement="kWh",
                     native_unit_of_measurement="Wh",
+                    native_precision=0,
                     state_class=SensorStateClass.TOTAL_INCREASING,
                     device=DeviceType.HEISHAMON,
                 )
