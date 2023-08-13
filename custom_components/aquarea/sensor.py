@@ -262,7 +262,7 @@ class S0Detector(SensorEntity):
                     key="/".join([base, s0, "Watthour", device_id]),
                     name=f"HeishaMon s0 {device_id} WattHour",
                     device_class=SensorDeviceClass.ENERGY,
-                    state_class=SensorStateClass.MEASUREMENT,
+                    state_class=SensorStateClass.TOTAL_INCREASING,
                     unit_of_measurement="kWh",
                     native_unit_of_measurement="Wh",
                     suggested_display_precision=0,
