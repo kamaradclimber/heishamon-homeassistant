@@ -30,4 +30,10 @@ HEATPUMP_MODELS = {
     "20": "WH-MDC07J3E5 7 1ph HP",
     "21": "WH-MDC09J3E5 9 1ph HP",
     "22": "WH-SDC0305J3E5 5 1ph HP",
+    "23": "WH-MXC09J3E8 9 3ph T-CAP",
+    "24": "WH-MXC12J9E8 12 3ph T-CAP",
+    "25": "WH-ADC1216H6E5 12 1ph T-CAP",
+    "26": "WH-ADC0309J3E5C 7 1ph HP - All-In-One Compact",
+    "27": "WH-MDC07J3E5 7 1ph HP (new version?)",
+    "28": "WH-MDC05J3E5 5 1ph HP (new version?",
 }
