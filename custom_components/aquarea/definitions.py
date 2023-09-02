@@ -229,6 +229,9 @@ class HeishaMonNumberEntityDescription(
     # function to transform selected option in value sent via mqtt
     state_to_mqtt: Optional[Callable] = None
 
+def positive_to_bool(value: str) -> bool:
+    return int(value) > 0
+
 def bit_to_bool(value: str) -> Optional[bool]:
     if value == "1":
         return True
@@ -616,7 +619,8 @@ def build_binary_sensors(
             heishamon_topic_id="TOP93",
             key=f"{mqtt_prefix}main/Pump_Duty",
             name="Aquarea Pump Running",
-            state=bit_to_bool,
+            # TODO(kamaradclimber): it seems value is showing something more than just "on/off". Tests show value of 120 when running and slowly decreasing to 100
+            state=positive_to_bool,
             device_class=BinarySensorDeviceClass.RUNNING,
         ),
         HeishaMonBinarySensorEntityDescription(
