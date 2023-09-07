@@ -20,7 +20,7 @@ from homeassistant.const import (
     CONF_DEVICE_CLASS,
     CONF_UNIT_OF_MEASUREMENT,
 )
-from homeassistant.helpers.template_entity import CONF_AVAILABILITY
+from homeassistant.helpers.trigger_template_entity import CONF_AVAILABILITY
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
