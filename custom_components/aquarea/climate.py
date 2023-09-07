@@ -14,12 +14,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
 from homeassistant.components.climate import ClimateEntityDescription
-from homeassistant.components.climate.const import (
-    PRESET_ECO,
-    PRESET_COMFORT,
-    PRESET_NONE,
-)
-from .definitions import lookup_by_value, OperatingMode
+from .definitions import OperatingMode
 from . import build_device_info
 from .const import DeviceType
 
@@ -69,11 +64,6 @@ async def async_setup_entry(
         f"Starting bootstrap of climate entities with prefix '{discovery_prefix}'"
     )
     """Set up HeishaMon climates from config entry."""
-    description = ClimateEntityDescription(
-        key=f"{discovery_prefix}main/DHW_Target_Temp",
-        name="Aquarea Domestic Water Heater",
-    )
-    async_add_entities([HeishaMonDHWClimate(hass, description, config_entry)])
     description_zone1 = ZoneClimateEntityDescription(
         key=f"{discovery_prefix}main/Z1_Temp",
         name="Aquarea Zone 1 climate",
@@ -88,172 +78,6 @@ async def async_setup_entry(
     zone2_climate = HeishaMonZoneClimate(hass, description_zone2, config_entry)
     async_add_entities([zone1_climate, zone2_climate])
 
-
-class HeishaMonDHWClimate(ClimateEntity):
-    """Representation of a HeishaMon sensor that is updated via MQTT."""
-
-    preset_mode_temps = {
-        "52": PRESET_ECO,
-        "60": PRESET_COMFORT,
-    }
-
-    def __init__(
-        self,
-        hass: HomeAssistant,
-        description: ClimateEntityDescription,
-        config_entry: ConfigEntry,
-    ) -> None:
-        """Initialize the climate entity."""
-        self.config_entry_entry_id = config_entry.entry_id
-        self.entity_description = description
-        self.hass = hass
-        self.discovery_prefix = config_entry.data[
-            "discovery_prefix"
-        ]  # TODO: handle migration of entities
-
-        slug = slugify(self.entity_description.key.replace("/", "_"))
-        self.entity_id = f"climate.{slug}"
-        self._attr_unique_id = f"{config_entry.entry_id}"
-
-        self._attr_temperature_unit = "°C"
-        self._attr_supported_features = (
-            ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
-        )
-        self._attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
-        self._attr_hvac_mode = HVACMode.OFF
-        self._attr_min_temp = 40
-        self._attr_max_temp = 65
-        self._attr_target_temperature_step = 1
-        self._operating_mode = OperatingMode(0)  # i.e None
-        self._attr_preset_modes = [PRESET_ECO, PRESET_COMFORT]
-        self._attr_preset_mode = PRESET_ECO
-
-        self._heatpump_state = False
-
-    async def async_set_temperature(self, **kwargs) -> None:
-        temperature = kwargs.get("temperature")
-        _LOGGER.debug(f"Changing {self.name} target temperature to {temperature})")
-        payload = str(temperature)
-        await async_publish(
-            self.hass,
-            f"{self.discovery_prefix}commands/SetDHWTemp",
-            payload,
-            0,
-            False,
-            "utf-8",
-        )
-
-    async def async_set_preset_mode(self, preset_mode: str):
-        temp = lookup_by_value(HeishaMonDHWClimate.preset_mode_temps, preset_mode)
-        if temp is None:
-            _LOGGER.warn(
-                f"No target temperature implemented for {preset_mode}, ignoring"
-            )
-            return
-        await self.async_set_temperature(temperature=float(temp))
-
-    async def async_added_to_hass(self) -> None:
-        """Subscribe to MQTT events."""
-
-        @callback
-        def current_temperature_message_received(message):
-            self._attr_current_temperature = float(message.payload)
-            self.async_write_ha_state()
-
-        await mqtt.async_subscribe(
-            self.hass,
-            f"{self.discovery_prefix}main/DHW_Temp",
-            current_temperature_message_received,
-            1,
-        )
-
-        @callback
-        def target_temperature_message_received(message):
-            self._attr_target_temperature = float(message.payload)
-            self._attr_preset_mode = HeishaMonDHWClimate.preset_mode_temps.get(
-                str(int(self._attr_target_temperature)), PRESET_NONE
-            )
-            self.async_write_ha_state()
-
-        await mqtt.async_subscribe(
-            self.hass,
-            f"{self.discovery_prefix}main/DHW_Target_Temp",
-            target_temperature_message_received,
-            1,
-        )
-
-        def guess_hvac_mode() -> HVACMode:
-            if OperatingMode.DHW in self._operating_mode and self._heatpump_state:
-                return HVACMode.HEAT
-            else:
-                return HVACMode.OFF
-
-        @callback
-        def heatpump_state_message_received(message):
-            self._heatpump_state = bool(int(message.payload))
-            self._attr_hvac_mode = guess_hvac_mode()
-            self.async_write_ha_state()
-
-        await mqtt.async_subscribe(
-            self.hass,
-            f"{self.discovery_prefix}main/Heatpump_State",
-            heatpump_state_message_received,
-            1,
-        )
-
-        @callback
-        def operating_state_message_received(message):
-            self._operating_mode = OperatingMode.from_mqtt(message.payload)
-            self._attr_hvac_mode = guess_hvac_mode()
-            self.async_write_ha_state()
-
-        await mqtt.async_subscribe(
-            self.hass,
-            f"{self.discovery_prefix}main/Operating_Mode_State",
-            operating_state_message_received,
-            1,
-        )
-
-    async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
-        new_heatpump_state = self._heatpump_state
-        if hvac_mode == HVACMode.HEAT:
-            new_operating_mode = self._operating_mode | OperatingMode.DHW
-            new_heatpump_state = True
-        elif hvac_mode == HVACMode.OFF:
-            new_operating_mode = self._operating_mode & ~OperatingMode.DHW
-            if new_operating_mode == OperatingMode(0):  # i.e "none"
-                new_heatpump_state = False
-        else:
-            raise NotImplemented(
-                f"Mode {hvac_mode} has not been implemented by this entity"
-            )
-        if (
-            new_operating_mode != OperatingMode(0)
-            and new_operating_mode != self._operating_mode
-        ):
-            await async_publish(
-                self.hass,
-                f"{self.discovery_prefix}commands/SetOperationMode",
-                new_operating_mode.to_mqtt(),
-                0,
-                False,
-                "utf-8",
-            )
-        if new_heatpump_state != self._heatpump_state:
-            await async_publish(
-                self.hass,
-                f"{self.discovery_prefix}commands/SetHeatpump",
-                str(int(new_heatpump_state)),
-                0,
-                False,
-                "utf-8",
-            )
-        self._attr_hvac_mode = hvac_mode  # let's be optimistic
-        self.async_write_ha_state()
-
-    @property
-    def device_info(self):
-        return build_device_info(DeviceType.HEATPUMP, self.discovery_prefix)
 
 
 @dataclass
