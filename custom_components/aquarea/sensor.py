@@ -20,7 +20,14 @@ from homeassistant.const import (
     CONF_DEVICE_CLASS,
     CONF_UNIT_OF_MEASUREMENT,
 )
-from homeassistant.helpers.trigger_template_entity import CONF_AVAILABILITY
+_LOGGER = logging.getLogger(__name__)
+try:
+    from homeassistant.helpers.trigger_template_entity import CONF_AVAILABILITY
+except:
+    # TODO(kamaradclimber): remove this once we stop support 2023.8 and below
+    _LOGGER.warn("backward compatibility mode: please update to HA 2023.9 eventually")
+    from homeassistant.helpers.template_entity import CONF_AVAILABILITY
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -30,7 +37,6 @@ from .const import DeviceType
 from .definitions import build_sensors, HeishaMonSensorEntityDescription
 from . import build_device_info
 
-_LOGGER = logging.getLogger(__name__)
 
 # async_setup_platform should be defined if one wants to support config via configuration.yaml
 
