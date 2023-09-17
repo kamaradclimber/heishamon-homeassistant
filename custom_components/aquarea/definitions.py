@@ -389,6 +389,18 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             state_to_mqtt=int,
         ),
         HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET15",  # also TOP95
+            key=f"{mqtt_prefix}main/Max_Pump_Duty",
+            command_topic=f"{mqtt_prefix}commands/SetMaxPumpDuty",
+            name="Aquarea Max pump duty configured",
+            entity_category=EntityCategory.CONFIG,
+            native_unit_of_measurement="Count",
+            native_min_value=64,
+            native_max_value=254,
+            state=int,
+            state_to_mqtt=int,
+        ),
+        HeishaMonNumberEntityDescription(
             heishamon_topic_id="SET18",  # also corresponds to TOP23
             key=f"{mqtt_prefix}main/Heat_Delta",
             command_topic=f"{mqtt_prefix}commands/SetFloorHeatDelta",
@@ -1284,12 +1296,6 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Heatpump model",
             state=read_heatpump_model,
             on_receive=update_device_model,
-        ),
-        HeishaMonSensorEntityDescription(
-            heishamon_topic_id="TOP95",
-            key=f"{mqtt_prefix}main/Max_Pump_Duty",
-            name="Aquarea Max pump duty configured",
-            native_unit_of_measurement="Count",
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP93",
