@@ -240,6 +240,15 @@ def bit_to_bool(value: str) -> Optional[bool]:
     else:
         return None
 
+def read_demandcontrol(value: str) -> Optional[int]:
+    i = int(value)
+    if i >= 43 and i <= 234:
+        return int((i - 43) / (234 - 43) * 100)
+    return None
+
+def write_demandcontrol(value: int) -> str:
+    return str(value / 100 * (234 - 43) + 43)
+
 
 def read_quiet_mode(value: str) -> str:
     # values range from 0 to 4
@@ -453,6 +462,19 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             state=int,
             state_to_mqtt=int,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SetDemandControl",
+            key=f"{mqtt_prefix}main/none", # FIXME
+            command_topic=f"{mqtt_prefix}commands/SetDemandControl",
+            name="Demand Control",
+            entity_category=EntityCategory.CONFIG,
+            native_unit_of_measurement="%",
+            native_min_value=5,
+            native_max_value=100,
+            state=read_demandcontrol,
+            state_to_mqtt=write_demandcontrol,
+            entity_registry_enabled_default=False, # comes from the optional PCB: disabled by default
         ),
     ]
 
