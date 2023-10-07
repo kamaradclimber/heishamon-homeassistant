@@ -24,49 +24,69 @@ If you own Panasonic CZ-TAW1 module and have access to Panasonic smart cloud: us
 When using compensation curves method, one can add a nice card to represent the values using [ploty](Plotly Graph Card)
 
 ```
-type: custom:plotly-graph
-refresh_interval: 10
-title: Heat curve
-defaults:
-  entity:
-    show_value: true
-    line:
-      shape: spline
-layout:
-  xaxis:
-    type: number
-    autorange: true
-entities:
-  - entity: ''
-    name: Zone 2
-    x:
-      - >-
-        $ex
-        hass.states['number.panasonic_heat_pump_main_z2_heat_curve_outside_low_temp'].state
-      - >-
-        $ex
-        hass.states['number.panasonic_heat_pump_main_z2_heat_curve_outside_high_temp'].state
-    'y':
-      - >-
-        $ex
-        hass.states['number.panasonic_heat_pump_main_z2_heat_curve_target_low_temp'].state
-      - >-
-        $ex
-        hass.states['number.panasonic_heat_pump_main_z2_heat_curve_target_high_temp'].state
-  - entity: ''
-    name: Zone 1
-    x:
-      - >-
-        $ex
-        hass.states['number.panasonic_heat_pump_main_z1_heat_curve_outside_low_temp'].state
-      - >-
-        $ex
-        hass.states['number.panasonic_heat_pump_main_z1_heat_curve_outside_high_temp'].state
-    'y':
-      - >-
-        $ex
-        hass.states['number.panasonic_heat_pump_main_z1_heat_curve_target_low_temp'].state
-      - >-
-        $ex
-        hass.states['number.panasonic_heat_pump_main_z1_heat_curve_target_high_temp'].state
+type: vertical-stack
+cards:
+  - type: vertical-stack
+    cards:
+      - type: horizontal-stack
+        cards:
+          - type: entities
+            entities:
+            - entity: number.panasonic_heat_pump_main_z1_heat_curve_outside_low_temp
+              name: "x_min: Outside temp lowest point"
+            - entity: number.panasonic_heat_pump_main_z1_heat_curve_target_low_temp
+              name: "y_min: Target temp lowest point"
+      - type: horizontal-stack
+        cards:
+          - type: entities
+            entities:
+            - entity: number.panasonic_heat_pump_main_z1_heat_curve_outside_high_temp
+              name: "x_max: Outside temp highest point"
+            - entity: number.panasonic_heat_pump_main_z1_heat_curve_target_high_temp
+              name: "y_max: Target temp highest point"
+  - type: custom:plotly-graph
+    refresh_interval: 10
+    title: Heat curve
+    defaults:
+      entity:
+        show_value: true
+        line:
+          shape: spline
+    layout:
+      xaxis:
+        type: number
+        autorange: true
+    entities:
+      - entity: ''
+        name: Zone 2
+        x:
+          - >-
+            $ex
+            hass.states['number.panasonic_heat_pump_main_z2_heat_curve_outside_low_temp'].state
+          - >-
+            $ex
+            hass.states['number.panasonic_heat_pump_main_z2_heat_curve_outside_high_temp'].state
+        'y':
+          - >-
+            $ex
+            hass.states['number.panasonic_heat_pump_main_z2_heat_curve_target_low_temp'].state
+          - >-
+            $ex
+            hass.states['number.panasonic_heat_pump_main_z2_heat_curve_target_high_temp'].state
+      - entity: ''
+        name: Zone 1
+        x:
+          - >-
+            $ex
+            hass.states['number.panasonic_heat_pump_main_z1_heat_curve_outside_low_temp'].state
+          - >-
+            $ex
+            hass.states['number.panasonic_heat_pump_main_z1_heat_curve_outside_high_temp'].state
+        'y':
+          - >-
+            $ex
+            hass.states['number.panasonic_heat_pump_main_z1_heat_curve_target_low_temp'].state
+          - >-
+            $ex
+            hass.states['number.panasonic_heat_pump_main_z1_heat_curve_target_high_temp'].state
 ```
