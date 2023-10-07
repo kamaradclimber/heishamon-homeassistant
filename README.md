@@ -18,3 +18,55 @@ Just make sure you have an MQTT integration configured. Heishamon mqtt messages 
 ## Alternatives
 
 If you own Panasonic CZ-TAW1 module and have access to Panasonic smart cloud: use https://github.com/cjaliaga/home-assistant-aquarea or https://github.com/ronhks/panasonic-aquarea-smart-cloud-mqtt.
+
+## UI
+
+When using compensation curves method, one can add a nice card to represent the values using [ploty](Plotly Graph Card)
+
+```
+type: custom:plotly-graph
+refresh_interval: 10
+title: Heat curve
+defaults:
+  entity:
+    show_value: true
+    line:
+      shape: spline
+layout:
+  xaxis:
+    type: number
+    autorange: true
+entities:
+  - entity: ''
+    name: Zone 2
+    x:
+      - >-
+        $ex
+        hass.states['number.panasonic_heat_pump_main_z2_heat_curve_outside_low_temp'].state
+      - >-
+        $ex
+        hass.states['number.panasonic_heat_pump_main_z2_heat_curve_outside_high_temp'].state
+    'y':
+      - >-
+        $ex
+        hass.states['number.panasonic_heat_pump_main_z2_heat_curve_target_low_temp'].state
+      - >-
+        $ex
+        hass.states['number.panasonic_heat_pump_main_z2_heat_curve_target_high_temp'].state
+  - entity: ''
+    name: Zone 1
+    x:
+      - >-
+        $ex
+        hass.states['number.panasonic_heat_pump_main_z1_heat_curve_outside_low_temp'].state
+      - >-
+        $ex
+        hass.states['number.panasonic_heat_pump_main_z1_heat_curve_outside_high_temp'].state
+    'y':
+      - >-
+        $ex
+        hass.states['number.panasonic_heat_pump_main_z1_heat_curve_target_low_temp'].state
+      - >-
+        $ex
+        hass.states['number.panasonic_heat_pump_main_z1_heat_curve_target_high_temp'].state
+```
