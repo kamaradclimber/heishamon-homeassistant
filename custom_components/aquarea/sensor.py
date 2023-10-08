@@ -3,6 +3,8 @@ from __future__ import annotations
 from string import Template
 import logging
 from typing import Any, Optional
+from dataclasses import dataclass
+from collections.abc import Callable
 
 from homeassistant.components import mqtt
 from homeassistant.components.sensor import (
@@ -47,18 +49,14 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up HeishaMon sensors from config entry."""
-    discovery_prefix = config_entry.data[
-        "discovery_prefix"
-    ]  # TODO: handle migration of entities
+    discovery_prefix = config_entry.data["discovery_prefix"] # TODO: handle migration of entities
     _LOGGER.debug(f"Starting bootstrap of sensors with prefix '{discovery_prefix}'")
     real_sensors = [
         HeishaMonSensor(hass, description, config_entry)
         for description in build_sensors(discovery_prefix)
     ]
-    all_sensors = real_sensors + build_virtual_sensors(
-        hass, config_entry, real_sensors, discovery_prefix
-    )
-    async_add_entities(all_sensors)
+    async_add_entities(real_sensors)
+
     # this special sensor will listen to 1wire topics and create new sensors accordingly
     dallas_list_config = SensorEntityDescription(
         key=f"{discovery_prefix}1wire/+",
@@ -76,142 +74,126 @@ async def async_setup_entry(
     s0_listing = S0Detector(hass, s0_list_config, config_entry, async_add_entities)
     async_add_entities([dallas_listing, s0_listing])
 
-
-def build_virtual_sensors(
-    hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    sensors: list[HeishaMonSensor],
-    discovery_prefix: str,
-) -> list[SensorEntity]:
-
-    # small helper function
-    # goal is to be independant from entity_id renaming from the user
-    # it will take a restart of HA to work correctly but at least it will work
-    def find_sensor(state_topic):
-        return next(
-            sensor for sensor in sensors if sensor.entity_description.key == state_topic
-        )
-
-    dhw_power_produced = find_sensor(
-        f"{discovery_prefix}main/DHW_Energy_Production"
-    ).entity_id
-    heat_power_produced = find_sensor(
-        f"{discovery_prefix}main/Heat_Energy_Production"
-    ).entity_id
-    cool_power_produced = find_sensor(
-        f"{discovery_prefix}main/Cool_Energy_Production"
-    ).entity_id
-    production_config = {
-        CONF_DEVICE_CLASS: SensorDeviceClass.POWER,
-        CONF_NAME: template_helper.Template("Aquarea Energy Production"),
-        CONF_UNIT_OF_MEASUREMENT: "W",
-        CONF_STATE: template_helper.Template(
-            Template(
-                """
-{{ states('$dhw_power_produced') | int(0) + states('$heat_power_produced') | int(0) + states('$cool_power_produced') | int(0) }}
-    """
-            )
-            .substitute(
-                dhw_power_produced=dhw_power_produced,
-                heat_power_produced=heat_power_produced,
-                cool_power_produced=cool_power_produced,
-            )
-            .strip()
-        ),
-    }
-    production = HeishaMonSensorTemplate(
-        hass,
-        production_config,
-        f"{config_entry.entry_id}-heishamon_w_production",
-        config_entry,
+    description = MultiMQTTSensorEntityDescription(
+            unique_id=f"{config_entry.entry_id}-heishamon_w_production",
+            key=f"{discovery_prefix}/production",
+            name=f"Pump total production",
+            device_class=SensorDeviceClass.POWER,
+            native_unit_of_measurement="W",
+            state_class=SensorStateClass.MEASUREMENT,
+            topics=[
+                f"{discovery_prefix}main/DHW_Energy_Production",
+                f"{discovery_prefix}main/Heat_Energy_Production",
+                f"{discovery_prefix}main/Cool_Energy_Production",
+            ],
+            compute_state=sum_all_topics,
     )
+    production_sensor = MultiMQTTSensorEntity(hass, config_entry, description)
 
-    dhw_power_consumed = find_sensor(
-        f"{discovery_prefix}main/DHW_Energy_Consumption"
-    ).entity_id
-    heat_power_consumed = find_sensor(
-        f"{discovery_prefix}main/Heat_Energy_Consumption"
-    ).entity_id
-    cool_power_consumed = find_sensor(
-        f"{discovery_prefix}main/Cool_Energy_Consumption"
-    ).entity_id
-    consumption_config = {
-        CONF_DEVICE_CLASS: SensorDeviceClass.POWER,
-        CONF_NAME: template_helper.Template("Aquarea Energy Consumption"),
-        CONF_UNIT_OF_MEASUREMENT: "W",
-        CONF_STATE: template_helper.Template(
-            Template(
-                """
-{{ states('$dhw_power_consumed') | int(0) + states('$heat_power_consumed') | int(0) + states('$cool_power_consumed') | int(0) }}
-    """
-            )
-            .substitute(
-                dhw_power_consumed=dhw_power_consumed,
-                heat_power_consumed=heat_power_consumed,
-                cool_power_consumed=cool_power_consumed,
-            )
-            .strip()
-        ),
-    }
-    consumption = HeishaMonSensorTemplate(
-        hass,
-        consumption_config,
-        f"{config_entry.entry_id}-heishamon_w_consumption",
-        config_entry,
+    description = MultiMQTTSensorEntityDescription(
+            unique_id=f"{config_entry.entry_id}-heishamon_w_consumption",
+            key=f"{discovery_prefix}/consumption",
+            name=f"Pump total consumption",
+            device_class=SensorDeviceClass.POWER,
+            native_unit_of_measurement="W",
+            state_class=SensorStateClass.MEASUREMENT,
+            topics=[
+                f"{discovery_prefix}main/DHW_Energy_Consumption",
+                f"{discovery_prefix}main/Heat_Energy_Consumption",
+                f"{discovery_prefix}main/Cool_Energy_Consumption",
+            ],
+            compute_state=sum_all_topics,
     )
-
-    cop_config = {
-        CONF_NAME: template_helper.Template("Aquarea COP"),
-        CONF_UNIT_OF_MEASUREMENT: "x",
-        CONF_STATE: template_helper.Template(
-            Template(
-                """
-{%- if states('$consumption') | float(0) > 0 -%}
-  {{ '%0.1f' % ((states('$production') | float ) / (states('$consumption') | float )) }}
-{%- else -%}
-  0.0
-{%- endif -%}
-    """
-            )
-            .substitute(
-                # FIXME: we should be dynamic instead of hardcoding entity_id and hope user won't change it
-                consumption="sensor.aquarea_energy_consumption",
-                production="sensor.aquarea_energy_production",
-            )
-            .strip()
-        ),
-        CONF_AVAILABILITY: template_helper.Template(
-            Template(
-                """
-        {%- if is_number(states('$consumption')) and is_number(states('$production')) %}
-         true
-        {%- else %}
-         false
-        {%- endif %}
-                   """
-            )
-            .substitute(
-                # FIXME: we should be dynamic instead of hardcoding entity_id and hope user won't change it
-                consumption="sensor.aquarea_energy_consumption",
-                production="sensor.aquarea_energy_production",
-            )
-            .strip()
-        ),
-    }
-    cop = HeishaMonSensorTemplate(
-        hass,
-        cop_config,
-        f"{config_entry.entry_id}-heishamon_cop",
-        config_entry,
+    consumption_sensor = MultiMQTTSensorEntity(hass, config_entry, description)
+    description = MultiMQTTSensorEntityDescription(
+            unique_id=f"{config_entry.entry_id}-heishamon_cop",
+            key=f"{discovery_prefix}/cop",
+            name=f"COP",
+            device_class=SensorDeviceClass.POWER,
+            native_unit_of_measurement="W",
+            state_class=SensorStateClass.MEASUREMENT,
+            topics=[
+                f"{discovery_prefix}main/DHW_Energy_Production",
+                f"{discovery_prefix}main/Heat_Energy_Production",
+                f"{discovery_prefix}main/Cool_Energy_Production",
+                f"{discovery_prefix}main/DHW_Energy_Consumption",
+                f"{discovery_prefix}main/Heat_Energy_Consumption",
+                f"{discovery_prefix}main/Cool_Energy_Consumption",
+            ],
+            compute_state=compute_cop,
     )
+    cop_sensor = MultiMQTTSensorEntity(hass, config_entry, description)
+    async_add_entities([production_sensor, consumption_sensor, cop_sensor])
 
-    # DHW Energy
-    # Heat Energy
-    # Coll Energy
-    # Total Energy
+def compute_cop(values) -> Optional[float]:
+    assert len(values) == 6
+    production  = sum([el for el in values[0:3] if el is not None])
+    consumption = sum([el for el in values[3:6] if el is not None])
+    if consumption == 0:
+        return None
+    cop = production / consumption
+    if cop > 10: # this value is obviously incorrect. We probably don't have all consumption
+        return None
+    return cop
 
-    return [production, consumption, cop]
+def sum_all_topics(values):
+    return sum(filter(lambda el: el is not None, values))
 
+@dataclass
+class MultiMQTTSensorEntityDescription(SensorEntityDescription):
+    topics: list[str] | None = None
+    # this callable will receive a list with as many entries as topics
+    # values in that list will be in the same order as the topics key.
+    # For instance, if topics are ["a", "b", "c"], state will receive a list with
+    # 3 items, whose values will be the last received value from the topics a, b and c.
+    # values will be None when we have not received any value for the corresponding topic yet.
+    compute_state: Callable | None = None
+    unique_id: Optional[str] = None
+
+class MultiMQTTSensorEntity(SensorEntity):
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        config_entry: ConfigEntry,
+        description: MultiMQTTSensorEntityDescription,
+    ) -> None:
+        self.hass = hass
+        self.entity_description = description
+        self.config_entry = config_entry
+        self.config_entry_entry_id = config_entry.entry_id
+        self.discovery_prefix = config_entry.data["discovery_prefix"]
+        self.compute_state = description.compute_state
+
+        slug = slugify(description.key.replace("/", "_"))
+        self.entity_id = f"sensor.{slug}"
+        self._attr_unique_id = description.unique_id
+        if self.entity_description.topics is None or len(self.entity_description.topics) == 0:
+            raise ValueError("topics should be defined")
+        self._received_values : list[Optional[float]] = [None] * len(self.entity_description.topics)
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe to MQTT events"""
+        await super().async_added_to_hass()
+
+        @callback
+        def message_received(message):
+            assert self.entity_description.topics is not None
+            if message.topic not in self.entity_description.topics:
+                _LOGGER.warn(f"Received a message for topic {message.topic} which is not in the list of expected topics")
+            index = self.entity_description.topics.index(message.topic)
+            self._received_values[index] = float(message.payload)
+            assert self.compute_state is not None
+            self._attr_native_value = self.compute_state(self._received_values)
+            self.async_write_ha_state()
+
+        for topic in self.entity_description.topics or []:
+            await mqtt.async_subscribe(
+                self.hass, topic, message_received, 1
+            )
+
+    @property
+    def device_info(self):
+        return build_device_info(DeviceType.HEATPUMP, self.discovery_prefix)
 
 class HeishaMonSensorTemplate(SensorTemplate):
     def __init__(
