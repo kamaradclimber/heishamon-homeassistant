@@ -69,10 +69,10 @@ cards:
         'y':
           - >-
             $ex
-            hass.states['number.panasonic_heat_pump_main_z2_heat_curve_target_low_temp'].state
+            hass.states['number.panasonic_heat_pump_main_z2_heat_curve_target_high_temp'].state
           - >-
             $ex
-            hass.states['number.panasonic_heat_pump_main_z2_heat_curve_target_high_temp'].state
+            hass.states['number.panasonic_heat_pump_main_z2_heat_curve_target_low_temp'].state
       - entity: ''
         name: Zone 1
         x:
@@ -85,8 +85,8 @@ cards:
         'y':
           - >-
             $ex
-            hass.states['number.panasonic_heat_pump_main_z1_heat_curve_target_low_temp'].state
+            hass.states['number.panasonic_heat_pump_main_z1_heat_curve_target_high_temp'].state
           - >-
             $ex
-            hass.states['number.panasonic_heat_pump_main_z1_heat_curve_target_high_temp'].state
+            hass.states['number.panasonic_heat_pump_main_z1_heat_curve_target_low_temp'].state
 ```
