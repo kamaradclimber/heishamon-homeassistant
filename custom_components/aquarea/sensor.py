@@ -112,8 +112,7 @@ async def async_setup_entry(
         unique_id=f"{config_entry.entry_id}-heishamon_cop",
         key=f"{discovery_prefix}/cop",
         name=f"COP",
-        device_class=SensorDeviceClass.POWER,
-        native_unit_of_measurement="W",
+        native_unit_of_measurement="x",
         state_class=SensorStateClass.MEASUREMENT,
         topics=[
             f"{discovery_prefix}main/DHW_Energy_Production",
@@ -140,7 +139,7 @@ def compute_cop(values) -> Optional[float]:
         cop > 10
     ):  # this value is obviously incorrect. We probably don't have all consumption
         return None
-    return cop
+    return round(cop, 2)
 
 
 def sum_all_topics(values):
