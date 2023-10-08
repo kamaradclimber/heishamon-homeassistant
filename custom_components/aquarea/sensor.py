@@ -1,6 +1,5 @@
 """Support for HeishaMon controlled heatpumps through MQTT."""
 from __future__ import annotations
-from string import Template
 import logging
 from typing import Any, Optional
 from dataclasses import dataclass
@@ -13,9 +12,7 @@ from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntityDescription,
 )
-from homeassistant.components.template.sensor import SensorTemplate
 from homeassistant.helpers.entity import EntityCategory
-from homeassistant.helpers import template as template_helper
 from homeassistant.const import (
     CONF_NAME,
     CONF_STATE,
@@ -24,12 +21,6 @@ from homeassistant.const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
-try:
-    from homeassistant.helpers.trigger_template_entity import CONF_AVAILABILITY
-except:
-    # TODO(kamaradclimber): remove this once we stop support 2023.8 and below
-    _LOGGER.warn("backward compatibility mode: please update to HA 2023.9 eventually")
-    from homeassistant.helpers.template_entity import CONF_AVAILABILITY
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -203,24 +194,6 @@ class MultiMQTTSensorEntity(SensorEntity):
 
         for topic in self.entity_description.topics or []:
             await mqtt.async_subscribe(self.hass, topic, message_received, 1)
-
-    @property
-    def device_info(self):
-        return build_device_info(DeviceType.HEATPUMP, self.discovery_prefix)
-
-
-class HeishaMonSensorTemplate(SensorTemplate):
-    def __init__(
-        self,
-        hass: HomeAssistant,
-        config: dict[str, Any],
-        unique_id: Optional[str],
-        config_entry: ConfigEntry,
-    ):
-        super().__init__(hass=hass, config=config, unique_id=unique_id)
-        self.discovery_prefix = config_entry.data[
-            "discovery_prefix"
-        ]  # TODO: handle migration of entities
 
     @property
     def device_info(self):
