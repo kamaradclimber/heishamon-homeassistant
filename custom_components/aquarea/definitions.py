@@ -14,7 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.components.switch import SwitchEntityDescription
 from homeassistant.components.select import SelectEntityDescription
-from homeassistant.components.number import (NumberEntityDescription, NumberDeviceClass)
+from homeassistant.components.number import NumberEntityDescription, NumberDeviceClass
 
 
 from homeassistant.components.sensor import (
@@ -229,8 +229,10 @@ class HeishaMonNumberEntityDescription(
     # function to transform selected option in value sent via mqtt
     state_to_mqtt: Optional[Callable] = None
 
+
 def positive_to_bool(value: str) -> bool:
     return int(value) > 0
+
 
 def bit_to_bool(value: str) -> Optional[bool]:
     if value == "1":
@@ -240,11 +242,13 @@ def bit_to_bool(value: str) -> Optional[bool]:
     else:
         return None
 
+
 def read_demandcontrol(value: str) -> Optional[int]:
     i = int(value)
     if i >= 43 and i <= 234:
         return int((i - 43) / (234 - 43) * 100)
     return None
+
 
 def write_demandcontrol(value: int) -> str:
     return str(value / 100 * (234 - 43) + 43)
@@ -465,7 +469,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
         ),
         HeishaMonNumberEntityDescription(
             heishamon_topic_id="SetDemandControl",
-            key=f"{mqtt_prefix}main/none", # FIXME
+            key=f"{mqtt_prefix}main/none",  # FIXME
             command_topic=f"{mqtt_prefix}commands/SetDemandControl",
             name="Demand Control",
             entity_category=EntityCategory.CONFIG,
@@ -474,68 +478,71 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             native_max_value=100,
             state=read_demandcontrol,
             state_to_mqtt=write_demandcontrol,
-            entity_registry_enabled_default=False, # comes from the optional PCB: disabled by default
+            entity_registry_enabled_default=False,  # comes from the optional PCB: disabled by default
         ),
     ]
     topic_ids = {
-            "1 Heat Target High": "TOP29",
-            "1 Heat Target Low": "TOP30",
-            "1 Heat Outside High": "TOP31",
-            "1 Heat Outside Low": "TOP32",
-            "1 Cool Target High": "TOP72",
-            "1 Cool Target Low": "TOP73",
-            "1 Cool Outside High": "TOP74",
-            "1 Cool Outside Low": "TOP75",
-            "2 Heat Target High": "TOP82",
-            "2 Heat Target Low": "TOP83",
-            "2 Heat Outside High": "TOP84",
-            "2 Heat Outside Low": "TOP85",
-            "2 Cool Target High": "TOP86",
-            "2 Cool Target Low": "TOP87",
-            "2 Cool Outside High": "TOP88",
-            "2 Cool Outside Low": "TOP89",
+        "1 Heat Target High": "TOP29",
+        "1 Heat Target Low": "TOP30",
+        "1 Heat Outside High": "TOP31",
+        "1 Heat Outside Low": "TOP32",
+        "1 Cool Target High": "TOP72",
+        "1 Cool Target Low": "TOP73",
+        "1 Cool Outside High": "TOP74",
+        "1 Cool Outside Low": "TOP75",
+        "2 Heat Target High": "TOP82",
+        "2 Heat Target Low": "TOP83",
+        "2 Heat Outside High": "TOP84",
+        "2 Heat Outside Low": "TOP85",
+        "2 Cool Target High": "TOP86",
+        "2 Cool Target Low": "TOP87",
+        "2 Cool Outside High": "TOP88",
+        "2 Cool Outside Low": "TOP89",
     }
     ranges = {
-            "Outside": [-15, 30],
-            "Target": [15, 60],
+        "Outside": [-15, 30],
+        "Target": [15, 60],
     }
+
     def dual_location(loc):
-        if loc == 'Target':
-            return 'Outside'
-        return 'Target'
+        if loc == "Target":
+            return "Outside"
+        return "Target"
+
     for zone_id in [1, 2]:
-        for action in ['Cool', 'Heat']:
-            for point in ['High', 'Low']:
-                for loc in ['Target', 'Outside']:
-                    numbers.append(HeishaMonNumberEntityDescription(
-                        heishamon_topic_id=topic_ids[f"{zone_id} {action} {loc} {point}"],
-                        key=f"{mqtt_prefix}main/Z{zone_id}_{action}_Curve_{loc}_{point}_Temp",
-                        command_topic=f"{mqtt_prefix}commands/SetCurves",
-                        entity_category=EntityCategory.CONFIG,
-                        native_min_value=ranges[loc][0],
-                        native_max_value=ranges[loc][1],
-                        name=f"Aquarea Zone {zone_id} {loc} water temperature at {point.lower()}est {dual_location(loc).lower()} temperature on {action.lower()}ing curve",
-                        device_class=NumberDeviceClass.TEMPERATURE,
-                        native_unit_of_measurement="°C",
-                        # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
-                        entity_registry_enabled_default=(action=='Heat'),
-                        state_to_mqtt=write_curves_gen(zone_id, action, loc, point),
+        for action in ["Cool", "Heat"]:
+            for point in ["High", "Low"]:
+                for loc in ["Target", "Outside"]:
+                    numbers.append(
+                        HeishaMonNumberEntityDescription(
+                            heishamon_topic_id=topic_ids[
+                                f"{zone_id} {action} {loc} {point}"
+                            ],
+                            key=f"{mqtt_prefix}main/Z{zone_id}_{action}_Curve_{loc}_{point}_Temp",
+                            command_topic=f"{mqtt_prefix}commands/SetCurves",
+                            entity_category=EntityCategory.CONFIG,
+                            native_min_value=ranges[loc][0],
+                            native_max_value=ranges[loc][1],
+                            name=f"Aquarea Zone {zone_id} {loc} water temperature at {point.lower()}est {dual_location(loc).lower()} temperature on {action.lower()}ing curve",
+                            device_class=NumberDeviceClass.TEMPERATURE,
+                            native_unit_of_measurement="°C",
+                            # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+                            entity_registry_enabled_default=(action == "Heat"),
+                            state_to_mqtt=write_curves_gen(zone_id, action, loc, point),
                         )
                     )
     return numbers
 
+
 def write_curves_gen(zone_id: int, action: str, loc: str, point: str):
     def write_curves(value: int) -> str:
         json_doc = {
-                f"zone{zone_id}": {
-                    action.lower(): {
-                        loc.lower(): {
-                            point.lower(): int(value)
-                        }
-                    }
-                }
+            f"zone{zone_id}": {
+                action.lower(): {loc.lower(): {point.lower(): int(value)}}
             }
+        }
         return json.dumps(json_doc)
+
     return write_curves
 
 
@@ -589,8 +596,10 @@ def read_holiday_status(value: str) -> str:
     else:
         return "Active"
 
+
 def read_holiday_status_to_bool(value: str) -> bool:
     return value != "0"
+
 
 def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
     return [

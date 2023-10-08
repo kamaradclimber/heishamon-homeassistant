@@ -79,7 +79,6 @@ async def async_setup_entry(
     async_add_entities([zone1_climate, zone2_climate])
 
 
-
 @dataclass
 class ZoneClimateEntityDescription(ClimateEntityDescription):
     zone_id: int = 1
