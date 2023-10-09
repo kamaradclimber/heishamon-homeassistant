@@ -71,7 +71,7 @@ async def async_setup_entry(
     description = MultiMQTTSensorEntityDescription(
         unique_id=f"{config_entry.entry_id}-heishamon_w_production",
         key=f"{discovery_prefix}/production",
-        name=f"Pump total production",
+        name=f"Aquarea Pump total production",
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement="W",
         state_class=SensorStateClass.MEASUREMENT,
@@ -81,13 +81,14 @@ async def async_setup_entry(
             f"{discovery_prefix}main/Cool_Energy_Production",
         ],
         compute_state=sum_all_topics,
+        suggested_display_precision=0,
     )
     production_sensor = MultiMQTTSensorEntity(hass, config_entry, description)
 
     description = MultiMQTTSensorEntityDescription(
         unique_id=f"{config_entry.entry_id}-heishamon_w_consumption",
         key=f"{discovery_prefix}/consumption",
-        name=f"Pump total consumption",
+        name=f"Aquarea Pump total consumption",
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement="W",
         state_class=SensorStateClass.MEASUREMENT,
@@ -97,6 +98,7 @@ async def async_setup_entry(
             f"{discovery_prefix}main/Cool_Energy_Consumption",
         ],
         compute_state=sum_all_topics,
+        suggested_display_precision=0,
     )
     consumption_sensor = MultiMQTTSensorEntity(hass, config_entry, description)
     description = MultiMQTTSensorEntityDescription(
