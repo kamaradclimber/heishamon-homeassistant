@@ -102,7 +102,7 @@ async def async_setup_entry(
     description = MultiMQTTSensorEntityDescription(
         unique_id=f"{config_entry.entry_id}-heishamon_cop",
         key=f"{discovery_prefix}/cop",
-        name=f"COP",
+        name=f"Aquarea COP",
         native_unit_of_measurement="x",
         state_class=SensorStateClass.MEASUREMENT,
         topics=[
@@ -124,12 +124,12 @@ def compute_cop(values) -> Optional[float]:
     production = sum([el for el in values[0:3] if el is not None])
     consumption = sum([el for el in values[3:6] if el is not None])
     if consumption == 0:
-        return None
+        return 0
     cop = production / consumption
     if (
         cop > 10
-    ):  # this value is obviously incorrect. We probably don't have all consumption
-        return None
+    ):  # this value is obviously incorrect. We probably don't have all consumption yet
+        return 0
     return round(cop, 2)
 
 
