@@ -248,7 +248,6 @@ def bit_to_bool(value: str) -> Optional[bool]:
 
 
 def read_demandcontrol(value: str) -> Optional[int]:
-    _LOGGER.warn(f"CHECKPOINT: {value}")
     i = int(value)
     if i >= 43 and i <= 234:
         return int((i - 43) / (234 - 43) * 100)
