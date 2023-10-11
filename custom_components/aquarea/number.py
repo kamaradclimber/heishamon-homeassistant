@@ -58,6 +58,9 @@ class HeishaMonMQTTNumber(NumberEntity):
         self._attr_unique_id = (
             f"{config_entry.entry_id}-{description.heishamon_topic_id}"
         )
+        if self.entity_description.initial_value is not None:
+            self._attr_native_value = self.entity_description.initial_value
+            self.async_write_ha_state()
 
     async def async_set_native_value(self, value: float) -> None:
         _LOGGER.debug(

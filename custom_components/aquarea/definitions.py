@@ -6,7 +6,7 @@ from enum import Flag, auto
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Optional, TypeVar
+from typing import Optional, TypeVar, Any
 import logging
 
 from homeassistant.helpers.entity import EntityCategory
@@ -229,6 +229,10 @@ class HeishaMonNumberEntityDescription(
     # function to transform selected option in value sent via mqtt
     state_to_mqtt: Optional[Callable] = None
 
+    # Initial value to set waiting for the first message from MQTT
+    # if let empty, no value will be set until first message
+    initial_value: Optional[Any] = None
+
 
 def positive_to_bool(value: str) -> bool:
     return int(value) > 0
@@ -244,6 +248,7 @@ def bit_to_bool(value: str) -> Optional[bool]:
 
 
 def read_demandcontrol(value: str) -> Optional[int]:
+    _LOGGER.warn(f"CHECKPOINT: {value}")
     i = int(value)
     if i >= 43 and i <= 234:
         return int((i - 43) / (234 - 43) * 100)
@@ -469,7 +474,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
         ),
         HeishaMonNumberEntityDescription(
             heishamon_topic_id="SetDemandControl",
-            key=f"{mqtt_prefix}main/none",  # FIXME
+            key=f"{mqtt_prefix}main/FakeDemandControl",  # FIXME: find how to get real value
             command_topic=f"{mqtt_prefix}commands/SetDemandControl",
             name="Demand Control",
             entity_category=EntityCategory.CONFIG,
@@ -479,6 +484,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             state=read_demandcontrol,
             state_to_mqtt=write_demandcontrol,
             entity_registry_enabled_default=False,  # comes from the optional PCB: disabled by default
+            initial_value=100,
         ),
     ]
     topic_ids = {
