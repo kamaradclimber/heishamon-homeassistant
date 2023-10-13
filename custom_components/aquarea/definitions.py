@@ -474,7 +474,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
         HeishaMonNumberEntityDescription(
             heishamon_topic_id="SetDemandControl",
             key=f"{mqtt_prefix}main/FakeDemandControl",  # FIXME: find how to get real value
-            command_topic=f"{mqtt_prefix}optional/SetDemandControl",
+            command_topic=f"{mqtt_prefix}commands/SetDemandControl",
             name="Demand Control",
             entity_category=EntityCategory.CONFIG,
             native_unit_of_measurement="%",
