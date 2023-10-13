@@ -63,6 +63,10 @@ class HeishaMonMQTTNumber(NumberEntity):
         _LOGGER.debug(
             f"Changing {self.entity_description.name} to {value} (sent to {self.entity_description.command_topic})"
         )
+        # optimisticly change the value
+        self._attr_native_value = value
+        self.async_write_ha_state()
+
         if self.entity_description.state_to_mqtt is not None:
             payload = self.entity_description.state_to_mqtt(value)
         else:
