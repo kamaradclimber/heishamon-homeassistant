@@ -79,6 +79,10 @@ async def async_setup_entry(
             f"{discovery_prefix}main/DHW_Power_Production",
             f"{discovery_prefix}main/Heat_Power_Production",
             f"{discovery_prefix}main/Cool_Power_Production",
+            # legacy topics, for firmwares < 3.2
+            f"{discovery_prefix}main/DHW_Energy_Production",
+            f"{discovery_prefix}main/Heat_Energy_Production",
+            f"{discovery_prefix}main/Cool_Energy_Production",
         ],
         compute_state=sum_all_topics,
         suggested_display_precision=0,
@@ -96,6 +100,10 @@ async def async_setup_entry(
             f"{discovery_prefix}main/DHW_Power_Consumption",
             f"{discovery_prefix}main/Heat_Power_Consumption",
             f"{discovery_prefix}main/Cool_Power_Consumption",
+            # legacy topics, for firmwares < 3.2
+            f"{discovery_prefix}main/DHW_Energy_Consumption",
+            f"{discovery_prefix}main/Heat_Energy_Consumption",
+            f"{discovery_prefix}main/Cool_Energy_Consumption",
         ],
         compute_state=sum_all_topics,
         suggested_display_precision=0,
@@ -114,6 +122,13 @@ async def async_setup_entry(
             f"{discovery_prefix}main/DHW_Power_Consumption",
             f"{discovery_prefix}main/Heat_Power_Consumption",
             f"{discovery_prefix}main/Cool_Power_Consumption",
+            # legacy topics, for firmwares < 3.2
+            f"{discovery_prefix}main/DHW_Energy_Production",
+            f"{discovery_prefix}main/Heat_Energy_Production",
+            f"{discovery_prefix}main/Cool_Energy_Production",
+            f"{discovery_prefix}main/DHW_Energy_Consumption",
+            f"{discovery_prefix}main/Heat_Energy_Consumption",
+            f"{discovery_prefix}main/Cool_Energy_Consumption",
         ],
         compute_state=compute_cop,
     )
@@ -122,9 +137,9 @@ async def async_setup_entry(
 
 
 def compute_cop(values) -> Optional[float]:
-    assert len(values) == 6
-    production = sum([el for el in values[0:3] if el is not None])
-    consumption = sum([el for el in values[3:6] if el is not None])
+    assert len(values) == 12
+    production = sum([el for el in values[0:3] + values[6:9] if el is not None])
+    consumption = sum([el for el in values[3:6] + values[9:12] if el is not None])
     if consumption == 0:
         return 0
     cop = production / consumption
@@ -402,6 +417,10 @@ class HeishaMonSensor(SensorEntity):
         await mqtt.async_subscribe(
             self.hass, self.entity_description.key, message_received, 1
         )
+        if self.entity_description.alternate_mqtt_topic is not None:
+            await mqtt.async_subscribe(
+                self.hass, self.entity_description.alternate_mqtt_topic, message_received, 1
+            )
 
     @property
     def device_info(self):
