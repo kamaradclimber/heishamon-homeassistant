@@ -1,5 +1,6 @@
 """Support for HeishaMon controlled heatpumps through MQTT."""
 from __future__ import annotations
+import re
 import logging
 import json
 from dataclasses import dataclass
@@ -148,7 +149,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 )
 
             last_release = releases[0]
-            self._attr_latest_version = last_release["tag_name"]
+            self._attr_latest_version = re.sub(r"^v", "", last_release["tag_name"])
             self._attr_release_url = last_release["html_url"]
             self._release_notes = last_release["body"]
             self.async_write_ha_state()
