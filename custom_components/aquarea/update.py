@@ -156,4 +156,5 @@ class HeishaMonMQTTUpdate(UpdateEntity):
 
     def release_notes(self) -> str | None:
         header = f"⚠ Update is not supported via HA. Update is done via heishamon webui\n\n\n"
+        header += "HA needs to be restarted after heishamon update for this message to disappear\n\n\n"
         return header + str(self._release_notes)
