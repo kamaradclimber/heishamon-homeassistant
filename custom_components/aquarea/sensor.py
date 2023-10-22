@@ -144,7 +144,7 @@ def compute_cop(values) -> Optional[float]:
         return 0
     cop = production / consumption
     if (
-        cop > 10
+        cop > 15
     ):  # this value is obviously incorrect. We probably don't have all consumption yet
         return 0
     return round(cop, 2)
