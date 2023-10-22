@@ -175,6 +175,7 @@ class HeishaMonSensorEntityDescription(
     HeishaMonEntityDescription, SensorEntityDescription
 ):
     """Sensor entity description for HeishaMon."""
+
     alternate_mqtt_topic: None | str = None
 
     pass

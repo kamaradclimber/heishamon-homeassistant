@@ -419,7 +419,10 @@ class HeishaMonSensor(SensorEntity):
         )
         if self.entity_description.alternate_mqtt_topic is not None:
             await mqtt.async_subscribe(
-                self.hass, self.entity_description.alternate_mqtt_topic, message_received, 1
+                self.hass,
+                self.entity_description.alternate_mqtt_topic,
+                message_received,
+                1,
             )
 
     @property

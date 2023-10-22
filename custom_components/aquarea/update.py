@@ -87,7 +87,9 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         )
         self.stats_firmware_contain_version: Optional[bool] = None
 
-        self._attr_supported_features = UpdateEntityFeature.RELEASE_NOTES | UpdateEntityFeature.INSTALL
+        self._attr_supported_features = (
+            UpdateEntityFeature.RELEASE_NOTES | UpdateEntityFeature.INSTALL
+        )
         self._attr_release_url = f"https://github.com/{HEISHAMON_REPOSITORY}/releases"
         self._release_notes = None
 
