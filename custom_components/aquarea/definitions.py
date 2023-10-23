@@ -176,7 +176,7 @@ class HeishaMonSensorEntityDescription(
 ):
     """Sensor entity description for HeishaMon."""
 
-    alternate_mqtt_topic: None | str = None
+    alternate_mqtt_topics: None | list[str] = None
 
     pass
 
@@ -880,7 +880,10 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP15",
             key=f"{mqtt_prefix}main/Heat_Power_Production",
-            alternate_mqtt_topic=f"{mqtt_prefix}main/Heat_Energy_Production",
+            alternate_mqtt_topics=[
+                f"{mqtt_prefix}main/Heat_Energy_Production",
+                f"{mqtt_prefix}extra/Heat_Power_Production",  # XTOP3
+            ],
             name="Aquarea Heat Power Produced",
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
@@ -890,7 +893,10 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP16",
             key=f"{mqtt_prefix}main/Heat_Power_Consumption",
-            alternate_mqtt_topic=f"{mqtt_prefix}main/Heat_Energy_Consumption",
+            alternate_mqtt_topics=[
+                f"{mqtt_prefix}main/Heat_Energy_Consumption",
+                f"{mqtt_prefix}extra/Heat_Power_Consumption",  # XTOP0
+            ],
             name="Aquarea Heat Power Consumed",
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
@@ -970,7 +976,10 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP38",
             key=f"{mqtt_prefix}main/Cool_Power_Production",
-            alternate_mqtt_topic=f"{mqtt_prefix}main/Cool_Energy_Production",
+            alternate_mqtt_topics=[
+                f"{mqtt_prefix}main/Cool_Energy_Production",
+                f"{mqtt_prefix}extra/Cool_Power_Production",  # XTOP4
+            ],
             state_class=SensorStateClass.MEASUREMENT,
             name="Aquarea Thermal Cooling power production",
             device_class=SensorDeviceClass.POWER,
@@ -980,7 +989,10 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP39",
             key=f"{mqtt_prefix}main/Cool_Power_Consumption",
-            alternate_mqtt_topic=f"{mqtt_prefix}main/Cool_Energy_Consumption",
+            alternate_mqtt_topics=[
+                f"{mqtt_prefix}main/Cool_Energy_Consumption",
+                f"{mqtt_prefix}extra/Cool_Power_Consumption",  # XTOP1
+            ],
             state_class=SensorStateClass.MEASUREMENT,
             name="Aquarea Thermal Cooling power consumption",
             device_class=SensorDeviceClass.POWER,
@@ -990,7 +1002,10 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP40",
             key=f"{mqtt_prefix}main/DHW_Power_Production",
-            alternate_mqtt_topic=f"{mqtt_prefix}main/DHW_Energy_Production",
+            alternate_mqtt_topics=[
+                f"{mqtt_prefix}main/DHW_Energy_Production",
+                f"{mqtt_prefix}extra/DHW_Power_Production",  # XTOP5
+            ],
             name="Aquarea DHW Power Produced",
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
@@ -1000,7 +1015,10 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP41",
             key=f"{mqtt_prefix}main/DHW_Power_Consumption",
-            alternate_mqtt_topic=f"{mqtt_prefix}main/DHW_Energy_Consumption",
+            alternate_mqtt_topics=[
+                f"{mqtt_prefix}main/DHW_Energy_Consumption",
+                f"{mqtt_prefix}extra/DHW_Power_Consumption",  # XTOP2
+            ],
             name="Aquarea DHW Power Consumed",
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
