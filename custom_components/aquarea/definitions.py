@@ -482,6 +482,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             native_unit_of_measurement="%",
             native_min_value=5,
             native_max_value=100,
+            native_step=5,
             state=read_demandcontrol,
             state_to_mqtt=write_demandcontrol,
             entity_registry_enabled_default=False,  # comes from the optional PCB: disabled by default
