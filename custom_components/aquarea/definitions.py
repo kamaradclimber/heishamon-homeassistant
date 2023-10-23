@@ -480,7 +480,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             name="Demand Control",
             entity_category=EntityCategory.CONFIG,
             native_unit_of_measurement="%",
-            native_min_value=5,
+            native_min_value=20,
             native_max_value=100,
             native_step=5,
             state=read_demandcontrol,
