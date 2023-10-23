@@ -156,6 +156,13 @@ def read_threeway_valve(value: str) -> Optional[str]:
         return None
 
 
+def first_positive(values) -> Optional[int]:
+    for v in values:
+        if v is not None and v >= 0:
+            return int(v)
+    return None
+
+
 @dataclass
 class HeishaMonEntityDescription:
     heishamon_topic_id: str | None = None
@@ -176,9 +183,22 @@ class HeishaMonSensorEntityDescription(
 ):
     """Sensor entity description for HeishaMon."""
 
-    alternate_mqtt_topics: None | list[str] = None
-
     pass
+
+
+@dataclass
+class MultiMQTTSensorEntityDescription(SensorEntityDescription):
+    topics: list[str] | None = None
+    # this callable will receive a list with as many entries as topics
+    # values in that list will be in the same order as the topics key.
+    # For instance, if topics are ["a", "b", "c"], state will receive a list with
+    # 3 items, whose values will be the last received value from the topics a, b and c.
+    # values will be None when we have not received any value for the corresponding topic yet.
+    compute_state: Callable | None = None
+
+    # one of unique_id and heishamon_topic_id must be defined
+    unique_id: Optional[str] = None
+    heishamon_topic_id: Optional[str] = None
 
 
 @dataclass
@@ -877,31 +897,33 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
         ),
-        HeishaMonSensorEntityDescription(
+        MultiMQTTSensorEntityDescription(
             heishamon_topic_id="TOP15",
             key=f"{mqtt_prefix}main/Heat_Power_Production",
-            alternate_mqtt_topics=[
-                f"{mqtt_prefix}main/Heat_Energy_Production",
+            topics=[
                 f"{mqtt_prefix}extra/Heat_Power_Production",  # XTOP3
+                f"{mqtt_prefix}main/Heat_Power_Production",
+                f"{mqtt_prefix}main/Heat_Energy_Production",
             ],
+            compute_state=first_positive,
             name="Aquarea Heat Power Produced",
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
             state_class=SensorStateClass.MEASUREMENT,
-            # original template states "force_update" FIXME
         ),
-        HeishaMonSensorEntityDescription(
+        MultiMQTTSensorEntityDescription(
             heishamon_topic_id="TOP16",
             key=f"{mqtt_prefix}main/Heat_Power_Consumption",
-            alternate_mqtt_topics=[
-                f"{mqtt_prefix}main/Heat_Energy_Consumption",
+            topics=[
                 f"{mqtt_prefix}extra/Heat_Power_Consumption",  # XTOP0
+                f"{mqtt_prefix}main/Heat_Power_Consumption",
+                f"{mqtt_prefix}main/Heat_Energy_Consumption",
             ],
+            compute_state=first_positive,
             name="Aquarea Heat Power Consumed",
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
             state_class=SensorStateClass.MEASUREMENT,
-            # original template states "force_update" FIXME
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP19",
@@ -973,57 +995,62 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
         ),
-        HeishaMonSensorEntityDescription(
+        MultiMQTTSensorEntityDescription(
             heishamon_topic_id="TOP38",
             key=f"{mqtt_prefix}main/Cool_Power_Production",
-            alternate_mqtt_topics=[
+            topics=[
                 f"{mqtt_prefix}main/Cool_Energy_Production",
                 f"{mqtt_prefix}extra/Cool_Power_Production",  # XTOP4
             ],
+            compute_state=first_positive,
             state_class=SensorStateClass.MEASUREMENT,
             name="Aquarea Thermal Cooling power production",
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
-        HeishaMonSensorEntityDescription(
+        MultiMQTTSensorEntityDescription(
             heishamon_topic_id="TOP39",
             key=f"{mqtt_prefix}main/Cool_Power_Consumption",
-            alternate_mqtt_topics=[
-                f"{mqtt_prefix}main/Cool_Energy_Consumption",
+            topics=[
                 f"{mqtt_prefix}extra/Cool_Power_Consumption",  # XTOP1
+                f"{mqtt_prefix}main/Cool_Power_Consumption",
+                f"{mqtt_prefix}main/Cool_Energy_Consumption",
             ],
+            compute_state=first_positive,
             state_class=SensorStateClass.MEASUREMENT,
             name="Aquarea Thermal Cooling power consumption",
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
-        HeishaMonSensorEntityDescription(
+        MultiMQTTSensorEntityDescription(
             heishamon_topic_id="TOP40",
             key=f"{mqtt_prefix}main/DHW_Power_Production",
-            alternate_mqtt_topics=[
-                f"{mqtt_prefix}main/DHW_Energy_Production",
+            topics=[
                 f"{mqtt_prefix}extra/DHW_Power_Production",  # XTOP5
+                f"{mqtt_prefix}main/DHW_Power_Production",
+                f"{mqtt_prefix}main/DHW_Energy_Production",
             ],
+            compute_state=first_positive,
             name="Aquarea DHW Power Produced",
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
             state_class=SensorStateClass.MEASUREMENT,
-            # original template states "force_update" FIXME
         ),
-        HeishaMonSensorEntityDescription(
+        MultiMQTTSensorEntityDescription(
             heishamon_topic_id="TOP41",
             key=f"{mqtt_prefix}main/DHW_Power_Consumption",
-            alternate_mqtt_topics=[
-                f"{mqtt_prefix}main/DHW_Energy_Consumption",
+            topics=[
                 f"{mqtt_prefix}extra/DHW_Power_Consumption",  # XTOP2
+                f"{mqtt_prefix}main/DHW_Power_Consumption",
+                f"{mqtt_prefix}main/DHW_Energy_Consumption",
             ],
+            compute_state=first_positive,
             name="Aquarea DHW Power Consumed",
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
             state_class=SensorStateClass.MEASUREMENT,
-            # original template states "force_update" FIXME
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP42",

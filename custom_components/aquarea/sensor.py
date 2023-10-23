@@ -28,7 +28,11 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
 from .const import DeviceType
-from .definitions import build_sensors, HeishaMonSensorEntityDescription
+from .definitions import (
+    build_sensors,
+    HeishaMonSensorEntityDescription,
+    MultiMQTTSensorEntityDescription,
+)
 from . import build_device_info
 
 
@@ -45,10 +49,14 @@ async def async_setup_entry(
         "discovery_prefix"
     ]  # TODO: handle migration of entities
     _LOGGER.debug(f"Starting bootstrap of sensors with prefix '{discovery_prefix}'")
-    real_sensors = [
-        HeishaMonSensor(hass, description, config_entry)
-        for description in build_sensors(discovery_prefix)
-    ]
+    real_sensors = []
+    for description in build_sensors(discovery_prefix):
+        match description:
+            case MultiMQTTSensorEntityDescription():
+                s = MultiMQTTSensorEntity(hass, config_entry, description)
+            case _:
+                s = HeishaMonSensor(hass, description, config_entry)
+        real_sensors.append(s)
     async_add_entities(real_sensors)
 
     # this special sensor will listen to 1wire topics and create new sensors accordingly
@@ -173,18 +181,6 @@ def sum_all_topics(values):
     return sum(filter(lambda el: el is not None, values))
 
 
-@dataclass
-class MultiMQTTSensorEntityDescription(SensorEntityDescription):
-    topics: list[str] | None = None
-    # this callable will receive a list with as many entries as topics
-    # values in that list will be in the same order as the topics key.
-    # For instance, if topics are ["a", "b", "c"], state will receive a list with
-    # 3 items, whose values will be the last received value from the topics a, b and c.
-    # values will be None when we have not received any value for the corresponding topic yet.
-    compute_state: Callable | None = None
-    unique_id: Optional[str] = None
-
-
 class MultiMQTTSensorEntity(SensorEntity):
     def __init__(
         self,
@@ -201,7 +197,12 @@ class MultiMQTTSensorEntity(SensorEntity):
 
         slug = slugify(description.key.replace("/", "_"))
         self.entity_id = f"sensor.{slug}"
-        self._attr_unique_id = description.unique_id
+        if description.heishamon_topic_id is not None:
+            self._attr_unique_id = (
+                f"{config_entry.entry_id}-{description.heishamon_topic_id}"
+            )
+        else:
+            self._attr_unique_id = description.unique_id
         if (
             self.entity_description.topics is None
             or len(self.entity_description.topics) == 0
@@ -436,14 +437,6 @@ class HeishaMonSensor(SensorEntity):
         await mqtt.async_subscribe(
             self.hass, self.entity_description.key, message_received, 1
         )
-        if self.entity_description.alternate_mqtt_topics is not None:
-            for alternate_mqtt_topic in self.entity_description.alternate_mqtt_topics:
-                await mqtt.async_subscribe(
-                    self.hass,
-                    alternate_mqtt_topic,
-                    message_received,
-                    1,
-                )
 
     @property
     def device_info(self):
