@@ -96,7 +96,7 @@ async def async_setup_entry(
             f"{discovery_prefix}extra/Heat_Power_Production",
             f"{discovery_prefix}extra/Cool_Power_Production",
         ],
-        compute_state=sum_all_topics,
+        compute_state=sum_all_positive_topics,
         suggested_display_precision=0,
     )
     production_sensor = MultiMQTTSensorEntity(hass, config_entry, description)
@@ -121,7 +121,7 @@ async def async_setup_entry(
             f"{discovery_prefix}extra/Heat_Power_Consumption",
             f"{discovery_prefix}extra/Cool_Power_Consumption",
         ],
-        compute_state=sum_all_topics,
+        compute_state=sum_all_positive_topics,
         suggested_display_precision=0,
     )
     consumption_sensor = MultiMQTTSensorEntity(hass, config_entry, description)
@@ -177,8 +177,8 @@ def compute_cop(values) -> Optional[float]:
     return round(cop, 2)
 
 
-def sum_all_topics(values):
-    return sum(filter(lambda el: el is not None, values))
+def sum_all_positive_topics(values):
+    return sum(filter(lambda el: el is not None and el >= 0, values))
 
 
 class MultiMQTTSensorEntity(SensorEntity):
