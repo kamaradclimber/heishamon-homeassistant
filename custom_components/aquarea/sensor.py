@@ -84,6 +84,11 @@ async def async_setup_entry(
         native_unit_of_measurement="W",
         state_class=SensorStateClass.MEASUREMENT,
         topics=[
+            # K & L models
+            f"{discovery_prefix}extra/DHW_Power_Production",
+            f"{discovery_prefix}extra/Heat_Power_Production",
+            f"{discovery_prefix}extra/Cool_Power_Production",
+            # new topics, for firmware >= 3.2
             f"{discovery_prefix}main/DHW_Power_Production",
             f"{discovery_prefix}main/Heat_Power_Production",
             f"{discovery_prefix}main/Cool_Power_Production",
@@ -91,12 +96,8 @@ async def async_setup_entry(
             f"{discovery_prefix}main/DHW_Energy_Production",
             f"{discovery_prefix}main/Heat_Energy_Production",
             f"{discovery_prefix}main/Cool_Energy_Production",
-            # K & L models
-            f"{discovery_prefix}extra/DHW_Power_Production",
-            f"{discovery_prefix}extra/Heat_Power_Production",
-            f"{discovery_prefix}extra/Cool_Power_Production",
         ],
-        compute_state=sum_all_positive_topics,
+        compute_state=extract_sum,
         suggested_display_precision=0,
     )
     production_sensor = MultiMQTTSensorEntity(hass, config_entry, description)
@@ -109,6 +110,11 @@ async def async_setup_entry(
         native_unit_of_measurement="W",
         state_class=SensorStateClass.MEASUREMENT,
         topics=[
+            # K & L models
+            f"{discovery_prefix}extra/DHW_Power_Consumption",
+            f"{discovery_prefix}extra/Heat_Power_Consumption",
+            f"{discovery_prefix}extra/Cool_Power_Consumption",
+            # new topics, for firmwares >= 3.2
             f"{discovery_prefix}main/DHW_Power_Consumption",
             f"{discovery_prefix}main/Heat_Power_Consumption",
             f"{discovery_prefix}main/Cool_Power_Consumption",
@@ -116,12 +122,8 @@ async def async_setup_entry(
             f"{discovery_prefix}main/DHW_Energy_Consumption",
             f"{discovery_prefix}main/Heat_Energy_Consumption",
             f"{discovery_prefix}main/Cool_Energy_Consumption",
-            # K & L models
-            f"{discovery_prefix}extra/DHW_Power_Consumption",
-            f"{discovery_prefix}extra/Heat_Power_Consumption",
-            f"{discovery_prefix}extra/Cool_Power_Consumption",
         ],
-        compute_state=sum_all_positive_topics,
+        compute_state=extract_sum,
         suggested_display_precision=0,
     )
     consumption_sensor = MultiMQTTSensorEntity(hass, config_entry, description)
@@ -176,9 +178,17 @@ def compute_cop(values) -> Optional[float]:
         return 0
     return round(cop, 2)
 
+def extract_sum(values):
+    def chunks3(lst):
+        for i in range(0, len(lst), 3):
+            yield lst[i:i+3]
 
-def sum_all_positive_topics(values):
-    return sum(filter(lambda el: el is not None and el >= 0, values))
+    for (i, candidate) in enumerate(chunks3(values)):
+        if len(list(filter(lambda el: el is not None, candidate))) > 0:
+            _LOGGER.debug(f"Chunk {i} {candidate} has data")
+            return sum(filter(lambda el: el is not None, values))
+    _LOGGER.debug(f"No values at all, here the values: {values}, assuming sum is 0")
+    return 0
 
 
 class MultiMQTTSensorEntity(SensorEntity):
