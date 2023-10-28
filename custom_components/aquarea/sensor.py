@@ -186,7 +186,7 @@ def extract_sum(values):
     for (i, candidate) in enumerate(chunks3(values)):
         if len(list(filter(lambda el: el is not None, candidate))) > 0:
             _LOGGER.debug(f"Chunk {i} {candidate} has data")
-            return sum(filter(lambda el: el is not None, values))
+            return sum(filter(lambda el: el is not None, candidate))
     _LOGGER.debug(f"No values at all, here the values: {values}, assuming sum is 0")
     return 0
 
