@@ -163,12 +163,8 @@ async def async_setup_entry(
 
 def compute_cop(values) -> Optional[float]:
     assert len(values) == 18
-    production = sum(
-        [el for el in values[0:3] + values[6:9] + values[12:15] if el is not None]
-    )
-    consumption = sum(
-        [el for el in values[3:6] + values[9:12] + values[15:18] if el is not None]
-    )
+    production = extract_sum(values[12:15] + values[0:3] + values[6:9])
+    consumption = extract_sum(values[15:18] + values[3:6] + values[9:12])
     if consumption == 0:
         return 0
     cop = production / consumption
