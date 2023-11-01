@@ -179,7 +179,9 @@ async def async_setup_entry(
 def compute_cop(values) -> Optional[float]:
     assert len(values) == 24
     production = extract_sum(values[18:21] + values[12:15] + values[0:3] + values[6:9])
-    consumption = extract_sum(values[21:24] + values[15:18] + values[3:6] + values[9:12])
+    consumption = extract_sum(
+        values[21:24] + values[15:18] + values[3:6] + values[9:12]
+    )
     if consumption == 0:
         return 0
     cop = production / consumption
@@ -189,12 +191,13 @@ def compute_cop(values) -> Optional[float]:
         return 0
     return round(cop, 2)
 
+
 def extract_sum(values):
     def chunks3(lst):
         for i in range(0, len(lst), 3):
-            yield lst[i:i+3]
+            yield lst[i : i + 3]
 
-    for (i, candidate) in enumerate(chunks3(values)):
+    for i, candidate in enumerate(chunks3(values)):
         if len(list(filter(lambda el: el is not None, candidate))) > 0:
             _LOGGER.debug(f"Chunk {i} {candidate} has data")
             return sum(filter(lambda el: el is not None, candidate))

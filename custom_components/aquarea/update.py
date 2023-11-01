@@ -100,9 +100,15 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         def message_received(message):
             """Handle new MQTT messages."""
 
-            if self.stats_firmware_contain_version == False and message.topic == self.marker3_2_topic:
+            if (
+                self.stats_firmware_contain_version == False
+                and message.topic == self.marker3_2_topic
+            ):
                 self._attr_installed_version = "3.2"
-            if self.stats_firmware_contain_version == False and message.topic == self.marker3_1_and_before_topic:
+            if (
+                self.stats_firmware_contain_version == False
+                and message.topic == self.marker3_1_and_before_topic
+            ):
                 self._attr_installed_version = "<= 3.1"
             if message.topic == self.entity_description.heishamon_topic_id:
                 field_value = json.loads(message.payload).get("version", None)
