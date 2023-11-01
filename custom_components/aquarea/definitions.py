@@ -109,6 +109,48 @@ def read_operating_mode_state(value: str) -> str:
     return str(mode)
 
 
+def read_pump_flowrate_mode(value: str) -> Optional[str]:
+    if value == "0":
+        return "DeltaT"
+    if value == "1":
+        return "Maximum flow"
+    _LOGGER.warn(f"Unknown flow rate mode {value}, open ticket to maintainer")
+    return None
+
+
+def read_liquid_type(value: str) -> Optional[str]:
+    if value == "0":
+        return "Water"
+    if value == "1":
+        return "Glycol"
+    _LOGGER.warn(f"Unknown liquid type {value}, open ticket to maintainer")
+    return None
+
+
+def read_zone_sensor_type(value: str) -> Optional[str]:
+    if value == "0":
+        return "Water Temperature"
+    if value == "1":
+        return "External Thermothat"
+    if value == "2":
+        return "Internal Thermosthat"
+    if value == "3":
+        return "Thermistor"
+    _LOGGER.warn(f"Unknown zone sensor type {value}, open ticket to maintainer")
+    return None
+
+
+def read_external_pad_heater_enabled(value: str) -> Optional[str]:
+    if value == "0":
+        return "Disabled"
+    if value == "1":
+        return "Type-A"
+    if value == "2":
+        return "Type-B"
+    _LOGGER.warn(f"Unknown pad heater type type {value}, open ticket to maintainer")
+    return None
+
+
 ZONE_STATES_STRING = {
     "0": "Zone 1",
     "1": "Zone 2",
@@ -808,6 +850,24 @@ def build_binary_sensors(
             name="Aquarea DHW Installed",
             state=bit_to_bool,
         ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="TOP108",
+            key=f"{mqtt_prefix}main/Alt_External_Sensor",
+            name="Aquarea external outdoor sensor selected",
+            state=bit_to_bool,
+        ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="TOP109",
+            key=f"{mqtt_prefix}main/Anti_Freeze_Mode",
+            name="Aquarea anti freeze mode",
+            state=bit_to_bool,
+        ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="TOP110",
+            key=f"{mqtt_prefix}main/Optional_PCB",
+            name="Aquarea optional PCB enabled",
+            state=bit_to_bool,
+        ),
     ]
 
 
@@ -1374,12 +1434,80 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
         HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP102",
+            key=f"{mqtt_prefix}main/Solar_On_Delta",
+            name="Aquarea Solar delta on",
+            device_class=SensorDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="°K",
+            state=int,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP103",
+            key=f"{mqtt_prefix}main/Solar_Off_Delta",
+            name="Aquarea Solar delta off",
+            device_class=SensorDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="°K",
+            state=int,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP104",
+            key=f"{mqtt_prefix}main/Solar_Frost_Protection",
+            name="Aquarea Solar frost protection temperature",
+            device_class=SensorDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="°C",
+            state=int,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP105",
+            key=f"{mqtt_prefix}main/Solar_High_Limit",
+            name="Aquarea Solar max temperature limit",
+            device_class=SensorDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="°C",
+            state=int,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP106",
+            key=f"{mqtt_prefix}main/Pump_Flowrate_mode",
+            name="Aquarea Pump flowrate mode",
+            state=read_pump_flowrate_mode,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP107",
+            key=f"{mqtt_prefix}main/Liquid_Type",
+            name="Aquarea Liquid Type",
+            state=read_liquid_type,
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP111",
+            key=f"{mqtt_prefix}main/Z2_Sensor_Settings",
+            name="Aquarea Zone 2 sensor setting",
+            state=read_zone_sensor_type,
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP112",
+            key=f"{mqtt_prefix}main/Z1_Sensor_Settings",
+            name="Aquarea Zone 1 sensor setting",
+            state=read_zone_sensor_type,
+        ),
+        HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP113",
             key=f"{mqtt_prefix}main/Buffer_Tank_Delta",
             state_class=SensorStateClass.MEASUREMENT,
             name="Aquarea Buffer tank delta",
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP114",
+            key=f"{mqtt_prefix}main/External_Pad_Heater",
+            name="Aquarea External Pad Heater type",
+            state=read_external_pad_heater_enabled,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
         HeishaMonSensorEntityDescription(
