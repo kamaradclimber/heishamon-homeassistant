@@ -114,7 +114,7 @@ def read_pump_flowrate_mode(value: str) -> Optional[str]:
         return "DeltaT"
     if value == "1":
         return "Maximum flow"
-    _LOGGER.warn(f"Unknown flow rate mode {value}, open ticket to maintainer")
+    _LOGGER.warn(f"Unknown flow rate mode '{value}', open ticket to maintainer")
     return None
 
 
@@ -123,7 +123,7 @@ def read_liquid_type(value: str) -> Optional[str]:
         return "Water"
     if value == "1":
         return "Glycol"
-    _LOGGER.warn(f"Unknown liquid type {value}, open ticket to maintainer")
+    _LOGGER.warn(f"Unknown liquid type '{value}', open ticket to maintainer")
     return None
 
 
@@ -136,7 +136,7 @@ def read_zone_sensor_type(value: str) -> Optional[str]:
         return "Internal Thermosthat"
     if value == "3":
         return "Thermistor"
-    _LOGGER.warn(f"Unknown zone sensor type {value}, open ticket to maintainer")
+    _LOGGER.warn(f"Unknown zone sensor type '{value}', open ticket to maintainer")
     return None
 
 
@@ -147,7 +147,18 @@ def read_external_pad_heater_enabled(value: str) -> Optional[str]:
         return "Type-A"
     if value == "2":
         return "Type-B"
-    _LOGGER.warn(f"Unknown pad heater type type {value}, open ticket to maintainer")
+    _LOGGER.warn(f"Unknown pad heater type '{value}', open ticket to maintainer")
+    return None
+
+
+def read_mixing_valve_request(value: str) -> Optional[str]:
+    if value == "0":
+        return "Off"
+    if value == "1":
+        return "Decrease"
+    if value == "2":
+        return "Increase"
+    _LOGGER.warn(f"Unknown mixing valve request '{value}', open ticket to maintainer")
     return None
 
 
@@ -867,6 +878,41 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}main/Optional_PCB",
             name="Aquarea optional PCB enabled",
             state=bit_to_bool,
+        ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="OPT0",
+            key=f"{mqtt_prefix}optional/Z1_Water_Pump",
+            name="Aquarea Zone 1 water pump action request",
+            state=bit_to_bool,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="OPT2",
+            key=f"{mqtt_prefix}optional/Z2_Water_Pump",
+            name="Aquarea Zone 2 water pump action request",
+            state=bit_to_bool,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="OPT4",
+            key=f"{mqtt_prefix}optional/Pool_Water_Pump",
+            name="Aquarea pool water pump action request",
+            state=bit_to_bool,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="OPT5",
+            key=f"{mqtt_prefix}optional/Solar_Water_Pump",
+            name="Aquarea solar water pump action request",
+            state=bit_to_bool,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="OPT6",
+            key=f"{mqtt_prefix}optional/Alarm_State",
+            name="Aquarea Alarm State",
+            state=bit_to_bool,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
     ]
 
@@ -1640,5 +1686,19 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device=DeviceType.HEISHAMON,
             entity_category=EntityCategory.DIAGNOSTIC,
             on_receive=update_device_ip,
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="OPT1",
+            key=f"{mqtt_prefix}optional/Z1_Mixing_Valve",
+            name="Aquarea Zone 1 mixing valve request",
+            state=read_mixing_valve_request,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="OPT3",
+            key=f"{mqtt_prefix}optional/Z2_Mixing_Valve",
+            name="Aquarea Zone 2 mixing valve request",
+            state=read_mixing_valve_request,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
     ]
