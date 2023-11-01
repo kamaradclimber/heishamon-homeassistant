@@ -480,6 +480,48 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             state_to_mqtt=int,
         ),
         HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET21",  # also corresponds to TOP96
+            key=f"{mqtt_prefix}main/Heater_Delay_Time",
+            command_topic=f"{mqtt_prefix}commands/SetHeaterDelayTime",
+            name="Aquarea Heater delay time",
+            entity_category=EntityCategory.CONFIG,
+            device_class=SensorDeviceClass.DURATION,
+            native_unit_of_measurement="min",
+            native_min_value=0,
+            native_max_value=254,
+            state=int,
+            state_to_mqtt=int,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET22",  # also corresponds to TOP97
+            key=f"{mqtt_prefix}main/Heater_Start_Delta",
+            command_topic=f"{mqtt_prefix}commands/SetHeaterStartDelta",
+            name="Aquarea Heater start delta",
+            entity_category=EntityCategory.CONFIG,
+            device_class=SensorDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="K",
+            native_min_value=0,
+            native_max_value=254,
+            state=int,
+            state_to_mqtt=int,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET23",  # also corresponds to TOP98
+            key=f"{mqtt_prefix}main/Heater_Stop_Delta",
+            command_topic=f"{mqtt_prefix}commands/SetHeaterStopDelta",
+            name="Aquarea Heater stop delta",
+            entity_category=EntityCategory.CONFIG,
+            device_class=SensorDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="K",
+            native_min_value=0,
+            native_max_value=254,
+            state=int,
+            state_to_mqtt=int,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonNumberEntityDescription(
             heishamon_topic_id="SET27",  # also corresponds to TOP113
             key=f"{mqtt_prefix}main/Buffer_Tank_Delta",
             command_topic=f"{mqtt_prefix}commands/SetBufferDelta",
