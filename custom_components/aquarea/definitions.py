@@ -139,17 +139,18 @@ def read_zone_sensor_type(value: str) -> Optional[str]:
     _LOGGER.warn(f"Unknown zone sensor type '{value}', open ticket to maintainer")
     return None
 
+EXTERNAL_PAD_HEATER_TYPE = {
+    "0": "Disabled",
+    "1": "type-A",
+    "2": "type-B",
+}
 
 def read_external_pad_heater_enabled(value: str) -> Optional[str]:
-    if value == "0":
-        return "Disabled"
-    if value == "1":
-        return "Type-A"
-    if value == "2":
-        return "Type-B"
-    _LOGGER.warn(f"Unknown pad heater type '{value}', open ticket to maintainer")
-    return None
+    return EXTERNAL_PAD_HEATER_TYPE.get(value, f"Unknown pad heater type value: {value}")
 
+
+def external_pad_heater_type_to_mqtt(value: str) -> Optional[str]:
+    return lookup_by_value(EXTERNAL_PAD_HEATER_TYPE, value)
 
 def read_mixing_valve_request(value: str) -> Optional[str]:
     if value == "0":
@@ -167,6 +168,7 @@ ZONE_STATES_STRING = {
     "1": "Zone 2",
     "2": "Zones 1 + 2",
 }
+
 
 
 def read_zones_state(value):
@@ -707,6 +709,15 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
             state=read_zones_state,
             state_to_mqtt=zone_state_to_mqtt,
             options=list(ZONE_STATES_STRING.values()),
+        ),
+        HeishaMonSelectEntityDescription(
+            heishamon_topic_id="SET26", # also TOP114
+            key=f"{mqtt_prefix}main/External_Pad_Heater",
+            command_topic=f"{mqtt_prefix}/commands/SetExternalPadHeater",
+            name="Aquarea External Pad Heater type",
+            state=read_external_pad_heater_enabled,
+            state_to_mqtt=external_pad_heater_type_to_mqtt,
+            options=list(EXTERNAL_PAD_HEATER_TYPE.values()),
         ),
     ]
 
@@ -1547,13 +1558,6 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Buffer tank delta",
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
-            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
-        ),
-        HeishaMonSensorEntityDescription(
-            heishamon_topic_id="TOP114",
-            key=f"{mqtt_prefix}main/External_Pad_Heater",
-            name="Aquarea External Pad Heater type",
-            state=read_external_pad_heater_enabled,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
         HeishaMonSensorEntityDescription(
