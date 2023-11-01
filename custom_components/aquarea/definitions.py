@@ -901,6 +901,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             heishamon_topic_id="TOP15",
             key=f"{mqtt_prefix}main/Heat_Power_Production",
             topics=[
+                f"{mqtt_prefix}extra/Heat_Power_Production_Extra",  # XTOP3, fw >= 3.2.3
                 f"{mqtt_prefix}extra/Heat_Power_Production",  # XTOP3
                 f"{mqtt_prefix}main/Heat_Power_Production",
                 f"{mqtt_prefix}main/Heat_Energy_Production",
@@ -915,6 +916,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             heishamon_topic_id="TOP16",
             key=f"{mqtt_prefix}main/Heat_Power_Consumption",
             topics=[
+                f"{mqtt_prefix}extra/Heat_Power_Consumption_Extra",  # XTOP3, fw >= 3.2.3
                 f"{mqtt_prefix}extra/Heat_Power_Consumption",  # XTOP0
                 f"{mqtt_prefix}main/Heat_Power_Consumption",
                 f"{mqtt_prefix}main/Heat_Energy_Consumption",
@@ -999,8 +1001,10 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             heishamon_topic_id="TOP38",
             key=f"{mqtt_prefix}main/Cool_Power_Production",
             topics=[
-                f"{mqtt_prefix}main/Cool_Energy_Production",
+                f"{mqtt_prefix}extra/Cool_Power_Production_Extra",  # XTOP4, fw >= 3.2.3
                 f"{mqtt_prefix}extra/Cool_Power_Production",  # XTOP4
+                f"{mqtt_prefix}main/Cool_Power_Production",
+                f"{mqtt_prefix}main/Cool_Energy_Production",
             ],
             compute_state=first_positive,
             state_class=SensorStateClass.MEASUREMENT,
@@ -1013,6 +1017,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             heishamon_topic_id="TOP39",
             key=f"{mqtt_prefix}main/Cool_Power_Consumption",
             topics=[
+                f"{mqtt_prefix}extra/Cool_Power_Consumption_Extra",  # XTOP1, fw >= 3.2.3
                 f"{mqtt_prefix}extra/Cool_Power_Consumption",  # XTOP1
                 f"{mqtt_prefix}main/Cool_Power_Consumption",
                 f"{mqtt_prefix}main/Cool_Energy_Consumption",
@@ -1028,6 +1033,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             heishamon_topic_id="TOP40",
             key=f"{mqtt_prefix}main/DHW_Power_Production",
             topics=[
+                f"{mqtt_prefix}extra/DHW_Power_Production_Extra",  # XTOP5, fw >= 3.2.3
                 f"{mqtt_prefix}extra/DHW_Power_Production",  # XTOP5
                 f"{mqtt_prefix}main/DHW_Power_Production",
                 f"{mqtt_prefix}main/DHW_Energy_Production",
@@ -1042,6 +1048,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             heishamon_topic_id="TOP41",
             key=f"{mqtt_prefix}main/DHW_Power_Consumption",
             topics=[
+                f"{mqtt_prefix}extra/DHW_Power_Consumption_Extra",  # XTOP2, fw >= 3.2.3
                 f"{mqtt_prefix}extra/DHW_Power_Consumption",  # XTOP2
                 f"{mqtt_prefix}main/DHW_Power_Consumption",
                 f"{mqtt_prefix}main/DHW_Energy_Consumption",

@@ -84,7 +84,11 @@ async def async_setup_entry(
         native_unit_of_measurement="W",
         state_class=SensorStateClass.MEASUREMENT,
         topics=[
-            # K & L models
+            # K & L models, fw >= 3.2.3
+            f"{discovery_prefix}extra/DHW_Power_Production_Extra",
+            f"{discovery_prefix}extra/Heat_Power_Production_Extra",
+            f"{discovery_prefix}extra/Cool_Power_Production_Extra",
+            # K & L models, 3.2 <= fw < 3.2.3
             f"{discovery_prefix}extra/DHW_Power_Production",
             f"{discovery_prefix}extra/Heat_Power_Production",
             f"{discovery_prefix}extra/Cool_Power_Production",
@@ -110,7 +114,11 @@ async def async_setup_entry(
         native_unit_of_measurement="W",
         state_class=SensorStateClass.MEASUREMENT,
         topics=[
-            # K & L models
+            # K & L models, fw >= 3.2.3
+            f"{discovery_prefix}extra/DHW_Power_Consumption_Extra",
+            f"{discovery_prefix}extra/Heat_Power_Consumption_Extra",
+            f"{discovery_prefix}extra/Cool_Power_Consumption_Extra",
+            # K & L models, 3.2.0 <= fw < 3.2.3
             f"{discovery_prefix}extra/DHW_Power_Consumption",
             f"{discovery_prefix}extra/Heat_Power_Consumption",
             f"{discovery_prefix}extra/Cool_Power_Consumption",
@@ -147,13 +155,20 @@ async def async_setup_entry(
             f"{discovery_prefix}main/DHW_Energy_Consumption",
             f"{discovery_prefix}main/Heat_Energy_Consumption",
             f"{discovery_prefix}main/Cool_Energy_Consumption",
-            # K & L models
+            # K & L models, firmware 3.2.0 <= x < 3.2.3
             f"{discovery_prefix}extra/DHW_Power_Production",
             f"{discovery_prefix}extra/Heat_Power_Production",
             f"{discovery_prefix}extra/Cool_Power_Production",
             f"{discovery_prefix}extra/DHW_Power_Consumption",
             f"{discovery_prefix}extra/Heat_Power_Consumption",
             f"{discovery_prefix}extra/Cool_Power_Consumption",
+            # K & L models, firmware >= 3.2.3
+            f"{discovery_prefix}extra/DHW_Power_Production_Extra",
+            f"{discovery_prefix}extra/Heat_Power_Production_Extra",
+            f"{discovery_prefix}extra/Cool_Power_Production_Extra",
+            f"{discovery_prefix}extra/DHW_Power_Consumption_Extra",
+            f"{discovery_prefix}extra/Heat_Power_Consumption_Extra",
+            f"{discovery_prefix}extra/Cool_Power_Consumption_Extra",
         ],
         compute_state=compute_cop,
     )
@@ -162,9 +177,9 @@ async def async_setup_entry(
 
 
 def compute_cop(values) -> Optional[float]:
-    assert len(values) == 18
-    production = extract_sum(values[12:15] + values[0:3] + values[6:9])
-    consumption = extract_sum(values[15:18] + values[3:6] + values[9:12])
+    assert len(values) == 24
+    production = extract_sum(values[18:21] + values[12:15] + values[0:3] + values[6:9])
+    consumption = extract_sum(values[21:24] + values[15:18] + values[3:6] + values[9:12])
     if consumption == 0:
         return 0
     cop = production / consumption
