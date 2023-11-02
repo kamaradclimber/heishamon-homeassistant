@@ -33,3 +33,7 @@ A clear and concise description of what you expected to happen.
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
+
+** MQTT dump **
+
+If you feel this is relevant, dump `#mosquitto_sub -h "$MQTT_HOST" -p "$MQTT_PORT" -t "panasonic_heat_pump/#" -u "$MQTT_USER" -P "$MQTT_PASSWORD" -v` here.
