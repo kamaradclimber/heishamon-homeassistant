@@ -52,29 +52,14 @@ async def async_setup_entry(
         "discovery_prefix"
     ]  # TODO: handle migration of entities
     _LOGGER.debug(f"Starting bootstrap of sensors with prefix '{discovery_prefix}'")
-    real_sensors = []
+    sensors = []
     for description in build_sensors(discovery_prefix):
         match description:
             case MultiMQTTSensorEntityDescription():
                 s = MultiMQTTSensorEntity(hass, config_entry, description)
             case _:
                 s = HeishaMonSensor(hass, description, config_entry)
-        real_sensors.append(s)
-    async_add_entities(real_sensors)
-    integration_sensors = []
-    for sensor in real_sensors:
-        if sensor.entity_description.native_unit_of_measurement == "W":
-            integration_sensors.append(DiagnosticIntegrationEntity(
-                integration_method=METHOD_TRAPEZOIDAL,
-                name=f"{sensor.entity_description.name} Total",
-                round_digits=3,
-                source_entity=sensor.entity_id,
-                unique_id=f"{sensor._attr_unique_id}_integration",
-                unit_prefix="k",
-                unit_time=UnitOfTime.HOURS,
-                device_info=sensor.device_info,
-            ))
-    async_add_entities(integration_sensors)
+        sensors.append(s)
 
     # this special sensor will listen to 1wire topics and create new sensors accordingly
     dallas_list_config = SensorEntityDescription(
@@ -85,13 +70,14 @@ async def async_setup_entry(
     dallas_listing = DallasListSensor(
         hass, dallas_list_config, config_entry, async_add_entities
     )
+    sensors.append(dallas_listing)
     s0_list_config = SensorEntityDescription(
         key=f"{discovery_prefix}s0/Watt/+",
         name="HeishaMon detected s0 sensors",
         entity_category=EntityCategory.DIAGNOSTIC,
     )
     s0_listing = S0Detector(hass, s0_list_config, config_entry, async_add_entities)
-    async_add_entities([dallas_listing, s0_listing])
+    sensors.append(s0_listing)
 
     description = MultiMQTTSensorEntityDescription(
         unique_id=f"{config_entry.entry_id}-heishamon_w_production",
@@ -122,6 +108,7 @@ async def async_setup_entry(
         suggested_display_precision=0,
     )
     production_sensor = MultiMQTTSensorEntity(hass, config_entry, description)
+    sensors.append(production_sensor)
 
     description = MultiMQTTSensorEntityDescription(
         unique_id=f"{config_entry.entry_id}-heishamon_w_consumption",
@@ -152,6 +139,7 @@ async def async_setup_entry(
         suggested_display_precision=0,
     )
     consumption_sensor = MultiMQTTSensorEntity(hass, config_entry, description)
+    sensors.append(consumption_sensor)
     description = MultiMQTTSensorEntityDescription(
         unique_id=f"{config_entry.entry_id}-heishamon_cop",
         key=f"{discovery_prefix}/cop",
@@ -190,7 +178,22 @@ async def async_setup_entry(
         compute_state=compute_cop,
     )
     cop_sensor = MultiMQTTSensorEntity(hass, config_entry, description)
-    async_add_entities([production_sensor, consumption_sensor, cop_sensor])
+    sensors.append(cop_sensor)
+    async_add_entities(sensors)
+    integration_sensors = []
+    for sensor in sensors:
+        if sensor.entity_description.native_unit_of_measurement == "W":
+            integration_sensors.append(EnergyIntegrationEntity(
+                integration_method=METHOD_TRAPEZOIDAL,
+                name=f"{sensor.entity_description.name} Total",
+                round_digits=3,
+                source_entity=sensor.entity_id,
+                unique_id=f"{sensor._attr_unique_id}_integration",
+                unit_prefix="k",
+                unit_time=UnitOfTime.HOURS,
+                device_info=sensor.device_info,
+            ))
+    async_add_entities(integration_sensors)
 
 
 def compute_cop(values) -> Optional[float]:
@@ -221,11 +224,14 @@ def extract_sum(values):
     _LOGGER.debug(f"No values at all, here the values: {values}, assuming sum is 0")
     return 0
 
-class DiagnosticIntegrationEntity(IntegrationSensor):
-
+class EnergyIntegrationEntity(IntegrationSensor):
     @property
     def entity_category(self):
         return EntityCategory.DIAGNOSTIC
+
+    @property
+    def device_class(self):
+        return SensorDeviceClass.ENERGY
 
 class MultiMQTTSensorEntity(SensorEntity):
     def __init__(
