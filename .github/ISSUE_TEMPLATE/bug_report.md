@@ -7,7 +7,9 @@ assignees: ''
 
 ---
 
+<!--
 👋 Hello, thanks for reporting a bug. Please make sure you have read/completed the following template ✅
+-->
 
 ** Versions **
 
@@ -19,7 +21,9 @@ assignees: ''
 
 **Describe the bug**
 
+<!--
 A clear and concise description of what the bug is.
+-->
 
 **To Reproduce**
 Steps to reproduce the behavior:
@@ -29,11 +33,15 @@ Steps to reproduce the behavior:
 4. See error
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
+
+<!-- A clear and concise description of what you expected to happen. -->
 
 **Screenshots**
-If applicable, add screenshots to help explain your problem.
+
+<!-- If applicable, add screenshots to help explain your problem. -->
 
 ** MQTT dump **
 
+<!--
 If you feel this is relevant, dump `#mosquitto_sub -h "$MQTT_HOST" -p "$MQTT_PORT" -t "panasonic_heat_pump/#" -u "$MQTT_USER" -P "$MQTT_PASSWORD" -v` here.
+-->
