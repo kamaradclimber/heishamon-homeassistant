@@ -12,12 +12,15 @@ from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntityDescription,
 )
+from homeassistant.components.integration.const import METHOD_TRAPEZOIDAL
+from homeassistant.components.integration.sensor import IntegrationSensor
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.const import (
     CONF_NAME,
     CONF_STATE,
     CONF_DEVICE_CLASS,
     CONF_UNIT_OF_MEASUREMENT,
+    UnitOfTime,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -58,6 +61,20 @@ async def async_setup_entry(
                 s = HeishaMonSensor(hass, description, config_entry)
         real_sensors.append(s)
     async_add_entities(real_sensors)
+    integration_sensors = []
+    for sensor in real_sensors:
+        if sensor.entity_description.native_unit_of_measurement == "W":
+            integration_sensors.append(DiagnosticIntegrationEntity(
+                integration_method=METHOD_TRAPEZOIDAL,
+                name=f"{sensor.entity_description.name} Total",
+                round_digits=3,
+                source_entity=sensor.entity_id,
+                unique_id=f"{sensor._attr_unique_id}_integration",
+                unit_prefix="k",
+                unit_time=UnitOfTime.HOURS,
+                device_info=sensor.device_info,
+            ))
+    async_add_entities(integration_sensors)
 
     # this special sensor will listen to 1wire topics and create new sensors accordingly
     dallas_list_config = SensorEntityDescription(
@@ -204,6 +221,11 @@ def extract_sum(values):
     _LOGGER.debug(f"No values at all, here the values: {values}, assuming sum is 0")
     return 0
 
+class DiagnosticIntegrationEntity(IntegrationSensor):
+
+    @property
+    def entity_category(self):
+        return EntityCategory.DIAGNOSTIC
 
 class MultiMQTTSensorEntity(SensorEntity):
     def __init__(
