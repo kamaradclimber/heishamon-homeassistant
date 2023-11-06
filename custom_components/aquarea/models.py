@@ -35,7 +35,7 @@ HEATPUMP_MODELS = {
     "25": "WH-ADC1216H6E5 12 1ph T-CAP",
     "26": "WH-ADC0309J3E5C 7 1ph HP - All-In-One Compact",
     "27": "WH-MDC07J3E5 7 1ph HP (new version?)",
-    "28": "Monoblcok 5 1ph HP (new version?",
+    "28": "WH-MDC05J3E5 5 1ph HP (new version)",
     "29": "WH-UQ12HE8 12 3ph T-CAP - Super Quiet",
     "30": "WH-SXC12H6E5 12 1ph T-CAP",
     "31": "WH-MDC09J3E5 9 1ph HP (new version?)",
