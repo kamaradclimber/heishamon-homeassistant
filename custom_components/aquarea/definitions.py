@@ -1104,13 +1104,6 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
         ),
         HeishaMonSensorEntityDescription(
-            heishamon_topic_id="TOP19",
-            key=f"{mqtt_prefix}main/Holiday_Mode_State",
-            name="Aquarea Holiday Mode",
-            entity_category=EntityCategory.CONFIG,
-            state=read_holiday_status,
-        ),
-        HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP20",
             key=f"{mqtt_prefix}main/ThreeWay_Valve_State",
             name="Aquarea 3-way Valve",
