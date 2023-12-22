@@ -83,10 +83,18 @@ async def async_setup_entry(
 class ZoneClimateEntityDescription(ClimateEntityDescription):
     zone_id: int = 1
 
+# preparing ZoneSensorMode to handle sensor setting per zone (TOP111 and TOP112)
+# currently not used as ZoneSensorMode change will result directly in ZoneClimateMode change
+class ZoneSensorMode(Enum):
+    WATER = 1
+    EXTERNAL = 2
+    INTERNAL = 3
+    THERMISOR = 4
 
 class ZoneClimateMode(Enum):
     COMPENSATION = 1
     DIRECT = 2
+
 
 
 class HeishaMonZoneClimate(ClimateEntity):
@@ -170,22 +178,26 @@ class HeishaMonZoneClimate(ClimateEntity):
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT events."""
-
+        # per zone handle of sensory type to drive mode of operation
         @callback
-        def mode_received(message):
+        def sensor_mode_received(message):
             if message.payload == "0":
                 mode = ZoneClimateMode.COMPENSATION
             elif message.payload == "1":
                 mode = ZoneClimateMode.DIRECT
+            elif message.payload == "2":
+                mode = ZoneClimateMode.DIRECT
+            elif message.payload == "3":
+                mode = ZoneClimateMode.DIRECT
             else:
-                assert False, f"Mode received is not a known value"
+                assert False, f"Sensor mode received is not a known value"
             if mode != self._mode:
                 self.change_mode(mode)
 
         await mqtt.async_subscribe(
             self.hass,
-            f"{self.discovery_prefix}main/Heating_Mode",
-            mode_received,
+            f"{self.discovery_prefix}main/Z{self.zone_id}_Sensor_Settings",
+            sensor_mode_received,
             1,
         )
 
