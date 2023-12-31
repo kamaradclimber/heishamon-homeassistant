@@ -12,7 +12,7 @@ from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntityDescription,
 )
-from homeassistant.components.integration.const import METHOD_TRAPEZOIDAL
+from homeassistant.components.integration.const import METHOD_LEFT
 from homeassistant.components.integration.sensor import IntegrationSensor
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.const import (
@@ -184,7 +184,7 @@ async def async_setup_entry(
     for sensor in sensors:
         if sensor.entity_description.native_unit_of_measurement == "W":
             integration_sensors.append(EnergyIntegrationEntity(
-                integration_method=METHOD_TRAPEZOIDAL,
+                integration_method=METHOD_LEFT,
                 name=f"{sensor.entity_description.name} Total",
                 round_digits=3,
                 source_entity=sensor.entity_id,
