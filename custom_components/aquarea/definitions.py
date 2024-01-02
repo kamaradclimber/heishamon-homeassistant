@@ -405,7 +405,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             native_min_value=-5,
-            native_max_value=61,
+            native_max_value=20,
             state=int,
             state_to_mqtt=int,
             on_receive=partial(
