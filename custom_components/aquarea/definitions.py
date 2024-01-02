@@ -800,7 +800,7 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             heishamon_topic_id="SET24",  # corresponds to "TOP13"
             key=f"{mqtt_prefix}main/Main_Schedule_State",
             command_topic=f"{mqtt_prefix}commands/SetMainSchedule",
-            name="Aquarea Main thermosthat schedule",
+            name="Aquarea Main thermostat schedule",
             entity_category=EntityCategory.CONFIG,
             state=bit_to_bool,
         ),
