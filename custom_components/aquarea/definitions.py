@@ -222,7 +222,7 @@ def first_positive(values) -> Optional[int]:
     return None
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonEntityDescription:
     heishamon_topic_id: str | None = None
 
@@ -236,7 +236,7 @@ class HeishaMonEntityDescription:
     on_receive: Callable | None = None
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonSensorEntityDescription(
     HeishaMonEntityDescription, SensorEntityDescription
 ):
@@ -245,7 +245,7 @@ class HeishaMonSensorEntityDescription(
     pass
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class MultiMQTTSensorEntityDescription(SensorEntityDescription):
     topics: list[str] | None = None
     # this callable will receive a list with as many entries as topics
@@ -260,7 +260,7 @@ class MultiMQTTSensorEntityDescription(SensorEntityDescription):
     heishamon_topic_id: Optional[str] = None
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonSwitchEntityDescription(
     HeishaMonEntityDescription, SwitchEntityDescription
 ):
@@ -274,7 +274,7 @@ class HeishaMonSwitchEntityDescription(
     encoding: str = "utf-8"
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonBinarySensorEntityDescription(
     HeishaMonEntityDescription, BinarySensorEntityDescription
 ):
@@ -283,7 +283,7 @@ class HeishaMonBinarySensorEntityDescription(
     pass
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonSelectEntityDescription(
     HeishaMonEntityDescription, SelectEntityDescription
 ):
@@ -297,7 +297,7 @@ class HeishaMonSelectEntityDescription(
     state_to_mqtt: Optional[Callable] = None
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonNumberEntityDescription(
     HeishaMonEntityDescription, NumberEntityDescription
 ):

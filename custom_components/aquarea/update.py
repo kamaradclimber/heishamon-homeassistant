@@ -52,7 +52,7 @@ async def async_setup_entry(
     async_add_entities([HeishaMonMQTTUpdate(hass, firmware_update, config_entry)])
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonUpdateEntityDescription(
     HeishaMonEntityDescription, UpdateEntityDescription
 ):
