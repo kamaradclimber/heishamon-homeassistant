@@ -3,7 +3,6 @@ from __future__ import annotations
 import re
 import logging
 import json
-from dataclasses import dataclass
 import aiohttp
 from typing import Optional
 
@@ -22,7 +21,7 @@ from homeassistant.util import slugify
 
 from . import build_device_info
 from .const import DeviceType
-from .definitions import HeishaMonEntityDescription
+from .definitions import HeishaMonEntityDescription, frozendataclass
 
 _LOGGER = logging.getLogger(__name__)
 HEISHAMON_REPOSITORY = "Egyras/HeishaMon"
@@ -52,7 +51,7 @@ async def async_setup_entry(
     async_add_entities([HeishaMonMQTTUpdate(hass, firmware_update, config_entry)])
 
 
-@dataclass(frozen=True, kw_only=True)
+@frozendataclass
 class HeishaMonUpdateEntityDescription(
     HeishaMonEntityDescription, UpdateEntityDescription
 ):
