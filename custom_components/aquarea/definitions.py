@@ -398,11 +398,9 @@ def guess_shift_or_direct_and_clamp_min_max_values(
     """
     # FIXME: we assume entity is of type HeishMonNumberEntity. We should find a way to properly use the type system
     if native_value in range1:  # we always favor range1
-        entity.entity_description.native_min_value = min(range1)
-        entity.entity_description.native_max_value = max(range1)
+        entity.set_range(min(range1), max(range1))
     elif native_value in range2:
-        entity.entity_description.native_min_value = min(range2)
-        entity.entity_description.native_max_value = max(range2)
+        entity.set_range(min(range2), max(range2))
     else:
         _LOGGER.warn(
             f"Received value {native_value} for {entity.entity_description.name}. Impossible to know if we are using 'shift' mode or 'direct' mode, ignoring"

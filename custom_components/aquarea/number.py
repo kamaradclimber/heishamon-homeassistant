@@ -58,6 +58,12 @@ class HeishaMonMQTTNumber(NumberEntity):
         self._attr_unique_id = (
             f"{config_entry.entry_id}-{description.heishamon_topic_id}"
         )
+        self._attr_native_min_value = description.native_min_value
+        self._attr_native_max_value = description.native_max_value
+
+    def set_range(self, min, max) -> None:
+        self._attr_native_min_value = min
+        self._attr_native_max_value = max
 
     async def async_set_native_value(self, value: float) -> None:
         _LOGGER.debug(
