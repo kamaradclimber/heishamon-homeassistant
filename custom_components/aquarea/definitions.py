@@ -560,8 +560,8 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             entity_category=EntityCategory.CONFIG,
             device_class=SensorDeviceClass.DURATION,
             native_unit_of_measurement="min",
-            native_min_value=0,
-            native_max_value=254,
+            native_min_value=10,
+            native_max_value=60,
             state=int,
             state_to_mqtt=int,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
@@ -574,8 +574,8 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             entity_category=EntityCategory.CONFIG,
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="K",
-            native_min_value=0,
-            native_max_value=254,
+            native_min_value=-10,
+            native_max_value=-2,
             state=int,
             state_to_mqtt=int,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
@@ -588,8 +588,8 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             entity_category=EntityCategory.CONFIG,
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="K",
-            native_min_value=0,
-            native_max_value=254,
+            native_min_value=-8,
+            native_max_value=0,
             state=int,
             state_to_mqtt=int,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
@@ -656,7 +656,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
         "2 Cool Outside Low": "TOP89",
     }
     ranges = {
-        "Outside": [-15, 30],
+        "Outside": [-20, 30],
         "Target": [15, 60],
     }
 
