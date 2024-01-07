@@ -818,6 +818,14 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             entity_category=EntityCategory.CONFIG,
             state=bit_to_bool,
         ),
+        HeishaMonSwitchEntityDescription(
+            heishamon_topic_id="SET28",  # corresponds to TOP99
+            key=f"{mqtt_prefix}main/Buffer_Installed",
+            command_topic=f"{mqtt_prefix}commands/SetBuffer",
+            name="Aquarea Buffer tank",
+            entity_category=EntityCategory.CONFIG,
+            state=bit_to_bool,
+        ),
     ]
 
 
@@ -890,12 +898,6 @@ def build_binary_sensors(
             # TODO(kamaradclimber): it seems value is showing something more than just "on/off". Tests show value of 120 when running and slowly decreasing to 100
             state=positive_to_bool,
             device_class=BinarySensorDeviceClass.RUNNING,
-        ),
-        HeishaMonBinarySensorEntityDescription(
-            heishamon_topic_id="TOP99",
-            key=f"{mqtt_prefix}main/Buffer_Installed",
-            name="Aquarea Buffer Installed",
-            state=bit_to_bool,
         ),
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP100",
