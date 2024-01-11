@@ -35,6 +35,7 @@ from .definitions import (
     build_sensors,
     HeishaMonSensorEntityDescription,
     MultiMQTTSensorEntityDescription,
+    bit_to_bool,
 )
 from . import build_device_info
 
@@ -147,6 +148,7 @@ async def async_setup_entry(
         native_unit_of_measurement="x",
         state_class=SensorStateClass.MEASUREMENT,
         topics=[
+            f"{discovery_prefix}main/Defrost_State",
             f"{discovery_prefix}main/DHW_Power_Production",
             f"{discovery_prefix}main/Heat_Power_Production",
             f"{discovery_prefix}main/Cool_Power_Production",
@@ -197,6 +199,11 @@ async def async_setup_entry(
 
 
 def compute_cop(values) -> Optional[float]:
+    # read defrost and cancel COP if defrost is on
+    if bit_to_bool(values[0]):
+        _LOGGER.debug("Defrost is in progress, cannot compute COP, it would not make sense")
+        return -1
+    values = values[1:]
     assert len(values) == 24
     production = extract_sum(values[18:21] + values[12:15] + values[0:3] + values[6:9])
     consumption = extract_sum(
