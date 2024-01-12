@@ -425,7 +425,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             on_receive=partial(
                 guess_shift_or_direct_and_clamp_min_max_values,
                 range(-5, 6),
-                range(20, 61),
+                range(7, 61),
             ),
         ),
         HeishaMonNumberEntityDescription(
