@@ -6,10 +6,11 @@ from homeassistant.components import mqtt
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
-from .definitions import build_binary_sensors, HeishaMonBinarySensorEntityDescription
+from .definitions import build_switches, build_binary_sensors, HeishaMonBinarySensorEntityDescription
 from . import build_device_info
 
 _LOGGER = logging.getLogger(__name__)
@@ -33,6 +34,26 @@ async def async_setup_entry(
         HeishaMonBinarySensor(description, config_entry)
         for description in build_binary_sensors(discovery_prefix)
     )
+    # those entities are added for people who want to have "safe" entities visible in their dashboard
+    # instead of exposing entities whose state can be modified by mistake. See #151
+    readonly_switches = []
+    for switch_description in build_switches(discovery_prefix):
+        category = switch_description.entity_category
+        if category == EntityCategory.CONFIG:
+            category = EntityCategory.DIAGNOSTIC
+        readonly_switches.append(HeishaMonBinarySensor(
+            HeishaMonBinarySensorEntityDescription(
+                heishamon_topic_id=switch_description.heishamon_topic_id,
+                key=switch_description.key,
+                name=f"{switch_description.name} (readonly)",
+                entity_category=category,
+                device=switch_description.device,
+                state=switch_description.state,
+                device_class=switch_description.device_class,
+                entity_registry_enabled_default=False,
+            ), config_entry)
+        )
+    async_add_entities(readonly_switches)
 
 
 class HeishaMonBinarySensor(BinarySensorEntity):
