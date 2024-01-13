@@ -96,9 +96,6 @@ class HeishaMonMQTTNumber(NumberEntity):
         @callback
         def message_received(message):
             """Handle new MQTT messages."""
-            _LOGGER.debug(
-                f"Received message for {self.entity_description.name}: {message}"
-            )
             if self.entity_description.state is not None:
                 self._attr_native_value = self.entity_description.state(message.payload)
             else:
