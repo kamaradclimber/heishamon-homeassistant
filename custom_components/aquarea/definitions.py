@@ -995,6 +995,11 @@ def read_heating_mode(value: str) -> Optional[str]:
         return "direct"
     return None
 
+def read_temp(value: str) -> Optional[Any]:
+    v = int(value)
+    if v == -128:
+        return None
+    return value
 
 def read_stats_json(field_name: str, json_doc: str) -> Optional[float]:
     field_value = json.loads(json_doc).get(field_name, None)
@@ -1171,6 +1176,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Zone 1 water outlet temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
+            state=read_temp,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP37",
@@ -1179,6 +1185,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Zone 2 water outlet temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
+            state=read_temp,
         ),
         MultiMQTTSensorEntityDescription(
             heishamon_topic_id="TOP38",
