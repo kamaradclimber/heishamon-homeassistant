@@ -99,7 +99,7 @@ class ZoneClimateMode(Enum):
 class ZoneTemperatureMode(Enum):
     COMPENSATION = 1  # driving the temp of water by comp curve (-5:5 deg C)
     DIRECT = 2  # driving the temp of water directly (20:55 deg C) 
-    ROOM = 3  # ROOM temperature is the driver, you set it directly from 10:35 deg C
+    ROOM = 3  # ROOM temperature is the driver, you set it directly from 10:30 deg C
     NAN = 4  # if external thermostat is choosen you cannot drive the temperature at all
 
 class HeishaMonZoneClimate(ClimateEntity):
@@ -152,8 +152,8 @@ class HeishaMonZoneClimate(ClimateEntity):
             self._attr_max_temp = 55
             self._attr_target_temperature_step = 1
         elif mode == ZoneTemperatureMode.ROOM:
-            self._attr_min_temp = 20
-            self._attr_max_temp = 55
+            self._attr_min_temp = 10
+            self._attr_max_temp = 30
             self._attr_target_temperature_step = 1
 #        else: # mode == ZoneTemperatureMode.NAN
             # TODO: disable widget as external thermostat is driving
@@ -165,13 +165,17 @@ class HeishaMonZoneClimate(ClimateEntity):
     async def async_set_temperature(self, **kwargs) -> None:
         temperature = kwargs.get("temperature")
 
-        if self._mode == ZoneClimateMode.COMPENSATION:
+        if self._mode == ZoneTemperatureMode.COMPENSATION:
             _LOGGER.info(
                 f"Changing {self.name} temperature offset to {temperature} for zone {self.zone_id}"
             )
-        elif self._mode == ZoneClimateMode.DIRECT:
+        elif self._mode == ZoneTemperatureMode.DIRECT:
             _LOGGER.info(
                 f"Changing {self.name} target temperature to {temperature} for zone {self.zone_id}"
+            )
+        elif self._mode == ZoneTemperatureMode.ROOM:
+            _LOGGER.info(
+                f"Changing {self.name} target room temperature to {temperature} for zone {self.zone_id}"
             )
         else:
             raise Exception(f"Unknown climate mode: {self._mode}")
