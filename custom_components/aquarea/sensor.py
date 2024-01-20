@@ -148,7 +148,7 @@ async def async_setup_entry(
         native_unit_of_measurement="x",
         state_class=SensorStateClass.MEASUREMENT,
         topics=[
-            f"{discovery_prefix}main/Defrost_State",
+            f"{discovery_prefix}main/Defrosting_State",
             f"{discovery_prefix}main/DHW_Power_Production",
             f"{discovery_prefix}main/Heat_Power_Production",
             f"{discovery_prefix}main/Cool_Power_Production",
