@@ -86,10 +86,10 @@ class ZoneClimateEntityDescription(ClimateEntityDescription):
 # preparing ZoneSensorMode to handle sensor setting per zone (TOP111 and TOP112)
 # currently not used as ZoneSensorMode change will result directly in ZoneClimateMode change
 class ZoneSensorMode(Enum):
-    WATER = 1
-    EXTERNAL = 2
-    INTERNAL = 3
-    THERMISTOR = 4
+    WATER = 0
+    EXTERNAL = 1
+    INTERNAL = 2
+    THERMISTOR = 3
 
 class ZoneClimateMode(Enum):
     COMPENSATION = 1
@@ -202,16 +202,11 @@ class HeishaMonZoneClimate(ClimateEntity):
         @callback
         def sensor_mode_received(message):
             mode = self._mode
-            if message.payload == "0":
-                sensor_mode = ZoneSensorMode.WATER
-            elif message.payload == "1":
-                sensor_mode = ZoneSensorMode.EXTERNAL
-            elif message.payload == "2":
-                sensor_mode = ZoneSensorMode.INTERNAL
-            elif message.payload == "3":
-                sensor_mode = ZoneSensorMode.THERMISTOR
-            else:
-                assert False, f"Sensor mode received is not a known value"
+            try:
+                sensor_mode = ZoneSensorMode(int(message.payload))
+            except ValueError:
+                _LOGGER.error(f"Sensor mode value {message.payload} is not a valid value")
+                assert False
             if sensor_mode != self._sensor_mode:
                 self._sensor_mode = sensor_mode
                 if self._sensor_mode == ZoneSensorMode.INTERNAL:
