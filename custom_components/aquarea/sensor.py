@@ -202,7 +202,7 @@ def compute_cop(values) -> Optional[float]:
     # read defrost and cancel COP if defrost is on
     if bit_to_bool(values[0]):
         _LOGGER.debug("Defrost is in progress, cannot compute COP, it would not make sense")
-        return -1
+        return None
     values = values[1:]
     assert len(values) == 24
     production = extract_sum(values[18:21] + values[12:15] + values[0:3] + values[6:9])
