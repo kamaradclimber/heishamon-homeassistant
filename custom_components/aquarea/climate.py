@@ -137,6 +137,27 @@ class HeishaMonZoneClimate(ClimateEntity):
         self._mode = ZoneTemperatureMode.DIRECT
         self.change_mode(ZoneTemperatureMode.DIRECT, initialization=True)
 
+    def evaluate_temperature_mode(self):
+        mode = self._mode
+        if self._sensor_mode == ZoneSensorMode.INTERNAL:
+            mode = ZoneTemperatureMode.ROOM
+        elif self._sensor_mode == ZoneSensorMode.THERMISTOR:
+            mode = ZoneTemperatureMode.ROOM
+        elif self._sensor_mode == ZoneSensorMode.EXTERNAL:
+            mode = ZoneTemperatureMode.NAN
+        elif self._sensor_mode == ZoneSensorMode.WATER:
+            if self._climate_mode == ZoneClimateMode.DIRECT:
+                mode = ZoneTemperatureMode.DIRECT
+            elif self._climate_mode == ZoneClimateMode.COMPENSATION:
+                mode = ZoneTemperatureMode.COMPENSATION
+            else:
+                assert False, f"Unknown combination of Sensor Mode and Climate Mode"
+        else:
+            assert False, f"Unknown Sensor Mode"
+
+        if mode != self._mode:
+            self.change_mode(mode)
+
     def change_mode(self, mode: ZoneTemperatureMode, initialization: bool = False):
         if self._mode == mode:
             _LOGGER.debug(f"Enforcing mode to {mode} for zone {self.zone_id}")
@@ -207,25 +228,9 @@ class HeishaMonZoneClimate(ClimateEntity):
             except ValueError:
                 _LOGGER.error(f"Sensor mode value {message.payload} is not a valid value")
                 assert False
-            if sensor_mode != self._sensor_mode:
-                self._sensor_mode = sensor_mode
-                if self._sensor_mode == ZoneSensorMode.INTERNAL:
-                    mode = ZoneTemperatureMode.ROOM
-                elif self._sensor_mode == ZoneSensorMode.THERMISTOR:
-                    mode = ZoneTemperatureMode.ROOM
-                elif self._sensor_mode == ZoneSensorMode.EXTERNAL:
-                    mode = ZoneTemperatureMode.NAN
-                elif self._sensor_mode == ZoneSensorMode.WATER:
-                    if self._climate_mode == ZoneClimateMode.DIRECT:
-                        mode = ZoneTemperatureMode.DIRECT
-                    elif self._climate_mode == ZoneClimateMode.COMPENSATION:
-                        mode = ZoneTemperatureMode.COMPENSATION
-                    else:
-                        assert False, f"Unknown combination of Sensor Mode and Climate Mode"
-                else:
-                    assert False, f"Unknown Sensor Mode"
-            if mode != self._mode:
-                self.change_mode(mode)
+            if sensor_mode != self._sensor_mode: # if sensor mode was changed
+                self._sensor_mode = sensor_mode     # updated it
+                self.evaluate_temperature_mode()    # and trigger temp eval
 
         await mqtt.async_subscribe(
             self.hass,
@@ -236,34 +241,15 @@ class HeishaMonZoneClimate(ClimateEntity):
 
         @callback
         def mode_received(message):
-            mode = self._mode
             if message.payload == "0":
                 climate_mode = ZoneClimateMode.COMPENSATION
             elif message.payload == "1":
                 climate_mode = ZoneClimateMode.DIRECT
             else:
                 assert False, f"Climate Mode received is not a known value"
-            # TODO move to a function evaluate mode
-            if climate_mode != self._climate_mode:
-                self._climate_mode = climate_mode
-                if self._sensor_mode == ZoneSensorMode.INTERNAL:
-                    mode = ZoneTemperatureMode.ROOM
-                elif self._sensor_mode == ZoneSensorMode.THERMISTOR:
-                    mode = ZoneTemperatureMode.ROOM
-                elif self._sensor_mode == ZoneSensorMode.EXTERNAL:
-                    mode = ZoneTemperatureMode.NAN
-                elif self._sensor_mode == ZoneSensorMode.WATER:
-                    if self._climate_mode == ZoneClimateMode.DIRECT:
-                        mode = ZoneTemperatureMode.DIRECT
-                    elif self._climate_mode == ZoneClimateMode.COMPENSATION:
-                        mode = ZoneTemperatureMode.COMPENSATION
-                    else:
-                        assert False, f"Unknown combination of Sensor Mode and Climate Mode"
-                else:
-                    assert False, f"Unknown Sensor Mode"
-
-            if mode != self._mode:
-                self.change_mode(mode)
+            if climate_mode != self._climate_mode: # if climate mode was changed
+                self._climate_mode = climate_mode   # updated it
+                self.evaluate_temperature_mode()    # and trigger temp eval
 
         await mqtt.async_subscribe(
             self.hass,
