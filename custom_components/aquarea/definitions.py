@@ -1518,7 +1518,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             key=f"{mqtt_prefix}main/Solar_On_Delta",
             name="Aquarea Solar delta on",
             device_class=SensorDeviceClass.TEMPERATURE,
-            native_unit_of_measurement="°K",
+            native_unit_of_measurement="°C",
             state=int,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
@@ -1527,7 +1527,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             key=f"{mqtt_prefix}main/Solar_Off_Delta",
             name="Aquarea Solar delta off",
             device_class=SensorDeviceClass.TEMPERATURE,
-            native_unit_of_measurement="°K",
+            native_unit_of_measurement="°C",
             state=int,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
