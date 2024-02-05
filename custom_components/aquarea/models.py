@@ -45,4 +45,9 @@ HEATPUMP_MODELS = {
     "35": "WH-SXC09H3E8 9 3ph T-CAP - new version",
     "36": "WH-ADC0309K3E5AN 7 1ph HP - All-In-One K-series - AN",
     "37": "WH-SDC0309K3E5 5 1ph HP - split K-series",
+    "38": "WH-SDC0309K3E5 7 1ph HP - split K-series",
+    "39": "WH-ADC0916H9E8 16 3ph T-CAP - All-In-One",
+    "40": "WH-ADC0912H9E8 12 3ph T-CAP - All-In-One",
+    "41": "WH-SDC12H9E8 12 3ph HP",
+    "42": "WH-MXC16J9E8 16 3ph T-CAP",
 }
