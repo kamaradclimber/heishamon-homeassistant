@@ -1551,7 +1551,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP106",
-            key=f"{mqtt_prefix}main/Pump_Flowrate_mode",
+            key=f"{mqtt_prefix}main/Pump_Flowrate_Mode",
             name="Aquarea Pump flowrate mode",
             state=read_pump_flowrate_mode,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
