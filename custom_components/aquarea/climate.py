@@ -125,7 +125,8 @@ class HeishaMonZoneClimate(ClimateEntity):
         self._attr_unique_id = f"{config_entry.entry_id}-{self.zone_id}"
 
         self._attr_temperature_unit = "°C"
-        self._attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
+        self._enable_turn_on_off_backwards_compatibility = False
+        self._attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TURN_OFF | ClimateEntityFeature.TURN_ON
         self._attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
         self._attr_hvac_mode = HVACMode.OFF
 
@@ -136,6 +137,12 @@ class HeishaMonZoneClimate(ClimateEntity):
         self._climate_mode = ZoneClimateMode.DIRECT
         self._mode = ZoneTemperatureMode.DIRECT
         self.change_mode(ZoneTemperatureMode.DIRECT, initialization=True)
+
+    async def async_turn_off(self) -> None:
+        await self.async_set_hvac_mode(HVACMode.OFF)
+
+    async def async_turn_on(self) -> None:
+        await self.async_set_hvac_mode(HVACMode.HEATING)
 
     def evaluate_temperature_mode(self):
         mode = self._mode
