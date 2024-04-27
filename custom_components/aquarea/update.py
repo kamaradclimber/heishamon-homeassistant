@@ -113,7 +113,11 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 field_value = json.loads(message.payload).get("version", None)
                 if field_value:
                     self.stats_firmware_contain_version = True
-                    self._attr_installed_version = field_value
+                    if field_value.startswith("alpha"):
+                        # otherwise alpha are always considered late
+                        self._attr_installed_version = None
+                    else:
+                        self._attr_installed_version = field_value
                 else:
                     self.stats_firmware_contain_version = False
             # we only write value when we know for sure how to get version
