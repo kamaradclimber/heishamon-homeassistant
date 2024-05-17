@@ -1707,6 +1707,15 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.TOTAL_INCREASING,
         ),
         HeishaMonSensorEntityDescription(
+            heishamon_topic_id="STAT1-active-rules",
+            key=f"{mqtt_prefix}stats",
+            name="HeishaMon Active rules",
+            state=partial(read_stats_json, "rules active"),
+            device=DeviceType.HEISHAMON,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            state_class=SensorStateClass.MEASUREMENT,
+        ),
+        HeishaMonSensorEntityDescription(
             heishamon_topic_id="INFO_ip",
             key=f"{mqtt_prefix}ip",
             name="HeishaMon IP Address",
