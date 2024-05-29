@@ -423,6 +423,7 @@ class DallasListSensor(SensorEntity):
                     name=f"HeishaMon 1wire {device_id}",
                     native_unit_of_measurement="°C",  # we assume everything will be temperature
                     device_class=SensorDeviceClass.TEMPERATURE,
+                    state_class=SensorStateClass.MEASUREMENT,
                     device=DeviceType.HEISHAMON,
                 )
                 sensor = HeishaMonSensor(self.hass, description, self.config_entry)
