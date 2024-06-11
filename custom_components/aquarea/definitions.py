@@ -713,7 +713,7 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
             entity_category=EntityCategory.CONFIG,
             state=read_quiet_mode,
             state_to_mqtt=write_quiet_mode,
-            options=["Off", "1", "2", "3", "Scheduled"],
+            options=list(QUIET_MODES.values()),
         ),
         HeishaMonSelectEntityDescription(
             heishamon_topic_id="SET4",  # also corresponds to TOP17
