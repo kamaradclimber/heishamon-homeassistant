@@ -1585,6 +1585,15 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
         HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP115",
+            key=f"{mqtt_prefix}main/Water_Pressure",
+            state_class=SensorStateClass.MEASUREMENT,
+            name="Aquarea Water Pressure",
+            device_class=SensorDeviceClass.PRESSURE,
+            native_unit_of_measurement="bar",
+            entity_registry_enabled_default=False,
+        ),
+        HeishaMonSensorEntityDescription(
             heishamon_topic_id="STAT1_rssi",
             key=f"{mqtt_prefix}stats",
             name="HeishaMon RSSI",
