@@ -132,9 +132,9 @@ def read_zone_sensor_type(value: str) -> Optional[str]:
     if value == "0":
         return "Water Temperature"
     if value == "1":
-        return "External Thermothat"
+        return "External Thermostat"
     if value == "2":
-        return "Internal Thermosthat"
+        return "Internal Thermostat"
     if value == "3":
         return "Thermistor"
     _LOGGER.warn(f"Unknown zone sensor type '{value}', open ticket to maintainer")
