@@ -354,14 +354,17 @@ def read_demandcontrol(value: str) -> Optional[int]:
 def write_demandcontrol(value: int) -> str:
     return str(value / 100 * (234 - 43) + 43)
 
+QUIET_MODES = {
+   "4": "Scheduled",
+   "3": "Least power",
+   "2": "Even less power",
+   "1": "Less power",
+   "0": "Off"
+}
 
 def read_quiet_mode(value: str) -> str:
     # values range from 0 to 4
-    if value == "4":
-        return "Scheduled"
-    elif value == "0":
-        return "Off"
-    return value
+    return QUIET_MODES.get(value, value)
 
 
 def read_heatpump_model(value: str) -> str:
@@ -375,12 +378,10 @@ def read_solar_mode(value: str) -> str:
 
 
 def write_quiet_mode(selected_value: str):
-    if selected_value == "Off":
-        return 0
-    elif selected_value == "Scheduled":
-        return 4
-    else:
-        return int(selected_value)
+    res = lookup_by_value(QUIET_MODES, selected_value)
+    if res is not None:
+        return int(res)
+    return int(selected_value)
 
 
 def guess_shift_or_direct_and_clamp_min_max_values(
