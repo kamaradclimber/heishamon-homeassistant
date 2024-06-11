@@ -1591,7 +1591,16 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Water Pressure",
             device_class=SensorDeviceClass.PRESSURE,
             native_unit_of_measurement="bar",
-            entity_registry_enabled_default=False,
+            entity_registry_enabled_default=False, # K/L Series
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP116",
+            key=f"{mqtt_prefix}main/Second_Inlet_Temp",
+            state_class=SensorStateClass.MEASUREMENT,
+            name="Aquarea Inlet 2 Temperature",
+            device_class=SensorDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="°C",
+            entity_registry_enabled_default=False, # K/L Series
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="STAT1_rssi",
