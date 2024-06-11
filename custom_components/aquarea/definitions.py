@@ -1603,6 +1603,15 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             entity_registry_enabled_default=False, # K/L Series
         ),
         HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP117",
+            key=f"{mqtt_prefix}main/Economizer_Outlet_Temp",
+            state_class=SensorStateClass.MEASUREMENT,
+            name="Aquarea Economizer Outlet Temperature",
+            device_class=SensorDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="°C",
+            entity_registry_enabled_default=False, # K/L Series
+        ),
+        HeishaMonSensorEntityDescription(
             heishamon_topic_id="STAT1_rssi",
             key=f"{mqtt_prefix}stats",
             name="HeishaMon RSSI",
