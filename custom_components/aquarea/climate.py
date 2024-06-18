@@ -127,7 +127,7 @@ class HeishaMonZoneClimate(ClimateEntity):
         self._attr_temperature_unit = "°C"
         self._enable_turn_on_off_backwards_compatibility = False
         self._attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TURN_OFF | ClimateEntityFeature.TURN_ON
-        self._attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
+        self._attr_hvac_modes = [HVACMode.HEAT, HVACMode.COOL, HVACMode.OFF]
         self._attr_hvac_mode = HVACMode.OFF
 
         self._zone_state = ZoneState(0)  # i.e None
@@ -142,7 +142,8 @@ class HeishaMonZoneClimate(ClimateEntity):
         await self.async_set_hvac_mode(HVACMode.OFF)
 
     async def async_turn_on(self) -> None:
-        await self.async_set_hvac_mode(HVACMode.HEATING)
+        # TODO: how could we guess whether we should turn on heat or cool
+        await self.async_set_hvac_mode(HVACMode.HEAT)
 
     def evaluate_temperature_mode(self):
         mode = self._mode
@@ -265,6 +266,13 @@ class HeishaMonZoneClimate(ClimateEntity):
             1,
         )
 
+        await mqtt.async_subscribe(
+            self.hass,
+            f"{self.discovery_prefix}main/Cooling_Mode",
+            mode_received,
+            1,
+        )
+
         @callback
         def current_temperature_message_received(message):
             self._attr_current_temperature = float(message.payload)
@@ -294,9 +302,12 @@ class HeishaMonZoneClimate(ClimateEntity):
 
         def guess_hvac_mode() -> HVACMode:
             global_heating = OperatingMode.HEAT in self._operating_mode
+            global_cooling = OperatingMode.COOL in self._operating_mode
             zone_heating = ZoneState.from_id(self.zone_id) in self._zone_state
             if global_heating and zone_heating:
                 return HVACMode.HEAT
+            elif global_cooling and zone_heating:
+                return HVACMode.COOL
             else:
                 return HVACMode.OFF
 
@@ -326,11 +337,14 @@ class HeishaMonZoneClimate(ClimateEntity):
         if hvac_mode == HVACMode.HEAT:
             new_zone_state = self._zone_state | ZoneState.from_id(self.zone_id)
             new_operating_mode = self._operating_mode | OperatingMode.HEAT
+        elif hvac_mode == HVACMode.COOL:
+            new_zone_state = self._zone_state | ZoneState.from_id(self.zone_id)
+            new_operating_mode = self._operating_mode | OperatingMode.COOL
         elif hvac_mode == HVACMode.OFF:
             new_zone_state = self._zone_state & ~ZoneState.from_id(self.zone_id)
             new_operating_mode = self._operating_mode
             if new_zone_state == ZoneState(0):
-                new_operating_mode = self._operating_mode & ~OperatingMode.HEAT
+                new_operating_mode = self._operating_mode & ~OperatingMode.HEAT & ~OperatingMode.COOL
         else:
             raise NotImplemented(
                 f"Mode {hvac_mode} has not been implemented by this entity"
