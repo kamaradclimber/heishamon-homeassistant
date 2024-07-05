@@ -193,6 +193,7 @@ async def async_setup_entry(
                 unique_id=f"{sensor._attr_unique_id}_integration",
                 unit_prefix="k",
                 unit_time=UnitOfTime.HOURS,
+                max_sub_interval=None,
                 device_info=sensor.device_info,
             ))
     async_add_entities(integration_sensors)
