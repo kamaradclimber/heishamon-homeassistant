@@ -4,6 +4,7 @@ import logging
 from typing import Any, Optional
 from dataclasses import dataclass
 from collections.abc import Callable
+from datetime import timedelta
 
 from homeassistant.components import mqtt
 from homeassistant.components.sensor import (
@@ -193,7 +194,8 @@ async def async_setup_entry(
                 unique_id=f"{sensor._attr_unique_id}_integration",
                 unit_prefix="k",
                 unit_time=UnitOfTime.HOURS,
-                max_sub_interval=None,
+                # update integral at least once every 5 minutes, even if source does not change
+                max_sub_interval=timedelta(minutes=5),
                 device_info=sensor.device_info,
             ))
     async_add_entities(integration_sensors)
