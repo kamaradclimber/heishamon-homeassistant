@@ -832,6 +832,26 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             entity_category=EntityCategory.CONFIG,
             state=bit_to_bool,
         ),
+        HeishaMonSwitchEntityDescription(
+            heishamon_topic_id="RELAY01",
+            key=f"{mqtt_prefix}gpio/relay/one",
+            command_topic=f"{mqtt_prefix}gpio/relay/one",
+            name="Relay 1",
+            entity_category=EntityCategory.CONFIG,
+            device=DeviceType.HEISHAMON,
+            state=bit_to_bool,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonSwitchEntityDescription(
+            heishamon_topic_id="RELAY02",
+            key=f"{mqtt_prefix}gpio/relay/two",
+            command_topic=f"{mqtt_prefix}gpio/relay/two",
+            name="Relay 2",
+            entity_category=EntityCategory.CONFIG,
+            device=DeviceType.HEISHAMON,
+            state=bit_to_bool,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
     ]
 
 
