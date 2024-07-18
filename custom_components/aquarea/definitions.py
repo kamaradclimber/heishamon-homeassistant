@@ -656,14 +656,8 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
         "2 Cool Outside Low": "TOP89",
     }
     ranges = {
-        "Heat": {
-            "Outside": [-20, 30],
-            "Target": [15, 60],
-        },
-        "Cool": {
-            "Outside": [15, 30],
-            "Target": [5, 20],
-        }
+        "Outside": [-20, 30],
+        "Target": [15, 60],
     }
 
     def dual_location(loc):
@@ -683,8 +677,8 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
                             key=f"{mqtt_prefix}main/Z{zone_id}_{action}_Curve_{loc}_{point}_Temp",
                             command_topic=f"{mqtt_prefix}commands/SetCurves",
                             entity_category=EntityCategory.CONFIG,
-                            native_min_value=ranges[action][loc][0],
-                            native_max_value=ranges[action][loc][1],
+                            native_min_value=ranges[loc][0],
+                            native_max_value=ranges[loc][1],
                             name=f"Aquarea Zone {zone_id} {loc} water temperature at {point.lower()}est {dual_location(loc).lower()} temperature on {action.lower()}ing curve",
                             device_class=NumberDeviceClass.TEMPERATURE,
                             native_unit_of_measurement="°C",
