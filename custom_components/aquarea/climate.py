@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from enum import Enum, Flag, auto
-from functools import partial
 
 from homeassistant.components import mqtt
 from homeassistant.components.mqtt.client import async_publish
@@ -135,7 +134,7 @@ class HeishaMonZoneClimate(ClimateEntity):
         self._operating_mode = OperatingMode(0)  # i.e None
 
         self._sensor_mode = ZoneSensorMode.WATER
-        self._climate_mode = {"HEATING": ZoneClimateMode.DIRECT, "COOLING": ZoneClimateMode.DIRECT}
+        self._climate_mode = ZoneClimateMode.DIRECT
         self._mode = ZoneTemperatureMode.DIRECT
         self.change_mode(ZoneTemperatureMode.DIRECT, initialization=True)
 
@@ -154,13 +153,9 @@ class HeishaMonZoneClimate(ClimateEntity):
         elif self._sensor_mode == ZoneSensorMode.EXTERNAL:
             mode = ZoneTemperatureMode.NAN
         elif self._sensor_mode == ZoneSensorMode.WATER:
-            if OperatingMode.HEAT in self._operating_mode:
-                key_mode = "HEATING"
-            else:
-                key_mode = "COOLING"
-            if self._climate_mode[key_mode] == ZoneClimateMode.DIRECT:
+            if self._climate_mode == ZoneClimateMode.DIRECT:
                 mode = ZoneTemperatureMode.DIRECT
-            elif self._climate_mode[key_mode] == ZoneClimateMode.COMPENSATION:
+            elif self._climate_mode == ZoneClimateMode.COMPENSATION:
                 mode = ZoneTemperatureMode.COMPENSATION
             else:
                 assert False, f"Unknown combination of Sensor Mode and Climate Mode"
@@ -252,21 +247,21 @@ class HeishaMonZoneClimate(ClimateEntity):
         )
 
         @callback
-        def mode_received(mod_key: str, message):
+        def mode_received(message):
             if message.payload == "0":
                 climate_mode = ZoneClimateMode.COMPENSATION
             elif message.payload == "1":
                 climate_mode = ZoneClimateMode.DIRECT
             else:
                 assert False, f"Climate Mode received is not a known value"
-            if climate_mode != self._climate_mode[mod_key]: # if climate mode was changed
-                self._climate_mode[mod_key] = climate_mode   # updated it
+            if climate_mode != self._climate_mode: # if climate mode was changed
+                self._climate_mode = climate_mode   # updated it
                 self.evaluate_temperature_mode()    # and trigger temp eval
 
         await mqtt.async_subscribe(
             self.hass,
             f"{self.discovery_prefix}main/Heating_Mode",
-            partial(mode_received, "HEATING"),
+            mode_received,
             1,
         )
 
