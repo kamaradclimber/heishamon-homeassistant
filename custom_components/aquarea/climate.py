@@ -64,19 +64,33 @@ async def async_setup_entry(
         f"Starting bootstrap of climate entities with prefix '{discovery_prefix}'"
     )
     """Set up HeishaMon climates from config entry."""
-    description_zone1 = ZoneClimateEntityDescription(
+    description_zone1_heating = ZoneClimateEntityDescription(
         key=f"{discovery_prefix}main/Z1_Temp",
         name="Aquarea Zone 1 climate",
         zone_id=1,
     )
-    zone1_climate = HeishaMonZoneClimate(hass, description_zone1, config_entry)
-    description_zone2 = ZoneClimateEntityDescription(
+    zone1_climate_heating = HeishaMonZoneClimate(hass, description_zone1_heating, config_entry, True)
+    # this entity is supposed to be temporary until we can implement a unified climate component without bug
+    description_zone1_cooling = ZoneClimateEntityDescription(
+        key=f"{discovery_prefix}main/Z1_Temp_Cooling",
+        name="Aquarea Zone 1 climate Cooling",
+        zone_id=1,
+    )
+    zone1_climate_cooling = HeishaMonZoneClimate(hass, description_zone1_cooling, config_entry, False)
+    description_zone2_heating = ZoneClimateEntityDescription(
         name="Aquarea Zone 2 climate",
         key=f"{discovery_prefix}main/Z2_Temp",
         zone_id=2,
     )
-    zone2_climate = HeishaMonZoneClimate(hass, description_zone2, config_entry)
-    async_add_entities([zone1_climate, zone2_climate])
+    # this entity is supposed to be temporary until we can implement a unified climate component without bug
+    description_zone2_cooling = ZoneClimateEntityDescription(
+        name="Aquarea Zone 2 climate Cooling",
+        key=f"{discovery_prefix}main/Z2_Temp_Cooling",
+        zone_id=2,
+    )
+    zone2_climate_heating = HeishaMonZoneClimate(hass, description_zone2_heating, config_entry, True)
+    zone2_climate_cooling = HeishaMonZoneClimate(hass, description_zone2_cooling, config_entry, False)
+    async_add_entities([zone1_climate_heating, zone2_climate_heating, zone1_climate_cooling, zone2_climate_cooling])
 
 
 @dataclass
@@ -110,8 +124,10 @@ class HeishaMonZoneClimate(ClimateEntity):
         hass: HomeAssistant,
         description: ZoneClimateEntityDescription,
         config_entry: ConfigEntry,
+        heater: bool,
     ) -> None:
         """Initialize the climate entity."""
+        self.heater = heater
         self.config_entry_entry_id = config_entry.entry_id
         self.entity_description = description
         self.hass = hass
@@ -122,12 +138,18 @@ class HeishaMonZoneClimate(ClimateEntity):
         self.zone_id = description.zone_id
         slug = slugify(self.entity_description.key.replace("/", "_"))
         self.entity_id = f"climate.{slug}"
-        self._attr_unique_id = f"{config_entry.entry_id}-{self.zone_id}"
+        if self.heater:
+            self._attr_unique_id = f"{config_entry.entry_id}-{self.zone_id}"
+        else:
+            self._attr_unique_id = f"{config_entry.entry_id}-{self.zone_id}-cooling"
 
         self._attr_temperature_unit = "°C"
         self._enable_turn_on_off_backwards_compatibility = False
         self._attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TURN_OFF | ClimateEntityFeature.TURN_ON
-        self._attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
+        if self.heater:
+            self._attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
+        else:
+            self._attr_hvac_modes = [HVACMode.COOL, HVACMode.OFF]
         self._attr_hvac_mode = HVACMode.OFF
 
         self._zone_state = ZoneState(0)  # i.e None
@@ -137,12 +159,18 @@ class HeishaMonZoneClimate(ClimateEntity):
         self._climate_mode = ZoneClimateMode.DIRECT
         self._mode = ZoneTemperatureMode.DIRECT
         self.change_mode(ZoneTemperatureMode.DIRECT, initialization=True)
+        # we only display heater by default
+        self._attr_entity_registry_enabled_default = self.heater
 
     async def async_turn_off(self) -> None:
         await self.async_set_hvac_mode(HVACMode.OFF)
 
     async def async_turn_on(self) -> None:
-        await self.async_set_hvac_mode(HVACMode.HEATING)
+        if self.heater:
+            target_mode = HVACMode.HEAT
+        else:
+            target_mode = HVACMode.COOL
+        await self.async_set_hvac_mode(target_mode)
 
     def evaluate_temperature_mode(self):
         mode = self._mode
@@ -176,12 +204,20 @@ class HeishaMonZoneClimate(ClimateEntity):
             self._attr_max_temp = 5
             self._attr_target_temperature_step = 1
         elif mode == ZoneTemperatureMode.DIRECT:
-            self._attr_min_temp = 20
-            self._attr_max_temp = 55
+            if self.heater:
+                self._attr_min_temp = 20
+                self._attr_max_temp = 55
+            else:
+                self._attr_min_temp = 15
+                self._attr_max_temp = 25
             self._attr_target_temperature_step = 1
         elif mode == ZoneTemperatureMode.ROOM:
-            self._attr_min_temp = 10
-            self._attr_max_temp = 30
+            if self.heater:
+                self._attr_min_temp = 10
+                self._attr_max_temp = 30
+            else:
+                self._attr_min_temp = 18
+                self._attr_max_temp = 28
             self._attr_target_temperature_step = 1
 #        else: # mode == ZoneTemperatureMode.NAN
             # TODO: disable widget as external thermostat is driving
@@ -212,9 +248,13 @@ class HeishaMonZoneClimate(ClimateEntity):
         _LOGGER.debug(
             f"sending {payload} as temperature command for zone {self.zone_id}"
         )
+        if self.heater:
+            topic = f"{self.discovery_prefix}commands/SetZ{self.zone_id}HeatRequestTemperature"
+        else:
+            topic = f"{self.discovery_prefix}commands/SetZ{self.zone_id}CoolRequestTemperature"
         await async_publish(
             self.hass,
-            f"{self.discovery_prefix}commands/SetZ{self.zone_id}HeatRequestTemperature",
+            topic,
             payload,
             0,
             False,
@@ -257,10 +297,13 @@ class HeishaMonZoneClimate(ClimateEntity):
             if climate_mode != self._climate_mode: # if climate mode was changed
                 self._climate_mode = climate_mode   # updated it
                 self.evaluate_temperature_mode()    # and trigger temp eval
-
+        if self.heater:
+            topic = f"{self.discovery_prefix}main/Heating_Mode"
+        else:
+            topic = f"{self.discovery_prefix}main/Cooling_Mode"
         await mqtt.async_subscribe(
             self.hass,
-            f"{self.discovery_prefix}main/Heating_Mode",
+            topic,
             mode_received,
             1,
         )
@@ -289,20 +332,33 @@ class HeishaMonZoneClimate(ClimateEntity):
                     _LOGGER.warn(f"Target temperature is not within expected range, this is suspicious")
             self.async_write_ha_state()
 
+        if self.heater:
+            topic = f"{self.discovery_prefix}main/Z{self.zone_id}_Heat_Request_Temp"
+        else:
+            topic = f"{self.discovery_prefix}main/Z{self.zone_id}_Cool_Request_Temp"
+
         await mqtt.async_subscribe(
             self.hass,
-            f"{self.discovery_prefix}main/Z{self.zone_id}_Heat_Request_Temp",
+            topic,
             target_temperature_message_received,
             1,
         )
 
         def guess_hvac_mode() -> HVACMode:
-            global_heating = OperatingMode.HEAT in self._operating_mode
-            zone_heating = ZoneState.from_id(self.zone_id) in self._zone_state
-            if global_heating and zone_heating:
-                return HVACMode.HEAT
+            if self.heater:
+                global_heating = OperatingMode.HEAT in self._operating_mode
+                zone_heating = ZoneState.from_id(self.zone_id) in self._zone_state
+                if global_heating and zone_heating:
+                    return HVACMode.HEAT
+                else:
+                    return HVACMode.OFF
             else:
-                return HVACMode.OFF
+                global_cooling = OperatingMode.COOL in self._operating_mode
+                zone_cooling = ZoneState.from_id(self.zone_id) in self._zone_state
+                if global_cooling and zone_cooling:
+                    return HVACMode.COOL
+                else:
+                    return HVACMode.OFF
 
         @callback
         def heating_conf_message_received(message):
@@ -330,11 +386,17 @@ class HeishaMonZoneClimate(ClimateEntity):
         if hvac_mode == HVACMode.HEAT:
             new_zone_state = self._zone_state | ZoneState.from_id(self.zone_id)
             new_operating_mode = self._operating_mode | OperatingMode.HEAT
+        elif hvac_mode == HVACMode.COOL:
+            new_zone_state = self._zone_state | ZoneState.from_id(self.zone_id)
+            new_operating_mode = self._operating_mode | OperatingMode.COOL
         elif hvac_mode == HVACMode.OFF:
             new_zone_state = self._zone_state & ~ZoneState.from_id(self.zone_id)
             new_operating_mode = self._operating_mode
             if new_zone_state == ZoneState(0):
-                new_operating_mode = self._operating_mode & ~OperatingMode.HEAT
+                if self.heater:
+                    new_operating_mode = self._operating_mode & ~OperatingMode.HEAT
+                else:
+                    new_operating_mode = self._operating_mode & ~OperatingMode.COOL
         else:
             raise NotImplemented(
                 f"Mode {hvac_mode} has not been implemented by this entity"
