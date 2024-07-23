@@ -193,11 +193,17 @@ class HeishaMonZoneClimate(ClimateEntity):
         if mode != self._mode:
             self.change_mode(mode)
 
+    def _climate_type(self):
+        if self.heater:
+            return "[HEAT]"
+        else:
+            return "[COOL]"
+
     def change_mode(self, mode: ZoneTemperatureMode, initialization: bool = False):
         if self._mode == mode:
-            _LOGGER.debug(f"Enforcing mode to {mode} for zone {self.zone_id}")
+            _LOGGER.debug(f"{self._climate_type()} Enforcing mode to {mode} for zone {self.zone_id}")
         else:
-            _LOGGER.info(f"Changing mode to {mode} for zone {self.zone_id}")
+            _LOGGER.info(f"{self._climate_type()} Changing mode to {mode} for zone {self.zone_id}")
         self._mode = mode
         if mode == ZoneTemperatureMode.COMPENSATION:
             self._attr_min_temp = -5
@@ -231,22 +237,22 @@ class HeishaMonZoneClimate(ClimateEntity):
 
         if self._mode == ZoneTemperatureMode.COMPENSATION:
             _LOGGER.info(
-                f"Changing {self.name} temperature offset to {temperature} for zone {self.zone_id}"
+                f"{self._climate_type()} Changing {self.name} temperature offset to {temperature} for zone {self.zone_id}"
             )
         elif self._mode == ZoneTemperatureMode.DIRECT:
             _LOGGER.info(
-                f"Changing {self.name} target temperature to {temperature} for zone {self.zone_id}"
+                f"{self._climate_type()} Changing {self.name} target temperature to {temperature} for zone {self.zone_id}"
             )
         elif self._mode == ZoneTemperatureMode.ROOM:
             _LOGGER.info(
-                f"Changing {self.name} target room temperature to {temperature} for zone {self.zone_id}"
+                f"{self._climate_type()} Changing {self.name} target room temperature to {temperature} for zone {self.zone_id}"
             )
         else:
             raise Exception(f"Unknown climate mode: {self._mode}")
         payload = str(temperature)
 
         _LOGGER.debug(
-            f"sending {payload} as temperature command for zone {self.zone_id}"
+            f"{self._climate_type()} sending {payload} as temperature command for zone {self.zone_id}"
         )
         if self.heater:
             topic = f"{self.discovery_prefix}commands/SetZ{self.zone_id}HeatRequestTemperature"
@@ -273,7 +279,7 @@ class HeishaMonZoneClimate(ClimateEntity):
             try:
                 sensor_mode = ZoneSensorMode(int(message.payload))
             except ValueError:
-                _LOGGER.error(f"Sensor mode value {message.payload} is not a valid value")
+                _LOGGER.error(f"{self._climate_type()} Sensor mode value {message.payload} is not a valid value")
                 assert False
             if sensor_mode != self._sensor_mode: # if sensor mode was changed
                 self._sensor_mode = sensor_mode     # updated it
@@ -324,12 +330,12 @@ class HeishaMonZoneClimate(ClimateEntity):
         def target_temperature_message_received(message):
             self._attr_target_temperature = float(message.payload)
             _LOGGER.debug(
-                f"Received target temperature for {self.zone_id}: {self._attr_target_temperature}"
+                f"{self._climate_type()} Received target temperature for {self.zone_id}: {self._attr_target_temperature}"
             )
             if self._attr_min_temp != None and self._attr_max_temp != None:
                 if self._attr_target_temperature not in range(self._attr_min_temp, self._attr_max_temp):
                     # when reaching that point, maybe we should set a wider range to avoid blocking user?
-                    _LOGGER.warn(f"Target temperature is not within expected range, this is suspicious")
+                    _LOGGER.warn(f"{self._climate_type()} Target temperature is not within expected range, this is suspicious")
             self.async_write_ha_state()
 
         if self.heater:
@@ -403,7 +409,7 @@ class HeishaMonZoneClimate(ClimateEntity):
             )
         if new_operating_mode != self._operating_mode:
             _LOGGER.debug(
-                f"Setting operation mode {new_operating_mode} for zone {self.zone_id}"
+                f"{self._climate_type()} Setting operation mode {new_operating_mode} for zone {self.zone_id}"
             )
             await async_publish(
                 self.hass,
@@ -415,7 +421,7 @@ class HeishaMonZoneClimate(ClimateEntity):
             )
         if new_zone_state not in [self._zone_state, ZoneState(0)]:
             _LOGGER.debug(
-                f"Setting operation mode {new_zone_state} for zone {self.zone_id}"
+                f"{self._climate_type()} Setting operation mode {new_zone_state} for zone {self.zone_id}"
             )
             await async_publish(
                 self.hass,
