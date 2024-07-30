@@ -112,10 +112,11 @@ class HeishaMonDHW(WaterHeaterEntity):
         await self.async_set_temperature(temperature=float(temp))
 
     def update_temperature_bounds(self) -> None:
-        self._attr_target_temperature_high = self._attr_target_temperature
-        self._attr_target_temperature_low = (
-            self._heat_delta + self._attr_target_temperature
-        )
+        if self._attr_target_temperature is not None:
+            self._attr_target_temperature_high = self._attr_target_temperature
+            self._attr_target_temperature_low = (
+                self._heat_delta + self._attr_target_temperature
+            )
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT events."""
