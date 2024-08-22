@@ -355,6 +355,30 @@ def write_demandcontrol(value: int) -> str:
     return str(value / 100 * (234 - 43) + 43)
 
 
+def read_smart_grid_mode(value: str) -> Optional[int]:
+    if value == "0":
+        return "Normal"
+    elif value == "1":
+        return "Capacity 1"
+    elif value == "2":
+        return "HP/DHW off"
+    elif value == "3":
+        return "Capacity 2"
+    return value
+
+
+def write_smart_grid_mode(value: int) -> str:
+    if value == "Normal":
+        return 0
+    elif value == "Capacity 1":
+        return 1
+    elif value == "HP/DHW off":
+        return 2
+    elif value == "Capacity 2":
+        return 3
+    return int(value)
+
+
 def read_quiet_mode(value: str) -> str:
     # values range from 0 to 4
     if value == "4":
@@ -756,6 +780,17 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
             state_to_mqtt=external_pad_heater_type_to_mqtt,
             options=list(EXTERNAL_PAD_HEATER_TYPE.values()),
         ),
+        HeishaMonSelectEntityDescription(
+            heishamon_topic_id="SetSmartGridMode",
+            key=f"{mqtt_prefix}main/FakeSmartGridMode", # FIXME: find how to get real value
+            command_topic=f"{mqtt_prefix}commands/SetSmartGridMode",
+            name="Smart Grid Mode",
+            entity_category=EntityCategory.CONFIG,
+            state=read_smart_grid_mode,
+            state_to_mqtt=write_smart_grid_mode,
+            options=["Normal", "HP/DHW off", "Capacity 1", "Capacity 2"],
+            entity_registry_enabled_default=False,  # comes from the optional PCB: disabled by default
+        ),
     ]
 
 
@@ -893,7 +928,7 @@ def build_binary_sensors(
             heishamon_topic_id="TOP59",
             key=f"{mqtt_prefix}main/Room_Heater_State",
             name="Aquarea Room Heater Enabled",
-            state=bit_to_bool,            
+            state=bit_to_bool,
         ),
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP60",
@@ -913,7 +948,7 @@ def build_binary_sensors(
             heishamon_topic_id="TOP68",
             key=f"{mqtt_prefix}main/Force_Heater_State",
             name="Aquarea Force heater status",
-            state=bit_to_bool,            
+            state=bit_to_bool,
         ),
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP93",
