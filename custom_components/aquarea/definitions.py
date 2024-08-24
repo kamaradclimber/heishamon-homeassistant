@@ -355,7 +355,7 @@ def write_demandcontrol(value: int) -> str:
     return str(value / 100 * (234 - 43) + 43)
 
 
-def read_smart_grid_mode(value: str) -> Optional[int]:
+def read_smart_grid_mode(value: str) -> str:
     if value == "0":
         return "Normal"
     elif value == "1":
@@ -364,19 +364,19 @@ def read_smart_grid_mode(value: str) -> Optional[int]:
         return "HP/DHW off"
     elif value == "3":
         return "Capacity 2"
-    return value
+    return str(value)
 
 
-def write_smart_grid_mode(value: int) -> str:
+def write_smart_grid_mode(value: str) -> str:
     if value == "Normal":
-        return 0
+        return "0"
     elif value == "Capacity 1":
-        return 1
+        return "1"
     elif value == "HP/DHW off":
-        return 2
+        return "2"
     elif value == "Capacity 2":
-        return 3
-    return int(value)
+        return "3"
+    return str(value)
 
 
 def read_quiet_mode(value: str) -> str:
