@@ -71,7 +71,6 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
         new[
             "discovery_prefix"
         ] = DEFAULT_MQTT_TOPIC  # it was hardcoded in version 1 of the config_entry schema
-        config_entry.version = 2
-        hass.config_entries.async_update_entry(config_entry, data=new)
+        hass.config_entries.async_update_entry(config_entry, data=new, version=2)
         _LOGGER.info(f"Migration to version {config_entry.version} successful")
     return True
