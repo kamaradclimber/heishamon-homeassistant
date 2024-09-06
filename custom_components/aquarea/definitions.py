@@ -364,7 +364,7 @@ def write_demandcontrol(value: int) -> str:
 
 
 def read_smart_grid_mode(value: str) -> str:
-    return SMART_GRID_MODES_STRING.get(value f"Unknown smart grid mode: {value}")
+    return SMART_GRID_MODES_STRING.get(value, f"Unknown smart grid mode: {value}")
 
 
 def write_smart_grid_mode(value: str) -> str:
