@@ -647,8 +647,9 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
         ),
         HeishaMonNumberEntityDescription(
             heishamon_topic_id="SetDemandControl",
-            key=f"{mqtt_prefix}main/FakeDemandControl",  # FIXME: find how to get real value
+            key=f"{mqtt_prefix}commands/SetDemandControl",
             command_topic=f"{mqtt_prefix}commands/SetDemandControl",
+            retain=True,
             name="Demand Control",
             entity_category=EntityCategory.CONFIG,
             native_unit_of_measurement="%",
@@ -782,8 +783,9 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
         ),
         HeishaMonSelectEntityDescription(
             heishamon_topic_id="SetSmartGridMode",
-            key=f"{mqtt_prefix}main/FakeSmartGridMode", # FIXME: find how to get real value
+            key=f"{mqtt_prefix}commands/SetSmartGridMode",
             command_topic=f"{mqtt_prefix}commands/SetSmartGridMode",
+            retain=True,
             name="Smart Grid Mode",
             entity_category=EntityCategory.CONFIG,
             state=read_smart_grid_mode,
