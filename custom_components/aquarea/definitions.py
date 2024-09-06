@@ -176,6 +176,14 @@ ZONE_STATES_STRING = {
 }
 
 
+SMART_GRID_MODES_STRING = {
+    "0": "Normal",
+    "1": "Capacity 1",
+    "2": "HP/DHW off",
+    "3": "Capacity 2",
+}
+
+
 def read_zones_state(value):
     return ZONE_STATES_STRING.get(value, f"Unknown zone state value: {value}")
 
@@ -356,27 +364,11 @@ def write_demandcontrol(value: int) -> str:
 
 
 def read_smart_grid_mode(value: str) -> str:
-    if value == "0":
-        return "Normal"
-    elif value == "1":
-        return "Capacity 1"
-    elif value == "2":
-        return "HP/DHW off"
-    elif value == "3":
-        return "Capacity 2"
-    return str(value)
+    return SMART_GRID_MODES_STRING.get(value f"Unknown smart grid mode: {value}")
 
 
 def write_smart_grid_mode(value: str) -> str:
-    if value == "Normal":
-        return "0"
-    elif value == "Capacity 1":
-        return "1"
-    elif value == "HP/DHW off":
-        return "2"
-    elif value == "Capacity 2":
-        return "3"
-    return str(value)
+    return lookup_by_value(SMART_GRID_MODES_STRING, value)
 
 
 def read_quiet_mode(value: str) -> str:
@@ -788,7 +780,7 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
             entity_category=EntityCategory.CONFIG,
             state=read_smart_grid_mode,
             state_to_mqtt=write_smart_grid_mode,
-            options=["Normal", "HP/DHW off", "Capacity 1", "Capacity 2"],
+            options=list(SMART_GRID_MODES_STRING.values()),
             entity_registry_enabled_default=False,  # comes from the optional PCB: disabled by default
         ),
     ]
