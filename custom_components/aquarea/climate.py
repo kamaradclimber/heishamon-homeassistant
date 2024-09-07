@@ -214,7 +214,7 @@ class HeishaMonZoneClimate(ClimateEntity):
                 self._attr_min_temp = 20
                 self._attr_max_temp = 55
             else:
-                self._attr_min_temp = 15
+                self._attr_min_temp = 5
                 self._attr_max_temp = 25
             self._attr_target_temperature_step = 1
         elif mode == ZoneTemperatureMode.ROOM:
