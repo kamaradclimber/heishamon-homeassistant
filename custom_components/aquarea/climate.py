@@ -158,6 +158,7 @@ class HeishaMonZoneClimate(ClimateEntity):
         self._sensor_mode = ZoneSensorMode.WATER
         self._climate_mode = ZoneClimateMode.DIRECT
         self._mode = ZoneTemperatureMode.DIRECT
+        self._mode_guessed = True
         self.change_mode(ZoneTemperatureMode.DIRECT, initialization=True)
         # we only display heater by default
         self._attr_entity_registry_enabled_default = self.heater
@@ -231,6 +232,7 @@ class HeishaMonZoneClimate(ClimateEntity):
             # during initialization we cannot write HA state because entities are not registered yet.
             # Otherwise it triggers https://github.com/kamaradclimber/heishamon-homeassistant/issues/47
             self.async_write_ha_state()
+            self._mode_guessed = False
 
     async def async_set_temperature(self, **kwargs) -> None:
         temperature = kwargs.get("temperature")
@@ -332,10 +334,11 @@ class HeishaMonZoneClimate(ClimateEntity):
             _LOGGER.debug(
                 f"{self._climate_type()} Received target temperature for {self.zone_id}: {self._attr_target_temperature}"
             )
-            if self._attr_min_temp != None and self._attr_max_temp != None:
-                if self._attr_target_temperature < self._attr_min_temp or self._attr_target_temperature > self._attr_max_temp:
-                    # when reaching that point, maybe we should set a wider range to avoid blocking user?
-                    _LOGGER.warn(f"{self._climate_type()} Target temperature is not within expected range, this is suspicious. {self._attr_target_temperature} should be within [{self._attr_min_temp},{self._attr_max_temp}]")
+            if not self._mode_guessed:
+                if self._attr_min_temp != None and self._attr_max_temp != None:
+                    if self._attr_target_temperature < self._attr_min_temp or self._attr_target_temperature > self._attr_max_temp:
+                        # when reaching that point, maybe we should set a wider range to avoid blocking user?
+                        _LOGGER.warn(f"{self._climate_type()} Target temperature is not within expected range, this is suspicious. {self._attr_target_temperature} should be within [{self._attr_min_temp},{self._attr_max_temp}]")
             self.async_write_ha_state()
 
         if self.heater:
