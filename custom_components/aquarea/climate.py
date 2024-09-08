@@ -333,7 +333,7 @@ class HeishaMonZoneClimate(ClimateEntity):
                 f"{self._climate_type()} Received target temperature for {self.zone_id}: {self._attr_target_temperature}"
             )
             if self._attr_min_temp != None and self._attr_max_temp != None:
-                if self._attr_target_temperature not in range(self._attr_min_temp, self._attr_max_temp):
+                if self._attr_target_temperature < self._attr_min_temp or self._attr_target_temperature > self._attr_max_temp:
                     # when reaching that point, maybe we should set a wider range to avoid blocking user?
                     _LOGGER.warn(f"{self._climate_type()} Target temperature is not within expected range, this is suspicious. {self._attr_target_temperature} should be within [{self._attr_min_temp},{self._attr_max_temp}]")
             self.async_write_ha_state()
