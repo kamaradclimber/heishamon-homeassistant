@@ -4,7 +4,8 @@ import re
 import logging
 import json
 import aiohttp
-from typing import Optional
+import asyncio
+from typing import Optional, Any
 
 from homeassistant.components import mqtt
 from homeassistant.components.mqtt.client import async_publish
@@ -87,13 +88,24 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         self.stats_firmware_contain_version: Optional[bool] = None
 
         self._attr_supported_features = (
-            UpdateEntityFeature.RELEASE_NOTES | UpdateEntityFeature.INSTALL
+            UpdateEntityFeature.RELEASE_NOTES | UpdateEntityFeature.INSTALL | UpdateEntityFeature.PROGRESS | UpdateEntityFeature.SPECIFIC_VERSION
         )
         self._attr_release_url = f"https://github.com/{HEISHAMON_REPOSITORY}/releases"
+        # FIXME: for now we assume board is using the "model-type-small"
+        self._model_type = "model-type-small"
         self._release_notes = None
+        self._attr_progress = False
+
+        self._ip_topic = f"{self.discovery_prefix}ip"
+        self._heishamon_ip = None
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT events."""
+
+        @callback
+        def ip_received(message):
+            self._heishamon_ip = message.payload
+        await mqtt.async_subscribe(self.hass, self._ip_topic, ip_received, 1)
 
         @callback
         def message_received(message):
@@ -120,6 +132,8 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                         self._attr_installed_version = field_value
                 else:
                     self.stats_firmware_contain_version = False
+            # FIXME
+            self._attr_installed_version = "0.42.0"
             # we only write value when we know for sure how to get version
             # this avoids having flickering of value when HA start (if we receive a marker3_2_topic message
             # before we get the stats message)
@@ -166,5 +180,56 @@ class HeishaMonMQTTUpdate(UpdateEntity):
             self.async_write_ha_state()
 
     def release_notes(self) -> str | None:
-        header = f"⚠ Update is not supported via HA. Update is done via heishamon webui\n\n\n"
-        return header + str(self._release_notes)
+        return str(self._release_notes)
+
+    async def async_install(self, version: str | None, backup: bool, **kwargs: Any) -> None:
+        if version is None:
+            version = self._attr_latest_version
+            _LOGGER.info(f"Will install latest version ({version}) of the firmware")
+        else:
+            _LOGGER.info(f"Will install version {version} of the firmware")
+        self._attr_progress = 0
+        async with aiohttp.ClientSession() as session:
+            resp = await session.get(
+                f"https://github.com/Egyras/HeishaMon/raw/master/binaries/{self._model_type}/HeishaMon.ino.d1-v{version}.bin"
+            )
+
+            if resp.status != 200:
+                _LOGGER.warn(
+                    f"Impossible to download version {version} from heishamon repository {HEISHAMON_REPOSITORY}"
+                )
+                return
+
+            firmware_binary = await resp.read()
+            _LOGGER.info(f"Firmware is {len(firmware_binary)} bytes long")
+            self._attr_progress = 10
+            resp = await session.get(
+                f"https://github.com/Egyras/HeishaMon/raw/master/binaries/{self._model_type}/HeishaMon.ino.d1-v{version}.md5"
+            )
+
+            if resp.status != 200:
+                _LOGGER.warn(
+                    f"Impossible to fetch checksum of version #{version} from heishamon repository {HEISHAMON_REPOSITORY}"
+                )
+                return
+            checksum = await resp.text()
+            self._attr_progress = 20
+            _LOGGER.info(f"Downloaded binary and checksum {checksum} of version {version}")
+
+            while self._heishamon_ip is None:
+                _LOGGER.warn("Waiting for an mqtt message to get the ip address of heishamon")
+                await asyncio.sleep(1)
+
+        async with aiohttp.ClientSession() as session:
+            _LOGGER.info(f"Starting upgrade of firmware to version {version} on {self._heishamon_ip}")
+            to = aiohttp.ClientTimeout(total=300, connect=10)
+            try:
+                resp = await session.post(
+                    f"http://{self._heishamon_ip}/firmware", data={'md5': checksum, 'firmware': ('firmware.bin', firmware_binary, 'application/octet-stream')}, timeout=to)
+            except TimeoutError as e:
+                _LOGGER.error(f"Timeout while uploading new firmware")
+                raise e
+            if resp.status != 200:
+                _LOGGER.warn(f"Impossible to perform firmware update to version {version}")
+                return
+            _LOGGER.info(f"Finished uploading firmware. Heishamon should now be rebooting")
