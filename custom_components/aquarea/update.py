@@ -6,6 +6,7 @@ import json
 import aiohttp
 import asyncio
 from typing import Optional, Any
+from io import BufferedReader, BytesIO
 
 from homeassistant.components import mqtt
 from homeassistant.components.mqtt.client import async_publish
@@ -132,8 +133,6 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                         self._attr_installed_version = field_value
                 else:
                     self.stats_firmware_contain_version = False
-            # FIXME
-            self._attr_installed_version = "0.42.0"
             # we only write value when we know for sure how to get version
             # this avoids having flickering of value when HA start (if we receive a marker3_2_topic message
             # before we get the stats message)
@@ -220,12 +219,26 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 _LOGGER.warn("Waiting for an mqtt message to get the ip address of heishamon")
                 await asyncio.sleep(1)
 
+        def track_progress(current, total):
+            self._attr_progress = int(current / total * 100)
+            _LOGGER.info(f"Currently read {current} out of {total}: {self._attr_progress}%")
+
+
         async with aiohttp.ClientSession() as session:
             _LOGGER.info(f"Starting upgrade of firmware to version {version} on {self._heishamon_ip}")
             to = aiohttp.ClientTimeout(total=300, connect=10)
             try:
-                resp = await session.post(
-                    f"http://{self._heishamon_ip}/firmware", data={'md5': checksum, 'firmware': ('firmware.bin', firmware_binary, 'application/octet-stream')}, timeout=to)
+                with ProgressReader(firmware_binary, track_progress) as reader:
+                    resp = await session.post(
+                        f"http://{self._heishamon_ip}/firmware",
+                        data={
+                            'md5': checksum,
+                            # 'firmware': ('firmware.bin', firmware_binary, 'application/octet-stream')
+                            'firmware': reader
+
+                        },
+                        timeout=to
+                    )
             except TimeoutError as e:
                 _LOGGER.error(f"Timeout while uploading new firmware")
                 raise e
@@ -233,3 +246,17 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 _LOGGER.warn(f"Impossible to perform firmware update to version {version}")
                 return
             _LOGGER.info(f"Finished uploading firmware. Heishamon should now be rebooting")
+
+class ProgressReader(BufferedReader):
+    def __init__(self, binary_data, read_callback=None):
+        self._read_callback = read_callback
+        super().__init__(raw=BytesIO(binary_data))
+        self.length = len(binary_data)
+
+    def read(self, size=None):
+        computed_size = size
+        if not computed_size:
+            computed_size = self.length - self.tell()
+        if self._read_callback:
+            self._read_callback(self.tell(), self.length)
+        return super(ProgressReader, self).read(size)
