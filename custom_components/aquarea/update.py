@@ -179,7 +179,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
             self.async_write_ha_state()
 
     def release_notes(self) -> str | None:
-        return str(self._release_notes)
+        return f"⚠️ Automated upgrades only supports {self._model_type}.\n\nBeware!\n\n" + str(self._release_notes)
 
     async def async_install(self, version: str | None, backup: bool, **kwargs: Any) -> None:
         if version is None:
