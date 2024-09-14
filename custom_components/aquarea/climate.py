@@ -259,6 +259,9 @@ class HeishaMonZoneClimate(ClimateEntity):
             _LOGGER.info(
                 f"{self._climate_type()} Changing {self.name} target room temperature to {temperature} for zone {self.zone_id}"
             )
+        elif self._mode == ZoneTemperatureMode.NAN:
+            _LOGGER.warn(f"{self._climate_type()} Changing {self.name} target temperature is not allowed for zone {self.zone_id} (external thermostat)")
+            return
         else:
             raise Exception(f"Unknown climate mode: {self._mode}")
         payload = str(temperature)
@@ -289,6 +292,8 @@ class HeishaMonZoneClimate(ClimateEntity):
             self._climate_mode = ZoneClimateMode(stored_values["zone_climate_mode"])
             self._mode = ZoneTemperatureMode(stored_values["zone_temperature_mode"])
             self.change_mode(self._mode)
+            if self._mode == ZoneTemperatureMode.NAN:
+                self._attr_supported_features = ClimateEntityFeature.TURN_OFF | ClimateEntityFeature.TURN_ON
         else:
             self.change_mode(ZoneTemperatureMode.DIRECT, initialization=True)
 
