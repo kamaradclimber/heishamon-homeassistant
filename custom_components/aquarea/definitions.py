@@ -353,14 +353,14 @@ def bit_to_bool(value: str) -> Optional[bool]:
 
 
 def read_demandcontrol(value: str) -> Optional[int]:
-    i = int(value)
+    i = float(value)
     if i >= 43 and i <= 234:
         return int((i - 43) / (234 - 43) * 100)
     return None
 
 
 def write_demandcontrol(value: int) -> str:
-    return str(value / 100 * (234 - 43) + 43)
+    return str(int(value / 100 * (234 - 43) + 43))
 
 
 def read_smart_grid_mode(value: str) -> str:
