@@ -165,6 +165,12 @@ class HeishaMonZoneClimate(ClimateEntity):
         # we only display heater by default
         self._attr_entity_registry_enabled_default = self.heater
 
+        # set default values so that attribute is always defined
+        self._attr_min_temp = self.UNDEFINED_VALUE
+        self._attr_max_temp = self.UNDEFINED_VALUE
+
+    UNDEFINED_VALUE = -42
+
     async def async_turn_off(self) -> None:
         await self.async_set_hvac_mode(HVACMode.OFF)
 
@@ -359,7 +365,7 @@ class HeishaMonZoneClimate(ClimateEntity):
                 f"{self._climate_type()} Received target temperature for {self.zone_id}: {self._attr_target_temperature}"
             )
             if not self._mode_guessed:
-                if self._attr_min_temp != None and self._attr_max_temp != None:
+                if self._attr_min_temp != self.UNDEFINED_VALUE and self._attr_max_temp != self.UNDEFINED_VALUE:
                     if self._attr_target_temperature < self._attr_min_temp or self._attr_target_temperature > self._attr_max_temp:
                         # when reaching that point, maybe we should set a wider range to avoid blocking user?
                         _LOGGER.warn(f"{self._climate_type()} Target temperature is not within expected range, this is suspicious. {self._attr_target_temperature} should be within [{self._attr_min_temp},{self._attr_max_temp}]")
