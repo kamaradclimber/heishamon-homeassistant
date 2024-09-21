@@ -355,7 +355,7 @@ def bit_to_bool(value: str) -> Optional[bool]:
 def read_demandcontrol(value: str) -> Optional[int]:
     i = float(value)
     if i >= 43 and i <= 234:
-        return int((i - 43) / (234 - 43) * 100)
+        return round((i - 43) / (234 - 43) * 100)
     return None
 
 
