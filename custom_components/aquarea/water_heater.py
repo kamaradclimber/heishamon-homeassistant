@@ -1,6 +1,8 @@
 from __future__ import annotations
 import logging
 
+from typing import Any
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -16,7 +18,7 @@ from homeassistant.components.water_heater import (
     STATE_PERFORMANCE,
 )
 
-from .definitions import lookup_by_value, OperatingMode
+from .definitions import OperatingMode
 from . import build_device_info
 from .const import DeviceType
 
@@ -162,6 +164,39 @@ class HeishaMonDHW(WaterHeaterEntity):
             f"{self.discovery_prefix}main/DHW_Heat_Delta",
             heat_delta_received,
             1,
+        )
+
+        @callback
+        def operating_mode_received(message):
+            self._operating_mode = OperatingMode.from_mqtt(message.payload)
+            self.async_write_ha_state()
+
+        await mqtt.async_subscribe(
+            self.hass,
+            f"{self.discovery_prefix}main/Operating_Mode_State",
+            operating_mode_received,
+            1,
+        )
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        new_operating_mode = self._operating_mode | OperatingMode.DHW
+        await async_publish(
+                self.hass,
+                f"{self.discovery_prefix}commands/SetOperationMode",
+                new_operating_mode.to_mqtt(),
+                0,
+                False,
+                "utf-8",
+        )
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        new_operating_mode = self._operating_mode & ~OperatingMode.DHW
+        await async_publish(
+                self.hass,
+                f"{self.discovery_prefix}commands/SetOperationMode",
+                new_operating_mode.to_mqtt(),
+                0,
+                False,
+                "utf-8",
         )
 
     @property
