@@ -6,7 +6,7 @@
 #   [id, "#{model} #{power} #{phase_count} #{tcap}"]
 # }.to_h.to_json)') >> models.py
 
-HEATPUMP_MODELS = {
+HEATPUMP_MODELS ={
     "0": "WH-MDC05H3E5 5 1ph HP",
     "1": "WH-MDC07H3E5 7 1ph HP",
     "2": "WH-SXC09H3E5 9 1ph T-CAP",
@@ -53,4 +53,8 @@ HEATPUMP_MODELS = {
     "43": "WH-MXC16J9E8 16 3ph T-CAP",
     "44": "WH-MXC12J6E5 12 1ph T-CAP",
     "45": "WH-SQC09H3E8 9 3ph T-CAP - Super Quiet revised model",
+    "46": "WH-ADC0309K3E5 9 1ph HP - K-series All-in-One R32",
+    "47": "WH-ADC0916H9E8 12 3ph T-CAP - All-In-One",
+    "48": "WH-SDC0509L3E5 7 1 ph HP - split L-series 3kW elec heating",
+    "49": "WH-SXC09H3E5 9 1ph T-CAP"
 }
