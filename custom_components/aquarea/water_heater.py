@@ -11,12 +11,19 @@ from homeassistant.components import mqtt
 from homeassistant.components.mqtt.client import async_publish
 
 from homeassistant.components.water_heater import (
-    WaterHeaterEntityEntityDescription,
     WaterHeaterEntity,
     WaterHeaterEntityFeature,
     STATE_ECO,
     STATE_PERFORMANCE,
 )
+try:
+    from homeassistant.components.water_heater import WaterHeaterEntityDescription
+except ImportError:
+    # compatibility code for HA < 2025.1
+    from homeassistant.components.water_heater import WaterHeaterEntityEntityDescription
+    WaterHeaterEntityDescription = WaterHeaterEntityEntityDescription
+
+
 
 from .definitions import OperatingMode
 from . import build_device_info
@@ -37,7 +44,7 @@ async def async_setup_entry(
         f"Starting bootstrap of water heater entities with prefix '{discovery_prefix}'"
     )
     """Set up HeishaMon water heater from config entry."""
-    description = WaterHeaterEntityEntityDescription(
+    description = WaterHeaterEntityDescription(
         key=f"{discovery_prefix}main/DHW_Target_Temp",
         name="Aquarea Domestic Water Heater",
     )
@@ -62,7 +69,7 @@ class HeishaMonDHW(WaterHeaterEntity):
     def __init__(
         self,
         hass: HomeAssistant,
-        description: WaterHeaterEntityEntityDescription,
+        description: WaterHeaterEntityDescription,
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize the water heater entity."""
