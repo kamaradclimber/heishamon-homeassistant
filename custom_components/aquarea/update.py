@@ -23,7 +23,7 @@ from homeassistant.util import slugify
 
 from . import build_device_info
 from .const import DeviceType
-from .definitions import HeishaMonEntityDescription, frozendataclass
+from .definitions import HeishaMonEntityDescription, frozendataclass, read_stats_json_string
 
 _LOGGER = logging.getLogger(__name__)
 HEISHAMON_REPOSITORY = "Egyras/HeishaMon"
@@ -92,13 +92,14 @@ class HeishaMonMQTTUpdate(UpdateEntity):
             UpdateEntityFeature.RELEASE_NOTES | UpdateEntityFeature.INSTALL | UpdateEntityFeature.PROGRESS | UpdateEntityFeature.SPECIFIC_VERSION
         )
         self._attr_release_url = f"https://github.com/{HEISHAMON_REPOSITORY}/releases"
-        # FIXME: for now we assume board is using the "model-type-small"
-        self._model_type = "model-type-small"
+        self._model_type = None
         self._release_notes = None
         self._attr_progress = False
 
         self._ip_topic = f"{self.discovery_prefix}ip"
         self._heishamon_ip = None
+
+        self._stats_topic = f"{self.discovery_prefix}stats"
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT events."""
@@ -107,6 +108,12 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         def ip_received(message):
             self._heishamon_ip = message.payload
         await mqtt.async_subscribe(self.hass, self._ip_topic, ip_received, 1)
+
+        @callback
+        def read_model(message):
+            self._model_type = read_stats_json_string("board", message.payload)
+        await mqtt.async_subscribe(self.hass, self._stats_topic, read_model, 1)
+
 
         @callback
         def message_received(message):
@@ -178,8 +185,17 @@ class HeishaMonMQTTUpdate(UpdateEntity):
             self._release_notes = last_release["body"]
             self.async_write_ha_state()
 
+    @property
+    def model_to_file(self) -> str | None:
+        return {
+            "ESP32": "model-type-large",
+            "ESP8266": "model-type-small",
+            None: "UNKNOWN",
+        }.get(self._model_type, None)
+        
+
     def release_notes(self) -> str | None:
-        return f"⚠️ Automated upgrades only supports {self._model_type}.\n\nBeware!\n\n" + str(self._release_notes)
+        return f"⚠️ Automated upgrades will fetch `{self.model_to_file}` binaries.\n\nBeware!\n\n" + str(self._release_notes)
 
     async def async_install(self, version: str | None, backup: bool, **kwargs: Any) -> None:
         if version is None:
@@ -190,7 +206,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         self._attr_progress = 0
         async with aiohttp.ClientSession() as session:
             resp = await session.get(
-                f"https://github.com/Egyras/HeishaMon/raw/master/binaries/{self._model_type}/HeishaMon.ino.d1-v{version}.bin"
+                f"https://github.com/Egyras/HeishaMon/raw/master/binaries/{self.model_to_file}/HeishaMon.ino.d1-v{version}.bin"
             )
 
             if resp.status != 200:
@@ -203,7 +219,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
             _LOGGER.info(f"Firmware is {len(firmware_binary)} bytes long")
             self._attr_progress = 10
             resp = await session.get(
-                f"https://github.com/Egyras/HeishaMon/raw/master/binaries/{self._model_type}/HeishaMon.ino.d1-v{version}.md5"
+                f"https://github.com/Egyras/HeishaMon/raw/master/binaries/{self.model_to_file}/HeishaMon.ino.d1-v{version}.md5"
             )
 
             if resp.status != 200:

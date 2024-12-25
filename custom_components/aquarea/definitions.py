@@ -1062,6 +1062,10 @@ def read_stats_json(field_name: str, json_doc: str) -> Optional[float]:
         return float(field_value)
     return None
 
+def read_stats_json_string(field_name: str, json_doc: str) -> Optional[str]:
+    field_value = json.loads(json_doc).get(field_name, None)
+    return field_value
+
 
 def ms_to_secs(value: Optional[float]) -> Optional[float]:
     if value:
