@@ -1811,6 +1811,15 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
         ),
         HeishaMonSensorEntityDescription(
+            heishamon_topic_id="STAT1-board",
+            key=f"{mqtt_prefix}stats",
+            name="HeishaMon Board type",
+            state=partial(read_stats_json_string, "board"),
+            device=DeviceType.HEISHAMON,
+            state_class=SensorStateClass.MEASUREMENT,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        HeishaMonSensorEntityDescription(
             heishamon_topic_id="INFO_ip",
             key=f"{mqtt_prefix}ip",
             name="HeishaMon IP Address",
