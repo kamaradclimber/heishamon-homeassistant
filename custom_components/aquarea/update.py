@@ -206,7 +206,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         self._attr_progress = 0
         async with aiohttp.ClientSession() as session:
             resp = await session.get(
-                f"https://github.com/Egyras/HeishaMon/raw/master/binaries/{self.model_to_file}/HeishaMon.ino.d1-v{version}.bin"
+                f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_file}/HeishaMon.ino.d1-v{version}.bin"
             )
 
             if resp.status != 200:
@@ -219,7 +219,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
             _LOGGER.info(f"Firmware is {len(firmware_binary)} bytes long")
             self._attr_progress = 10
             resp = await session.get(
-                f"https://github.com/Egyras/HeishaMon/raw/master/binaries/{self.model_to_file}/HeishaMon.ino.d1-v{version}.md5"
+                f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_file}/HeishaMon.ino.d1-v{version}.md5"
             )
 
             if resp.status != 200:
