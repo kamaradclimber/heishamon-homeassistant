@@ -23,7 +23,7 @@ from homeassistant.util import slugify
 
 from . import build_device_info
 from .const import DeviceType
-from .definitions import HeishaMonEntityDescription, frozendataclass, read_stats_json_string
+from .definitions import HeishaMonEntityDescription, frozendataclass, read_board_type
 
 _LOGGER = logging.getLogger(__name__)
 HEISHAMON_REPOSITORY = "Egyras/HeishaMon"
@@ -111,7 +111,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
 
         @callback
         def read_model(message):
-            self._model_type = read_stats_json_string("board", message.payload)
+            self._model_type = read_board_type(message.payload)
         await mqtt.async_subscribe(self.hass, self._stats_topic, read_model, 1)
 
 
@@ -198,6 +198,8 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         return f"⚠️ Automated upgrades will fetch `{self.model_to_file}` binaries.\n\nBeware!\n\n" + str(self._release_notes)
 
     async def async_install(self, version: str | None, backup: bool, **kwargs: Any) -> None:
+        if self._model_type is None:
+            raise Exception("Impossible to update automatically because we don't know the board version")
         if version is None:
             version = self._attr_latest_version
             _LOGGER.info(f"Will install latest version ({version}) of the firmware")
