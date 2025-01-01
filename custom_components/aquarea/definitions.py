@@ -1062,6 +1062,14 @@ def read_stats_json(field_name: str, json_doc: str) -> Optional[float]:
         return float(field_value)
     return None
 
+def read_board_type(json_doc: str) -> Optional[str]:
+    j = json.loads(json_doc)
+    if "board" in j:
+        return j["board"]
+    if "voltage" in j:
+        if j["voltage"] != "3.3":
+            return "ESP8266"
+    return None
 
 def ms_to_secs(value: Optional[float]) -> Optional[float]:
     if value:
@@ -1805,6 +1813,16 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device=DeviceType.HEISHAMON,
             entity_category=EntityCategory.DIAGNOSTIC,
             state_class=SensorStateClass.MEASUREMENT,
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="STAT1-board",
+            key=f"{mqtt_prefix}stats",
+            name="HeishaMon Board type",
+            state=read_board_type,
+            device=DeviceType.HEISHAMON,
+            state_class=SensorStateClass.MEASUREMENT,
+            device_class=SensorDeviceClass.ENUM,
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="INFO_ip",
