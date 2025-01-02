@@ -1820,7 +1820,6 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="HeishaMon Board type",
             state=read_board_type,
             device=DeviceType.HEISHAMON,
-            state_class=SensorStateClass.MEASUREMENT,
             device_class=SensorDeviceClass.ENUM,
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
