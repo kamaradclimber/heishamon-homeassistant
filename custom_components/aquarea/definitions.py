@@ -1068,7 +1068,7 @@ def read_board_type(json_doc: str) -> Optional[str]:
         return j["board"]
     if "voltage" in j:
         # ESP32 has a static 3.3V and more than 64k free heap
-        if j["voltage"] != "3.3":
+        if j["voltage"] != 3.3:
             return "ESP8266"
         if "free heap" in j:
             if float(j["free heap"]) > 65535:
