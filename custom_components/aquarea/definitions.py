@@ -355,12 +355,14 @@ def bit_to_bool(value: str) -> Optional[bool]:
 def read_demandcontrol(value: str) -> Optional[int]:
     i = float(value)
     if i >= 43 and i <= 234:
-        return round((i - 43) / (234 - 43) * 100)
+        i = (i - 43) / (234 - 43)
+        return round(i * 95) + 5
     return None
 
 
 def write_demandcontrol(value: int) -> str:
-    return str(int(value / 100 * (234 - 43) + 43))
+    value = (value - 5) / 95 # 5% -> 100% to 0% -> 95% for remapping
+    return str(int(value * (234 - 43) + 43))
 
 
 def read_smart_grid_mode(value: str) -> str:
@@ -645,7 +647,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             name="Demand Control",
             entity_category=EntityCategory.CONFIG,
             native_unit_of_measurement="%",
-            native_min_value=20,
+            native_min_value=5,
             native_max_value=100,
             native_step=5,
             state=read_demandcontrol,
