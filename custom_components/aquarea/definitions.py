@@ -29,7 +29,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntityDescription,
 )
 
-from .models import HEATPUMP_MODELS
+from .models import HEATPUMP_MODELS, HEATPUMP_MODELS_39
 from .const import DeviceType
 
 _LOGGER = logging.getLogger(__name__)
@@ -381,7 +381,10 @@ def read_quiet_mode(value: str) -> str:
 
 
 def read_heatpump_model(value: str) -> str:
-    return HEATPUMP_MODELS.get(value, "Unknown model for HeishaMon")
+    if len(value) < 8:
+        # heishamon < 3.9
+        return HEATPUMP_MODELS.get(value, "Unknown model for HeishaMon")
+    return HEATPUMP_MODELS_39.get(value, "Unknown model for HeishaMon")
 
 
 def read_solar_mode(value: str) -> str:
