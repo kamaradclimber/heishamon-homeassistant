@@ -1,10 +1,10 @@
 # This file is updated using the following command
 
-# (echo -n "HEATPUMP_MODELS =" ;curl -f -s https://raw.githubusercontent.com/Egyras/HeishaMon/master/HeatPumpType.md | grep "WH-" | ruby -r json -e 'puts(STDIN.read.split("\n").map { |line|
+# (echo -n "HEATPUMP_MODELS_39 =" ;curl -f -s https://raw.githubusercontent.com/Egyras/HeishaMon/master/HeatPumpType.md | grep "WH-" | ruby -r json -e 'puts(JSON.pretty_generate(STDIN.read.split("\n").map { |line|
 #   _, id, bytes, idu, odu, kit, power, phase_count, tcap = line.split("|").map(&:strip);
 #   model = [idu, odu, kit].reject {|el| el == "Monoblock" }.first;
-#   [id, "#{model} #{power} #{phase_count} #{tcap}"]
-# }.to_h.to_json)') >> models.py
+#   [bytes, "#{model} #{power} #{phase_count} #{tcap}"]
+# }.to_h))') >> custom_components/aquarea/models.py
 
 HEATPUMP_MODELS ={
     "0": "WH-MDC05H3E5 5 1ph HP",
@@ -57,4 +57,59 @@ HEATPUMP_MODELS ={
     "47": "WH-ADC0916H9E8 12 3ph T-CAP - All-In-One",
     "48": "WH-SDC0509L3E5 7 1 ph HP - split L-series 3kW elec heating",
     "49": "WH-SXC09H3E5 9 1ph T-CAP"
+}
+
+HEATPUMP_MODELS_39 ={
+  "E2 CF 0B 13 33 32 D1 0C 16 33": "WH-MDC05H3E5 5 1ph HP",
+  "E2 CF 0B 14 33 42 D1 0B 17 33": "WH-MDC07H3E5 7 1ph HP",
+  "E2 CF 0D 77 09 12 D0 0B 05 11": "WH-SXC09H3E5 9 1ph T-CAP",
+  "E2 CF 0C 88 05 12 D0 0B 97 05": "WH-SDC09H3E8 9 3ph HP",
+  "E2 CF 0D 85 05 12 D0 0C 94 05": "WH-SXC09H3E8 9 3ph T-CAP",
+  "E2 CF 0D 86 05 12 D0 0C 95 05": "WH-SXC12H9E8 12 3ph T-CAP",
+  "E2 CF 0D 87 05 12 D0 0C 96 05": "WH-SXC16H9E8 16 3ph T-CAP",
+  "E2 CE 0D 71 81 72 CE 0C 92 81": "WH-SDC05H3E5 5 1ph HP",
+  "62 D2 0B 43 54 42 D2 0B 72 66": "WH-SDC0709J3E5 9 1ph HP",
+  "C2 D3 0B 33 65 B2 D3 0B 94 65": "WH-MDC05J3E5 5 1ph HP",
+  "E2 CF 0B 15 33 42 D1 0B 18 33": "WH-MDC09H3E5 9 1ph HP",
+  "E2 CF 0B 41 34 82 D1 0B 31 35": "WH-MXC09H3E5 9 1ph T-CAP",
+  "62 D2 0B 45 54 42 D2 0B 47 55": "WH-ADC0309J3E5 9 1ph HP - All-In-One",
+  "E2 CF 0C 74 09 12 D0 0D 95 05": "WH-ADC0916H9E8 12 3ph T-CAP - All-In-One",
+  "E2 CF 0B 82 05 12 D0 0C 91 05": "WH-SQC09H3E8 9 3ph T-CAP - Super Quiet",
+  "E2 CF 0C 55 14 12 D0 0B 15 08": "WH-SDC09H3E5 9 1 ph HP",
+  "E2 CF 0C 43 00 12 D0 0B 15 08": "WH-ADC0309H3E5 9 1 ph HP - All-In-One",
+  "62 D2 0B 45 54 32 D2 0C 45 55": "WH-ADC0309J3E5 5 1ph HP - All-In-One",
+  "62 D2 0B 43 54 42 D2 0C 46 55": "WH-SDC0709J3E5 7 1 ph HP",
+  "E2 CF 0C 54 14 12 D0 0B 14 08": "WH-SDC07H3E5-1 7 1 ph HP",
+  "C2 D3 0B 34 65 B2 D3 0B 95 65": "WH-MDC07J3E5 7 1ph HP",
+  "C2 D3 0B 35 65 B2 D3 0B 96 65": "WH-MDC09J3E5 9 1ph HP",
+  "62 D2 0B 41 54 32 D2 0C 45 55": "WH-SDC0305J3E5 5 1ph HP",
+  "32 D4 0B 87 84 73 90 0C 84 84": "WH-MXC09J3E8 9 3ph T-CAP",
+  "32 D4 0B 88 84 73 90 0C 85 84": "WH-MXC12J9E8 12 3ph T-CAP",
+  "E2 CF 0B 75 09 12 D0 0C 06 11": "WH-ADC1216H6E5 12 1ph T-CAP",
+  "42 D4 0B 83 71 42 D2 0C 46 55": "WH-ADC0309J3E5C 7 1ph HP - All-In-One Compact",
+  "C2 D3 0C 34 65 B2 D3 0B 95 65": "WH-MDC07J3E5 7 1ph HP (new version?)",
+  "C2 D3 0C 33 65 B2 D3 0B 94 65": "WH-MDC05J3E5 5 1ph HP (new version)",
+  "E2 CF 0B 83 05 12 D0 0D 92 05": "WH-UQ12HE8 12 3ph T-CAP - Super Quiet",
+  "E2 CF 0C 78 09 12 D0 0B 06 11": "WH-SXC12H6E5 12 1ph T-CAP",
+  "C2 D3 0C 35 65 B2 D3 0B 96 65": "WH-MDC09J3E5 9 1ph HP (new version?)",
+  "32 D4 0B 99 77 62 90 0B 01 78": "WH-MXC09J3E5 9 1ph T-CAP",
+  "42 D4 0B 15 76 12 D0 0B 10 11": "WH-ADC1216H6E5C 12 1ph HP - All-In-One Compact",
+  "E2 D5 0C 29 99 83 92 0C 28 98": "WH-ADC0509L3E5 7 1ph HP - All-In-One L-series",
+  "E2 CF 0D 85 05 12 D0 0E 94 05": "WH-SXC09H3E8 9 3ph T-CAP - new version",
+  "E2 D5 0D 36 99 02 D6 0F 67 95": "WH-ADC0309K3E5AN 7 1ph HP - All-In-One K-series - AN",
+  "E2 D5 0B 08 95 02 D6 0E 66 95": "WH-SDC0309K3E5 5 1ph HP - split K-series",
+  "E2 D5 0B 34 99 83 92 0C 29 98": "WH-SDC0509L3E5 9 1 ph HP - split L-series 3kW elec heating",
+  "E2 CF 0C 89 05 12 D0 0C 98 05": "WH-SDC12H9E8 12 3ph HP",
+  "E2 D5 0B 08 95 02 D6 0E 67 95": "WH-SDC0309K3E5 7 1ph HP - split K-series",
+  "E2 CF 0C 74 09 12 D0 0C 96 05": "WH-ADC0916H9E8 16 3ph T-CAP - All-In-One",
+  "E2 CF 0C 74 09 12 D0 0E 95 05": "WH-ADC0912H9E8 12 3ph T-CAP - All-In-One",
+  "32 D4 0B 89 84 73 90 0C 86 84": "WH-MXC16J9E8 16 3ph T-CAP",
+  "32 D4 0B 00 78 62 90 0B 02 78": "WH-MXC12J6E5 12 1ph T-CAP",
+  "E2 CF 0B 82 05 12 D0 0D 91 05": "WH-SQC09H3E8 9 3ph T-CAP - Super Quiet revised model",
+  "E2 D5 0D 99 94 02 D6 0D 68 95": "WH-ADC0309K3E5 9 1ph HP - K-series All-in-One R32",
+  "E2 CF 0C 74 09 12 D0 0C 95 05": "WH-ADC0916H9E8 12 3ph T-CAP - All-In-One",
+  "E2 D5 0B 34 99 83 92 0C 28 98": "WH-SDC0509L3E5 7 1 ph HP - split L-series 3kW elec heating",
+  "E2 CF 0D 77 09 12 D0 0C 05 11": "WH-SXC09H3E5 9 1ph T-CAP",
+  "E2 D5 0C 67 00 83 92 0C 27 98": "WH-ADC0509L3E5AN 5 1ph HP - split L-series 3kW elec heating - AN",
+  "E2 D5 0B 34 99 83 92 0C 27 98": "WH-SDC0509L3E5 5 1ph HP - split L-series 3kW elec heating"
 }
