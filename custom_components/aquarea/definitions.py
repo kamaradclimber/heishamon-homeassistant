@@ -104,6 +104,24 @@ class OperatingMode(Flag):
 def operating_mode_to_state(str_repr: str):
     return str(int(OperatingMode.from_str(str_repr)))
 
+def read_enabled_disabled(value: str) -> Optional[bool]:
+    if value == "1":
+        return True
+    if value == "0":
+        return False
+    return None
+
+def read_bivalent_mode(value: str) -> Optional[str]:
+    return BIVALENT_MODES.get(value, None)
+
+BIVALENT_MODES = {
+    "0": "Alternative",
+    "1": "Parallel",
+    "2": "Advanced Parallel",
+}
+
+def bivalent_mode_to_mqtt(value: str) -> Optional[str]:
+    return lookup_by_value(BIVALENT_MODES, value)
 
 def read_operating_mode_state(value: str) -> str:
     mode = OperatingMode.from_mqtt(value)
@@ -656,6 +674,54 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             entity_registry_enabled_default=False,  # comes from the optional PCB: disabled by default
             initial_value=100,
         ),
+        HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET36", # corresponds to TOP131
+            key=f"{mqtt_prefix}commands/Bivalent_Start_Temp",
+            command_topic=f"{mqtt_prefix}commands/SetBivalentStartTemp",
+            retain=True,
+            name="Aquarea Bivalent Start Temp",
+            entity_category=EntityCategory.CONFIG,
+            native_unit_of_measurement="°C",
+            native_min_value=-15,
+            native_max_value=35,
+            native_step=1,
+            state=int,
+            state_to_mqtt=int,
+            entity_registry_enabled_default=True,
+            initial_value=0,
+        ),
+        HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET37", # corresponds to TOP134
+            key=f"{mqtt_prefix}commands/Bivalent_Advanced_Start_Temp",
+            command_topic=f"{mqtt_prefix}commands/SetBivalentAStartTemp",
+            retain=True,
+            name="Aquarea Bivalent Advanced Start Temp",
+            entity_category=EntityCategory.CONFIG,
+            native_unit_of_measurement="°C",
+            native_min_value=-15,
+            native_max_value=35,
+            native_step=1,
+            state=int,
+            state_to_mqtt=int,
+            entity_registry_enabled_default=True,
+            initial_value=0,
+        ),
+        HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET38", # corresponds to TOP135
+            key=f"{mqtt_prefix}commands/Bivalent_Advanced_Stop_Temp",
+            command_topic=f"{mqtt_prefix}commands/SetBivalentAStopTemp",
+            retain=True,
+            name="Aquarea Bivalent Advanced Stop Temp",
+            entity_category=EntityCategory.CONFIG,
+            native_unit_of_measurement="°C",
+            native_min_value=-15,
+            native_max_value=35,
+            native_step=1,
+            state=int,
+            state_to_mqtt=int,
+            entity_registry_enabled_default=True,
+            initial_value=0,
+        ),
     ]
     topic_ids = {
         "1 Heat Target High": "TOP29",
@@ -777,6 +843,15 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
             options=list(EXTERNAL_PAD_HEATER_TYPE.values()),
         ),
         HeishaMonSelectEntityDescription(
+            heishamon_topic_id="SET35",  # also TOP130
+            key=f"{mqtt_prefix}main/Bivalent_Mode",
+            command_topic=f"{mqtt_prefix}/commands/SetBivalentMode",
+            name="Aquarea Bivalent Mode",
+            state=read_bivalent_mode,
+            state_to_mqtt=bivalent_mode_to_mqtt,
+            options=list(BIVALENT_MODES.values()),
+        ),
+        HeishaMonSelectEntityDescription(
             heishamon_topic_id="SetSmartGridMode",
             key=f"{mqtt_prefix}commands/SetSmartGridMode",
             command_topic=f"{mqtt_prefix}commands/SetSmartGridMode",
@@ -863,6 +938,50 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             name="Aquarea Buffer tank",
             entity_category=EntityCategory.CONFIG,
             state=bit_to_bool,
+        ),
+        HeishaMonSwitchEntityDescription(
+            heishamon_topic_id="SET30",  # corresponds to TOP119
+            key=f"{mqtt_prefix}main/External_Control",
+            command_topic=f"{mqtt_prefix}commands/SetExternalControl",
+            name="Aquarea External Control Enabled",
+            entity_category=EntityCategory.CONFIG,
+            state=bit_to_bool,
+            entity_registry_enabled_default=False,
+        ),
+        HeishaMonSwitchEntityDescription(
+            heishamon_topic_id="SET31",  # corresponds to TOP121
+            key=f"{mqtt_prefix}main/External_Error_Signal",
+            command_topic=f"{mqtt_prefix}commands/SetExternalError",
+            name="Aquarea External Error Signal",
+            entity_category=EntityCategory.CONFIG,
+            state=bit_to_bool,
+            entity_registry_enabled_default=False,
+        ),
+        HeishaMonSwitchEntityDescription(
+            heishamon_topic_id="SET32",  # corresponds to TOP122
+            key=f"{mqtt_prefix}main/External_Compressor_Control",
+            command_topic=f"{mqtt_prefix}commands/SetExternalCompressorControl",
+            name="Aquarea External Compressor control",
+            entity_category=EntityCategory.CONFIG,
+            state=bit_to_bool,
+            entity_registry_enabled_default=False,
+        ),
+        HeishaMonSwitchEntityDescription(
+            heishamon_topic_id="SET33",  # corresponds to TOP120
+            key=f"{mqtt_prefix}main/External_Heat_Cool_Control",
+            command_topic=f"{mqtt_prefix}commands/SetExternalHeatCoolControl",
+            name="Aquarea External Compressor control",
+            entity_category=EntityCategory.CONFIG,
+            state=bit_to_bool,
+            entity_registry_enabled_default=False,
+        ),
+        HeishaMonSwitchEntityDescription(
+            heishamon_topic_id="SET34", # corresponds to TOP129
+            key=f"{mqtt_prefix}main/Bivalent_Control",
+            command_topic=f"{mqtt_prefix}commands/SetBivalentControl",
+            name="Aquarea Bivalent Control",
+            state=bit_to_bool,
+            entity_registry_enabled_default=True,
         ),
         HeishaMonSwitchEntityDescription(
             heishamon_topic_id="RELAY01",
@@ -978,6 +1097,20 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}main/Optional_PCB",
             name="Aquarea optional PCB enabled",
             state=bit_to_bool,
+        ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="TOP132",
+            key=f"{mqtt_prefix}main/Bivalent_Advanced_Heat",
+            name="Aquarea Bivalent Advanced Heat",
+            state=read_enabled_disabled,
+            entity_registry_enabled_default=True,
+        ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="TOP133",
+            key=f"{mqtt_prefix}main/Bivalent_Advanced_DHW",
+            name="Aquarea Bivalent Advanced DHW",
+            state=read_enabled_disabled,
+            entity_registry_enabled_default=True,
         ),
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="OPT0",
@@ -1688,6 +1821,62 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             entity_registry_enabled_default=False, # K/L Series
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP127",
+            key=f"{mqtt_prefix}main/Z1_Valve_PID",
+            state_class=SensorStateClass.MEASUREMENT,
+            name="Aquarea Zone 1 valve PID",
+            native_unit_of_measurement="%",
+            entity_registry_enabled_default=True,
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP128",
+            key=f"{mqtt_prefix}main/Z2_Valve_PID",
+            state_class=SensorStateClass.MEASUREMENT,
+            name="Aquarea Zone 2 valve PID",
+            native_unit_of_measurement="%",
+            entity_registry_enabled_default=True,
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP131",
+            key=f"{mqtt_prefix}main/Bivalent_Start_Temp",
+            state_class=SensorStateClass.MEASUREMENT,
+            device_class=SensorDeviceClass.TEMPERATURE,
+            name="Aquarea Bivalent start Temperature",
+            state=int,
+            native_unit_of_measurement="°C",
+            entity_registry_enabled_default=True,
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP136",
+            key=f"{mqtt_prefix}main/Bivalent_Advanced_Start_Delay",
+            state_class=SensorStateClass.MEASUREMENT,
+            device_class=SensorDeviceClass.DURATION,
+            name="Aquarea Bivalent advanced start Delay",
+            state=int,
+            native_unit_of_measurement="min",
+            entity_registry_enabled_default=True,
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP137",
+            key=f"{mqtt_prefix}main/Bivalent_Advanced_Stop_Delay",
+            state_class=SensorStateClass.MEASUREMENT,
+            device_class=SensorDeviceClass.DURATION,
+            name="Aquarea Bivalent advanced stop Delay",
+            state=int,
+            native_unit_of_measurement="min",
+            entity_registry_enabled_default=True,
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP138",
+            key=f"{mqtt_prefix}main/Bivalent_Advanced_DHW_Delay",
+            state_class=SensorStateClass.MEASUREMENT,
+            device_class=SensorDeviceClass.DURATION,
+            name="Aquarea Bivalent advanced DHW Delay",
+            state=int,
+            native_unit_of_measurement="min",
+            entity_registry_enabled_default=True,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="STAT1_rssi",
