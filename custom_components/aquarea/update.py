@@ -4,10 +4,12 @@ import re
 import logging
 import json
 import aiohttp
+import datetime
 import asyncio
 from typing import Optional, Any
 from io import BufferedReader, BytesIO
 
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.components import mqtt
 from homeassistant.components.mqtt.client import async_publish
 from homeassistant.components.update.const import UpdateEntityFeature
@@ -20,6 +22,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 
 from . import build_device_info
 from .const import DeviceType
@@ -50,7 +53,13 @@ async def async_setup_entry(
         device=DeviceType.HEISHAMON,
     )
 
-    async_add_entities([HeishaMonMQTTUpdate(hass, firmware_update, config_entry)])
+    update_entity = HeishaMonMQTTUpdate(hass, firmware_update, config_entry)
+    async_add_entities([update_entity])
+
+
+async def async_update_progress_tracking(update_entity) -> None:
+    _LOGGER.debug("Update ha state, this periodic task should only run while a firmware update is in progress")
+    update_entity.async_write_ha_state()
 
 
 @frozendataclass
@@ -72,6 +81,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         config_entry: ConfigEntry,
     ) -> None:
         self.entity_description = description
+        self.config_entry = config_entry
         self.config_entry_entry_id = config_entry.entry_id
         self.hass = hass
         self.discovery_prefix = config_entry.data["discovery_prefix"]
@@ -94,7 +104,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         self._attr_release_url = f"https://github.com/{HEISHAMON_REPOSITORY}/releases"
         self._model_type = None
         self._release_notes = None
-        self._attr_progress = False
+        self._attr_in_progress = False
 
         self._ip_topic = f"{self.discovery_prefix}ip"
         self._heishamon_ip = None
@@ -118,6 +128,9 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         @callback
         def message_received(message):
             """Handle new MQTT messages."""
+            self._attr_installed_version = "3.8"
+            self.async_write_ha_state()
+            return None
 
             if (
                 self.stats_firmware_contain_version == False
@@ -162,7 +175,9 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         return build_device_info(self.entity_description.device, self.discovery_prefix)
 
     async def _update_latest_release(self):
+        _LOGGER.debug("Starting refresh latest version info")
         async with aiohttp.ClientSession() as session:
+            _LOGGER.warn(f"Fetching https://api.github.com/repos/{HEISHAMON_REPOSITORY}/releases")
             resp = await session.get(
                 f"https://api.github.com/repos/{HEISHAMON_REPOSITORY}/releases"
             )
@@ -174,6 +189,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 return
 
             releases = await resp.json()
+            _LOGGER.debug(f"Received json with list of releases")
             if len(releases) == 0:
                 _LOGGER.warn(
                     f"Not a single release was found for heishamon repository {HEISHAMON_REPOSITORY}"
@@ -183,6 +199,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
             self._attr_latest_version = re.sub(r"^v", "", last_release["tag_name"])
             self._attr_release_url = last_release["html_url"]
             self._release_notes = last_release["body"]
+            _LOGGER.debug(f"Latest release is {self._attr_latest_version}")
             self.async_write_ha_state()
 
     @property
@@ -205,7 +222,8 @@ class HeishaMonMQTTUpdate(UpdateEntity):
             _LOGGER.info(f"Will install latest version ({version}) of the firmware")
         else:
             _LOGGER.info(f"Will install version {version} of the firmware")
-        self._attr_progress = 0
+        self._attr_in_progress = True
+        self._attr_update_percentage = 0
         async with aiohttp.ClientSession() as session:
             resp = await session.get(
                 f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_file}/HeishaMon.ino.d1-v{version}.bin"
@@ -219,7 +237,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
 
             firmware_binary = await resp.read()
             _LOGGER.info(f"Firmware is {len(firmware_binary)} bytes long")
-            self._attr_progress = 10
+            self._attr_update_percentage = 10
             resp = await session.get(
                 f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_file}/HeishaMon.ino.d1-v{version}.md5"
             )
@@ -230,7 +248,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 )
                 return
             checksum = await resp.text()
-            self._attr_progress = 20
+            self._attr_update_percentage = 20
             _LOGGER.info(f"Downloaded binary and checksum {checksum} of version {version}")
 
             while self._heishamon_ip is None:
@@ -238,8 +256,20 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 await asyncio.sleep(1)
 
         def track_progress(current, total):
-            self._attr_progress = int(current / total * 100)
-            _LOGGER.info(f"Currently read {current} out of {total}: {self._attr_progress}%")
+            self._attr_update_percentage = 20 + int(current / total * 80)
+            _LOGGER.info(f"Currently read {current} out of {total}: {self._attr_update_percentage}%")
+
+        # This whole mechanic is made to call async_write_ha_state to make sure the entity state (especially the _attr_in_progress attribute is updated)
+        # trying to call this method from a callback when posting the firmware update leads HA to crash the integration
+        @callback
+        def callback_update_progress_tracking(now) -> None:
+            self.config_entry.async_create_background_task(self.hass, async_update_progress_tracking(self), name="update entity to track progress", eager_start=True)
+        cancel_update_tracking_schedule = async_track_time_interval(self.hass, callback_update_progress_tracking, datetime.timedelta(seconds=1))
+        def stop_update_progress_tracking(*_: Any) -> None:
+            cancel_update_tracking_schedule()
+        # we stop at the end of the update or (if it crashes badly, at HA stop)
+        self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, stop_update_progress_tracking)
+        self.hass.bus.async_listen_once("stop_heishamon_update_tracker", stop_update_progress_tracking)
 
 
         async with aiohttp.ClientSession() as session:
@@ -260,6 +290,8 @@ class HeishaMonMQTTUpdate(UpdateEntity):
             except TimeoutError as e:
                 _LOGGER.error(f"Timeout while uploading new firmware")
                 raise e
+            finally:
+                self.hass.bus.fire("stop_heishamon_update_tracker")
             if resp.status != 200:
                 _LOGGER.warn(f"Impossible to perform firmware update to version {version}")
                 return
