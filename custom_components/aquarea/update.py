@@ -128,10 +128,6 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         @callback
         def message_received(message):
             """Handle new MQTT messages."""
-            self._attr_installed_version = "3.8"
-            self.async_write_ha_state()
-            return None
-
             if (
                 self.stats_firmware_contain_version == False
                 and message.topic == self.marker3_2_topic
