@@ -972,7 +972,7 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             heishamon_topic_id="SET33",  # corresponds to TOP120
             key=f"{mqtt_prefix}main/External_Heat_Cool_Control",
             command_topic=f"{mqtt_prefix}commands/SetExternalHeatCoolControl",
-            name="Aquarea External Compressor control",
+            name="Aquarea External Heat Cool control",
             entity_category=EntityCategory.CONFIG,
             state=bit_to_bool,
             entity_registry_enabled_default=False,
