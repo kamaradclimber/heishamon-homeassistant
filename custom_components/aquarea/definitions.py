@@ -934,6 +934,14 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             state=bit_to_bool,
         ),
         HeishaMonSwitchEntityDescription(
+            heishamon_topic_id="SET26",  # corresponds to "TOP108"
+            key=f"{mqtt_prefix}main/Alt_External_Sensor",
+            command_topic=f"{mqtt_prefix}commands/SetAltExternalSensor",
+            name="Aquarea use external outdoor sensor",
+            entity_category=EntityCategory.CONFIG,
+            state=bit_to_bool,
+        ),
+        HeishaMonSwitchEntityDescription(
             heishamon_topic_id="SET28",  # corresponds to TOP99
             key=f"{mqtt_prefix}main/Buffer_Installed",
             command_topic=f"{mqtt_prefix}commands/SetBuffer",
