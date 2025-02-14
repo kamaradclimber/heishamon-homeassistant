@@ -1091,12 +1091,6 @@ def build_binary_sensors(
             state=bit_to_bool,
         ),
         HeishaMonBinarySensorEntityDescription(
-            heishamon_topic_id="TOP108",
-            key=f"{mqtt_prefix}main/Alt_External_Sensor",
-            name="Aquarea external outdoor sensor selected",
-            state=bit_to_bool,
-        ),
-        HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP109",
             key=f"{mqtt_prefix}main/Anti_Freeze_Mode",
             name="Aquarea anti freeze mode",
