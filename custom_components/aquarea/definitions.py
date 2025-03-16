@@ -838,7 +838,7 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
         HeishaMonSelectEntityDescription(
             heishamon_topic_id="SET26",  # also TOP114
             key=f"{mqtt_prefix}main/External_Pad_Heater",
-            command_topic=f"{mqtt_prefix}/commands/SetExternalPadHeater",
+            command_topic=f"{mqtt_prefix}commands/SetExternalPadHeater",
             name="Aquarea External Pad Heater type",
             state=read_external_pad_heater_enabled,
             state_to_mqtt=external_pad_heater_type_to_mqtt,
@@ -847,7 +847,7 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
         HeishaMonSelectEntityDescription(
             heishamon_topic_id="SET35",  # also TOP130
             key=f"{mqtt_prefix}main/Bivalent_Mode",
-            command_topic=f"{mqtt_prefix}/commands/SetBivalentMode",
+            command_topic=f"{mqtt_prefix}commands/SetBivalentMode",
             name="Aquarea Bivalent Mode",
             state=read_bivalent_mode,
             state_to_mqtt=bivalent_mode_to_mqtt,
