@@ -678,7 +678,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
         ),
         HeishaMonNumberEntityDescription(
             heishamon_topic_id="SET36", # corresponds to TOP131
-            key=f"{mqtt_prefix}commands/Bivalent_Start_Temp",
+            key=f"{mqtt_prefix}main/Bivalent_Start_Temp",
             command_topic=f"{mqtt_prefix}commands/SetBivalentStartTemp",
             retain=True,
             name="Aquarea Bivalent Start Temp",
@@ -694,9 +694,8 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
         ),
         HeishaMonNumberEntityDescription(
             heishamon_topic_id="SET37", # corresponds to TOP134
-            key=f"{mqtt_prefix}commands/Bivalent_Advanced_Start_Temp",
+            key=f"{mqtt_prefix}main/Bivalent_Advanced_Start_Temp",
             command_topic=f"{mqtt_prefix}commands/SetBivalentAStartTemp",
-            retain=True,
             name="Aquarea Bivalent Advanced Start Temp",
             entity_category=EntityCategory.CONFIG,
             native_unit_of_measurement="°C",
@@ -710,9 +709,8 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
         ),
         HeishaMonNumberEntityDescription(
             heishamon_topic_id="SET38", # corresponds to TOP135
-            key=f"{mqtt_prefix}commands/Bivalent_Advanced_Stop_Temp",
+            key=f"{mqtt_prefix}main/Bivalent_Advanced_Stop_Temp",
             command_topic=f"{mqtt_prefix}commands/SetBivalentAStopTemp",
-            retain=True,
             name="Aquarea Bivalent Advanced Stop Temp",
             entity_category=EntityCategory.CONFIG,
             native_unit_of_measurement="°C",
