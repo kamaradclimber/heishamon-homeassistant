@@ -974,6 +974,16 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             state=bit_to_bool,
             entity_registry_enabled_default=False,
         ),
+        HeishaMonSwitchEntityDescription( 
+            heishamon_topic_id="SetCompressorState", # depends on SET32 TOP122
+            key=f"{mqtt_prefix}commands/SetCompressorState",
+            command_topic=f"{mqtt_prefix}commands/SetCompressorState",
+            name="Aquarea Set Compressor state",
+            retain=True,       # should be retained since the value is not provided by heat pump data
+            entity_category=EntityCategory.CONFIG, 
+            state=bit_to_bool,
+            entity_registry_enabled_default=False, # hide by default since actual action depends on state of SET32=External_Compressor_Control (only if "ON", this switch has any effect) and on state of Pin3 of SW2 on Main PCB (Pin3=1 Switch Backup Heater OFF; Pin3=0 Switch Compressor OFF)
+        ),
         HeishaMonSwitchEntityDescription(
             heishamon_topic_id="SET33",  # corresponds to TOP120
             key=f"{mqtt_prefix}main/External_Heat_Cool_Control",
