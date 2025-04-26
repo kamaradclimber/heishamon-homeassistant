@@ -173,7 +173,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
     async def _update_latest_release(self):
         _LOGGER.debug("Starting refresh latest version info")
         async with aiohttp.ClientSession() as session:
-            _LOGGER.warn(f"Fetching https://api.github.com/repos/{HEISHAMON_REPOSITORY}/releases")
+            _LOGGER.info(f"Fetching https://api.github.com/repos/{HEISHAMON_REPOSITORY}/releases")
             resp = await session.get(
                 f"https://api.github.com/repos/{HEISHAMON_REPOSITORY}/releases"
             )
