@@ -13,11 +13,14 @@ Just make sure you have an MQTT integration configured. Heishamon mqtt messages 
 
 ℹ This integration supports any heishamon MQTT topic prefix (defaults to `panasonic_heat_pump`) and multiple heatpumps (experimental).
 
-⚠ By default, all sensors related to less common setups (cooling, buffer, solar or pool) are disabled by default. They can easily enabled when looking at the "Aquarea HeatPump Indoor Unit" device under "entities not shown".
+ℹ️ By default, all sensors related to less common setups (cooling, buffer, solar or pool) are disabled by default. They can easily enabled when looking at the "Aquarea HeatPump Indoor Unit" device under "entities not shown".
 
 ## Alternatives
 
 If you own Panasonic CZ-TAW1 module and have access to Panasonic smart cloud: use https://github.com/cjaliaga/home-assistant-aquarea or https://github.com/ronhks/panasonic-aquarea-smart-cloud-mqtt.
+
+⚠️ this integration and home-assistant-aquarea use the same subdirectory in `custom_components` so they cannot be installed via hacs at the same time.
+Uninstall one before installing the other.
 
 ## UI
 
