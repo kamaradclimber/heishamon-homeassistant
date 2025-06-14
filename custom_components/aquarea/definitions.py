@@ -483,7 +483,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             on_receive=partial(
                 guess_shift_or_direct_and_clamp_min_max_values,
                 range(-5, 6),
-                range(5, 26),
+                range(5, 36),
             ),
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
@@ -522,7 +522,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             on_receive=partial(
                 guess_shift_or_direct_and_clamp_min_max_values,
                 range(-5, 6),
-                range(5, 26),
+                range(5, 36),
             ),
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
