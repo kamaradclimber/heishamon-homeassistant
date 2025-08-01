@@ -187,6 +187,7 @@ async def async_setup_entry(
     for sensor in sensors:
         if sensor.entity_description.native_unit_of_measurement == "W":
             integration_sensors.append(EnergyIntegrationEntity(
+                hass,
                 integration_method=METHOD_LEFT,
                 name=f"{sensor.entity_description.name} Total",
                 round_digits=3,
@@ -196,7 +197,6 @@ async def async_setup_entry(
                 unit_time=UnitOfTime.HOURS,
                 # update integral at least once every 5 minutes, even if source does not change
                 max_sub_interval=timedelta(minutes=5),
-                device_info=sensor.device_info,
             ))
     async_add_entities(integration_sensors)
 
