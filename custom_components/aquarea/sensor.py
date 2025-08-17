@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from collections.abc import Callable
 from datetime import timedelta
 
+from awesomeversion import AwesomeVersion
 from homeassistant.components import mqtt
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -17,11 +18,8 @@ from homeassistant.components.integration.const import METHOD_LEFT
 from homeassistant.components.integration.sensor import IntegrationSensor
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.const import (
-    CONF_NAME,
-    CONF_STATE,
-    CONF_DEVICE_CLASS,
-    CONF_UNIT_OF_MEASUREMENT,
     UnitOfTime,
+    __version__ as HA_VERSION,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -234,6 +232,13 @@ def extract_sum(values):
     return 0
 
 class EnergyIntegrationEntity(IntegrationSensor):
+
+    def __init__(self, hass, **kwargs):
+        if AwesomeVersion(HA_VERSION) < AwesomeVersion("2025.8"):
+            super().__init__(**kwargs)
+        else:
+            super().__init__(hass, **kwargs)
+
     @property
     def entity_category(self):
         return EntityCategory.DIAGNOSTIC
