@@ -744,7 +744,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
     ranges = {
         "Heat": {
             "Outside": [-20, 30],
-            "Target": [15, 60],
+            "Target": [15, 70],
         },
         "Cool": {
             "Outside": [15, 30],
