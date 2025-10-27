@@ -22,3 +22,4 @@ jobs:
           exclude-any-issue-labels: 'keep-open'
           add-issue-labels: 'outdated'
           process-only: 'issues'
+          log-output: true
