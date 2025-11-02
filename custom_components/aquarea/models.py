@@ -113,5 +113,5 @@ HEATPUMP_MODELS_39 ={
   "E2 D5 0C 67 00 83 92 0C 27 98": "WH-ADC0509L3E5AN 5 1ph HP - split L-series 3kW elec heating - AN",
   "E2 D5 0B 34 99 83 92 0C 27 98": "WH-SDC0509L3E5 5 1ph HP - split L-series 3kW elec heating",
   # "E2 D5 0C 67 00 83 92 0C 28 98": "WH-ADC0509L3E5AN WH-WDG07LE5 1ph HP - split L-series 3kW elec heating - AN",   
-  "E2 D5 0C 67 00 83 92 0C 28 98": "WH-ADC0509L3E5AN 7 1ph HP - split L-series 3kW elec heating - AN"   WH-WDG07LE5
+  "E2 D5 0C 67 00 83 92 0C 28 98": "WH-ADC0509L3E5AN 7 1ph HP - split L-series 3kW elec heating - AN"
 }
