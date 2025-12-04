@@ -94,6 +94,7 @@ class HeishaMonDHW(WaterHeaterEntity):
         self._attr_current_operation = STATE_ECO
         self._attr_min_temp = 40
         self._attr_max_temp = 65
+        self._attr_target_temperature_step = 1
         self._attr_precision = 1
         self._attr_operation_list = [STATE_OFF, STATE_SUPERECO, STATE_ECO, STATE_PERFORMANCE]
         self._heat_delta = 0
