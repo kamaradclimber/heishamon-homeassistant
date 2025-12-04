@@ -13,6 +13,7 @@ from homeassistant.components.mqtt.client import async_publish
 from homeassistant.components.water_heater import (
     WaterHeaterEntity,
     WaterHeaterEntityFeature,
+    STATE_OFF,
     STATE_ECO,
     STATE_PERFORMANCE,
 )
@@ -94,7 +95,7 @@ class HeishaMonDHW(WaterHeaterEntity):
         self._attr_min_temp = 40
         self._attr_max_temp = 65
         self._attr_precision = 1
-        self._attr_operation_list = [STATE_SUPERECO, STATE_ECO, STATE_PERFORMANCE]
+        self._attr_operation_list = [STATE_OFF, STATE_SUPERECO, STATE_ECO, STATE_PERFORMANCE]
         self._heat_delta = 0
 
     async def async_set_temperature(self, **kwargs) -> None:
@@ -112,6 +113,17 @@ class HeishaMonDHW(WaterHeaterEntity):
         )
 
     async def async_set_operation_mode(self, operation_mode: str):
+        if operation_mode == STATE_OFF:
+            await self.async_turn_off()
+            # optimistic update
+            self._attr_current_operation = STATE_OFF
+            self.async_write_ha_state()
+            return
+        if not (self._operating_mode & OperatingMode.DHW):
+            await self.async_turn_on()
+        # optimistic update
+        self._attr_current_operation = operation_mode
+        self.async_write_ha_state()
         temp = HeishaMonDHW.operation_modes_temps[operation_mode][0]
         if temp is None:
             _LOGGER.warn(
@@ -176,6 +188,11 @@ class HeishaMonDHW(WaterHeaterEntity):
         @callback
         def operating_mode_received(message):
             self._operating_mode = OperatingMode.from_mqtt(message.payload)
+            if not (self._operating_mode & OperatingMode.DHW):
+                _LOGGER.debug("DHW is off")
+                self._attr_current_operation = STATE_OFF
+            elif self._attr_current_operation == STATE_OFF: # DHW is on but it was off before
+                self._attr_current_operation = "unknown preset"
             self.async_write_ha_state()
 
         await mqtt.async_subscribe(
@@ -187,6 +204,9 @@ class HeishaMonDHW(WaterHeaterEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         new_operating_mode = self._operating_mode | OperatingMode.DHW
+        _LOGGER.debug(
+                f"setting operating mode {new_operating_mode}"
+            )
         await async_publish(
                 self.hass,
                 f"{self.discovery_prefix}commands/SetOperationMode",
@@ -197,6 +217,9 @@ class HeishaMonDHW(WaterHeaterEntity):
         )
     async def async_turn_off(self, **kwargs: Any) -> None:
         new_operating_mode = self._operating_mode & ~OperatingMode.DHW
+        _LOGGER.debug(
+                f"setting operating mode {new_operating_mode}"
+            )
         await async_publish(
                 self.hass,
                 f"{self.discovery_prefix}commands/SetOperationMode",
