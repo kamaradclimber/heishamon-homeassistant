@@ -97,6 +97,7 @@ class HeishaMonDHW(WaterHeaterEntity):
         self._attr_target_temperature_step = 1
         self._attr_precision = 1
         self._attr_operation_list = [STATE_OFF, STATE_SUPERECO, STATE_ECO, STATE_PERFORMANCE]
+        self._desired_current_operation = STATE_OFF
         self._heat_delta = 0
 
     async def async_set_temperature(self, **kwargs) -> None:
@@ -159,11 +160,18 @@ class HeishaMonDHW(WaterHeaterEntity):
         def target_temperature_message_received(message):
             self._attr_target_temperature = float(message.payload)
             self.update_temperature_bounds()  # optimistic update
-            self._attr_current_operation = "unknown preset"
+            found = False
             for state_name, values in HeishaMonDHW.operation_modes_temps.items():
                 if float(message.payload) in values[1]:
-                    self._attr_current_operation = state_name
+                    found = True
+                    # we remember the current operation if we switch to STATE_OFF at one point
+                    self._desired_current_operation = state_name
+                    # when dhw is OFF, we don't use temperature to detect current operation
+                    if self._attr_current_operation != STATE_OFF:
+                        self._attr_current_operation = state_name
                     break
+            if not found:
+                self._attr_current_operation = "unknown preset"
             self.async_write_ha_state()
 
         await mqtt.async_subscribe(
@@ -193,7 +201,7 @@ class HeishaMonDHW(WaterHeaterEntity):
                 _LOGGER.debug("DHW is off")
                 self._attr_current_operation = STATE_OFF
             elif self._attr_current_operation == STATE_OFF: # DHW is on but it was off before
-                self._attr_current_operation = "unknown preset"
+                self._attr_current_operation = self._desired_current_operation or "unknown preset"
             self.async_write_ha_state()
 
         await mqtt.async_subscribe(
