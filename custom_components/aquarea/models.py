@@ -56,7 +56,8 @@ HEATPUMP_MODELS ={
     "46": "WH-ADC0309K3E5 9 1ph HP - K-series All-in-One R32",
     "47": "WH-ADC0916H9E8 12 3ph T-CAP - All-In-One",
     "48": "WH-SDC0509L3E5 7 1 ph HP - split L-series 3kW elec heating",
-    "49": "WH-SXC09H3E5 9 1ph T-CAP"
+    "49": "WH-SXC09H3E5 9 1ph T-CAP",
+    "50": "WH-ADC0309J3E5C 3.2 1ph HP - All-In-One Compact"
 }
 
 HEATPUMP_MODELS_39 ={
@@ -113,5 +114,6 @@ HEATPUMP_MODELS_39 ={
   "E2 D5 0C 67 00 83 92 0C 27 98": "WH-ADC0509L3E5AN 5 1ph HP - split L-series 3kW elec heating - AN",
   "E2 D5 0B 34 99 83 92 0C 27 98": "WH-SDC0509L3E5 5 1ph HP - split L-series 3kW elec heating",
   "E2 D5 0C 67 00 83 92 0C 28 98": "WH-ADC0509L3E5AN+WH-WDG07LE5 7 1ph HP - split L-series 3kW elec heating - AN",
-  "E2 D5 0C 67 00 83 92 0C 29 98": "WH-ADC0509L3E5AN+WH-WDG09LE5 9 1ph HP - split L-series 3kW elec heating - AN"
+  "E2 D5 0C 67 00 83 92 0C 29 98": "WH-ADC0509L3E5AN+WH-WDG09LE5 9 1ph HP - split L-series 3kW elec heating - AN",
+  "42 D4 0B 83 71 32 D2 0C 44 55": "WH-ADC0309J3E5C 3.2 1ph HP - All-In-One Compact"
 }
