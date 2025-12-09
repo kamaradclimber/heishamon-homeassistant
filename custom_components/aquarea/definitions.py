@@ -133,7 +133,9 @@ def read_pump_flowrate_mode(value: str) -> Optional[str]:
         return "DeltaT"
     if value == "1":
         return "Maximum flow"
-    _LOGGER.warn(f"Unknown flow rate mode '{value}', open ticket to maintainer")
+    if value == "-1":
+        return None
+    _LOGGER.warning(f"Unknown flow rate mode '{value}', please open ticket to maintainer")
     return None
 
 
@@ -142,7 +144,9 @@ def read_liquid_type(value: str) -> Optional[str]:
         return "Water"
     if value == "1":
         return "Glycol"
-    _LOGGER.warn(f"Unknown liquid type '{value}', open ticket to maintainer")
+    if value == "-1":
+        return None
+    _LOGGER.warning(f"Unknown liquid type '{value}', open ticket to maintainer")
     return None
 
 
@@ -155,7 +159,9 @@ def read_zone_sensor_type(value: str) -> Optional[str]:
         return "Internal Thermostat"
     if value == "3":
         return "Thermistor"
-    _LOGGER.warn(f"Unknown zone sensor type '{value}', open ticket to maintainer")
+    if value == "-1":
+        return None
+    _LOGGER.warning(f"Unknown zone sensor type '{value}', please open ticket to maintainer")
     return None
 
 
@@ -183,7 +189,9 @@ def read_mixing_valve_request(value: str) -> Optional[str]:
         return "Decrease"
     if value == "2":
         return "Increase"
-    _LOGGER.warn(f"Unknown mixing valve request '{value}', open ticket to maintainer")
+    if value == "-1":
+        return None
+    _LOGGER.warning(f"Unknown mixing valve request '{value}', please open ticket to maintainer")
     return None
 
 
