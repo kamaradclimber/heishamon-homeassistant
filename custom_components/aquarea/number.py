@@ -60,6 +60,8 @@ class HeishaMonMQTTNumber(NumberEntity):
         )
         self._attr_native_min_value = description.native_min_value
         self._attr_native_max_value = description.native_max_value
+        if (self._attr_native_max_value - self._attr_native_min_value) > 10:
+            self._attr_mode = "box"
 
     def set_range(self, min, max) -> None:
         self._attr_native_min_value = min
