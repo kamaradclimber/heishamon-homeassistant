@@ -1076,6 +1076,7 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}main/Room_Heater_State",
             name="Aquarea Room Heater Enabled",
             state=bit_to_bool,
+            device_class=BinarySensorDeviceClass.HEAT,
         ),
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP60",
@@ -1096,6 +1097,7 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}main/Force_Heater_State",
             name="Aquarea Force heater status",
             state=bit_to_bool,
+            device_class=BinarySensorDeviceClass.HEAT,
         ),
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP93",
@@ -1116,6 +1118,7 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}main/Anti_Freeze_Mode",
             name="Aquarea anti freeze mode",
             state=bit_to_bool,
+            device_class=BinarySensorDeviceClass.RUNNING,
         ),
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP110",
@@ -1142,6 +1145,7 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}optional/Z1_Water_Pump",
             name="Aquarea Zone 1 water pump action request",
             state=bit_to_bool,
+            device_class=BinarySensorDeviceClass.RUNNING,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
         HeishaMonBinarySensorEntityDescription(
@@ -1149,6 +1153,7 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}optional/Z2_Water_Pump",
             name="Aquarea Zone 2 water pump action request",
             state=bit_to_bool,
+            device_class=BinarySensorDeviceClass.RUNNING,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
         HeishaMonBinarySensorEntityDescription(
@@ -1156,6 +1161,7 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}optional/Pool_Water_Pump",
             name="Aquarea pool water pump action request",
             state=bit_to_bool,
+            device_class=BinarySensorDeviceClass.RUNNING,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
         HeishaMonBinarySensorEntityDescription(
@@ -1163,6 +1169,7 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}optional/Solar_Water_Pump",
             name="Aquarea solar water pump action request",
             state=bit_to_bool,
+            device_class=BinarySensorDeviceClass.RUNNING,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
         HeishaMonBinarySensorEntityDescription(
@@ -1170,6 +1177,7 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}optional/Alarm_State",
             name="Aquarea Alarm State",
             state=bit_to_bool,
+            device_class=BinarySensorDeviceClass.PROBLEM,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
     ]
