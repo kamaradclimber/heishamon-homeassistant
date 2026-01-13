@@ -1353,6 +1353,8 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             key=f"{mqtt_prefix}main/ThreeWay_Valve_State",
             name="Aquarea 3-way Valve",
             state=read_threeway_valve,
+            options=["Room", "Tank"],
+            device_class=SensorDeviceClass.ENUM,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP21",
