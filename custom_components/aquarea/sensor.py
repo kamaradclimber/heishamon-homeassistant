@@ -144,7 +144,7 @@ async def async_setup_entry(
         unique_id=f"{config_entry.entry_id}-heishamon_cop",
         key=f"{discovery_prefix}/cop",
         name=f"Aquarea COP",
-        native_unit_of_measurement="x",
+        device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
         topics=[
             f"{discovery_prefix}main/Defrosting_State",

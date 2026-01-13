@@ -100,6 +100,8 @@ class OperatingMode(Flag):
     def to_mqtt(self) -> str:
         return str(int(self))
 
+def convert_pressure_to_kPa(str_repr: str) -> float:
+    return float(str_repr) * 98.0665
 
 def operating_mode_to_state(str_repr: str):
     return str(int(OperatingMode.from_str(str_repr)))
@@ -1247,11 +1249,8 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             key=f"{mqtt_prefix}main/Pump_Flow",
             name="Aquarea Pump Flow",
             native_unit_of_measurement="L/min",
+            device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
             state_class=SensorStateClass.MEASUREMENT,
-            # device_class=SensorDeviceClass.ENERGY,
-            # icon= "mdi:on"
-            # entity_registry_enabled_default = False, # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
-            # native_unit_of_measurement="L/min",
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP5",
@@ -1624,8 +1623,10 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             heishamon_topic_id="TOP64",
             key=f"{mqtt_prefix}main/High_Pressure",
             name="Aquarea High pressure",
-            native_unit_of_measurement="Kgf/cm2",
+            native_unit_of_measurement="kPa",
+            device_class=SensorDeviceClass.PRESSURE,
             state_class=SensorStateClass.MEASUREMENT,
+            state=convert_pressure_to_kPa,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP65",
@@ -1638,8 +1639,10 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             heishamon_topic_id="TOP66",
             key=f"{mqtt_prefix}main/Low_Pressure",
             name="Aquarea Low Pressure",
-            native_unit_of_measurement="Kgf/cm2",
+            native_unit_of_measurement="kPa",
+            device_class=SensorDeviceClass.PRESSURE,
             state_class=SensorStateClass.MEASUREMENT,
+            state=convert_pressure_to_kPa,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP67",
@@ -1671,6 +1674,8 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             key=f"{mqtt_prefix}main/Heating_Mode",
             name="Aquarea Heating Mode",
             state=read_heating_mode,
+            device_class=SensorDeviceClass.ENUM,
+            options=["compensation curve", "direct"],
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP78",
@@ -1703,6 +1708,8 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             key=f"{mqtt_prefix}main/Cooling_Mode",
             name="Aquarea Cooling Mode",
             state=read_heating_mode,
+            device_class=SensorDeviceClass.ENUM,
+            options=["compensation curve", "direct"],
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
         HeishaMonSensorEntityDescription(
@@ -2057,6 +2064,8 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             key=f"{mqtt_prefix}optional/Z1_Mixing_Valve",
             name="Aquarea Zone 1 mixing valve request",
             state=read_mixing_valve_request,
+            device_class=SensorDeviceClass.ENUM,
+            options=["Off", "Decrease", "Increase"],
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
         HeishaMonSensorEntityDescription(
@@ -2064,6 +2073,8 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             key=f"{mqtt_prefix}optional/Z2_Mixing_Valve",
             name="Aquarea Zone 2 mixing valve request",
             state=read_mixing_valve_request,
+            device_class=SensorDeviceClass.ENUM,
+            options=["Off", "Decrease", "Increase"],
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
     ]
