@@ -1259,6 +1259,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="L/min",
             device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP5",
@@ -1267,6 +1268,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Inlet Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP6",
@@ -1275,6 +1277,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Outlet Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP7",
@@ -1283,6 +1286,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Outlet Target Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP8",
@@ -1292,6 +1296,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.FREQUENCY,
             native_unit_of_measurement="Hz",
             entity_category=EntityCategory.DIAGNOSTIC,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP10",
@@ -1300,6 +1305,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP11",
@@ -1309,6 +1315,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="h",
             state_class=SensorStateClass.TOTAL_INCREASING,
             entity_category=EntityCategory.DIAGNOSTIC,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP12",
@@ -1324,6 +1331,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         MultiMQTTSensorEntityDescription(
             heishamon_topic_id="TOP15",
@@ -1339,6 +1347,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=0,
         ),
         MultiMQTTSensorEntityDescription(
             heishamon_topic_id="TOP16",
@@ -1354,6 +1363,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP20",
@@ -1370,6 +1380,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Outdoor Pipe Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP23",
@@ -1378,6 +1389,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Heat delta",
             device_class=SensorDeviceClass.TEMPERATURE_DELTA,
             native_unit_of_measurement="K",
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP24",
@@ -1387,6 +1399,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE_DELTA,
             native_unit_of_measurement="K",
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP25",
@@ -1395,6 +1408,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea DHW Holiday shift temperature",
             device_class=SensorDeviceClass.TEMPERATURE_DELTA,
             native_unit_of_measurement="K",
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP33",
@@ -1403,6 +1417,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Remote control thermostat temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP36",
@@ -1412,6 +1427,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state=read_temp,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP37",
@@ -1421,6 +1437,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state=read_temp,
+            suggested_display_precision=1,
         ),
         MultiMQTTSensorEntityDescription(
             heishamon_topic_id="TOP38",
@@ -1437,6 +1454,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+            suggested_display_precision=0,
         ),
         MultiMQTTSensorEntityDescription(
             heishamon_topic_id="TOP39",
@@ -1453,6 +1471,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+            suggested_display_precision=0,
         ),
         MultiMQTTSensorEntityDescription(
             heishamon_topic_id="TOP40",
@@ -1468,6 +1487,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=0,
         ),
         MultiMQTTSensorEntityDescription(
             heishamon_topic_id="TOP41",
@@ -1483,6 +1503,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.POWER,
             native_unit_of_measurement="W",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP42",
@@ -1491,6 +1512,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP43",
@@ -1499,6 +1521,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP44",
@@ -1513,6 +1536,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE_DELTA,
             native_unit_of_measurement="K",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP46",
@@ -1522,6 +1546,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP47",
@@ -1531,6 +1556,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP48",
@@ -1540,6 +1566,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP49",
@@ -1548,6 +1575,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP50",
@@ -1556,6 +1584,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP51",
@@ -1564,6 +1593,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP52",
@@ -1572,6 +1602,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP53",
@@ -1580,6 +1611,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP54",
@@ -1588,6 +1620,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP55",
@@ -1596,6 +1629,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP56",
@@ -1604,6 +1638,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP57",
@@ -1612,6 +1647,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP62",
@@ -1619,6 +1655,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Fan 1 Speed",
             native_unit_of_measurement="R/min",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP63",
@@ -1626,6 +1663,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Fan 2 Speed",
             native_unit_of_measurement="R/min",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP64",
@@ -1635,6 +1673,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.PRESSURE,
             state_class=SensorStateClass.MEASUREMENT,
             state=convert_pressure_to_kPa,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP65",
@@ -1642,6 +1681,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Pump Speed",
             native_unit_of_measurement="R/min",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP66",
@@ -1651,6 +1691,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.PRESSURE,
             state_class=SensorStateClass.MEASUREMENT,
             state=convert_pressure_to_kPa,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP67",
@@ -1660,6 +1701,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="A",
             state_class=SensorStateClass.MEASUREMENT,
             entity_category=EntityCategory.DIAGNOSTIC,
+            suggested_display_precision=2,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP70",
@@ -1668,6 +1710,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP71",
@@ -1676,6 +1719,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.DURATION,
             native_unit_of_measurement="min",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP76",
@@ -1692,6 +1736,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP79",
@@ -1701,6 +1746,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP80",
@@ -1710,6 +1756,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="°C",
             state_class=SensorStateClass.MEASUREMENT,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP81",
@@ -1727,6 +1774,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.DURATION,
             native_unit_of_measurement="h",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP91",
@@ -1735,6 +1783,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.DURATION,
             native_unit_of_measurement="h",
             state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP92",
@@ -1764,6 +1813,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="K",
             state=int,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP103",
@@ -1773,6 +1823,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="K",
             state=int,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP104",
@@ -1782,6 +1833,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="°C",
             state=int,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP105",
@@ -1791,6 +1843,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="°C",
             state=int,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP106",
@@ -1825,6 +1878,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE_DELTA,
             native_unit_of_measurement="K",
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP115",
@@ -1834,6 +1888,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.PRESSURE,
             native_unit_of_measurement="bar",
             entity_registry_enabled_default=False, # K/L Series
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP116",
@@ -1843,6 +1898,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             entity_registry_enabled_default=False, # K/L Series
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP117",
@@ -1852,6 +1908,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             entity_registry_enabled_default=False, # K/L Series
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP118",
@@ -1861,6 +1918,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
             entity_registry_enabled_default=False, # K/L Series
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP127",
@@ -1869,6 +1927,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Zone 1 valve PID",
             native_unit_of_measurement="%",
             entity_registry_enabled_default=True,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP128",
@@ -1877,6 +1936,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Zone 2 valve PID",
             native_unit_of_measurement="%",
             entity_registry_enabled_default=True,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP131",
@@ -1887,6 +1947,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state=int,
             native_unit_of_measurement="°C",
             entity_registry_enabled_default=True,
+            suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP136",
@@ -1897,6 +1958,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state=int,
             native_unit_of_measurement="min",
             entity_registry_enabled_default=True,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP137",
@@ -1907,6 +1969,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state=int,
             native_unit_of_measurement="min",
             entity_registry_enabled_default=True,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP138",
@@ -1917,6 +1980,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state=int,
             native_unit_of_measurement="min",
             entity_registry_enabled_default=True,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="STAT1_rssi",
@@ -1927,6 +1991,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="%",
             state_class=SensorStateClass.MEASUREMENT,
             entity_category=EntityCategory.DIAGNOSTIC,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="STAT1_uptime",
@@ -1938,6 +2003,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="s",
             state_class=SensorStateClass.MEASUREMENT,
             entity_category=EntityCategory.DIAGNOSTIC,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="STAT1_total_reads",
@@ -2012,6 +2078,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
             entity_category=EntityCategory.DIAGNOSTIC,
+            suggested_display_precision=2,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="STAT1_freememory",
@@ -2022,6 +2089,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="%",
             state_class=SensorStateClass.MEASUREMENT,
             entity_category=EntityCategory.DIAGNOSTIC,
+            suggested_display_precision=0,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="STAT1_freeheap",
