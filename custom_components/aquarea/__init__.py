@@ -17,6 +17,7 @@ PLATFORMS = [
     Platform.CLIMATE,
     Platform.WATER_HEATER,
     Platform.UPDATE,
+    Platform.BUTTON,
 ]
 _LOGGER = logging.getLogger(__name__)
 
