@@ -1,4 +1,5 @@
 """Definitions for HeishaMon sensors added to MQTT."""
+
 from __future__ import annotations
 from functools import partial, wraps
 import json
@@ -13,10 +14,10 @@ from homeassistant.const import MAJOR_VERSION
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
+from homeassistant.components.button import ButtonEntityDescription, ButtonDeviceClass
 from homeassistant.components.switch import SwitchEntityDescription
 from homeassistant.components.select import SelectEntityDescription
 from homeassistant.components.number import NumberEntityDescription, NumberDeviceClass
-
 
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -100,11 +101,14 @@ class OperatingMode(Flag):
     def to_mqtt(self) -> str:
         return str(int(self))
 
+
 def convert_pressure_to_kPa(str_repr: str) -> float:
     return float(str_repr) * 98.0665
 
+
 def operating_mode_to_state(str_repr: str):
     return str(int(OperatingMode.from_str(str_repr)))
+
 
 def read_enabled_disabled(value: str) -> Optional[bool]:
     if value == "1":
@@ -113,8 +117,10 @@ def read_enabled_disabled(value: str) -> Optional[bool]:
         return False
     return None
 
+
 def read_bivalent_mode(value: str) -> Optional[str]:
     return BIVALENT_MODES.get(value, None)
+
 
 BIVALENT_MODES = {
     "0": "Alternative",
@@ -122,8 +128,10 @@ BIVALENT_MODES = {
     "2": "Advanced Parallel",
 }
 
+
 def bivalent_mode_to_mqtt(value: str) -> Optional[str]:
     return lookup_by_value(BIVALENT_MODES, value)
+
 
 def read_operating_mode_state(value: str) -> str:
     mode = OperatingMode.from_mqtt(value)
@@ -137,7 +145,9 @@ def read_pump_flowrate_mode(value: str) -> Optional[str]:
         return "Maximum flow"
     if value == "-1":
         return None
-    _LOGGER.warning(f"Unknown flow rate mode '{value}', please open ticket to maintainer")
+    _LOGGER.warning(
+        f"Unknown flow rate mode '{value}', please open ticket to maintainer"
+    )
     return None
 
 
@@ -163,7 +173,9 @@ def read_zone_sensor_type(value: str) -> Optional[str]:
         return "Thermistor"
     if value == "-1":
         return None
-    _LOGGER.warning(f"Unknown zone sensor type '{value}', please open ticket to maintainer")
+    _LOGGER.warning(
+        f"Unknown zone sensor type '{value}', please open ticket to maintainer"
+    )
     return None
 
 
@@ -193,7 +205,9 @@ def read_mixing_valve_request(value: str) -> Optional[str]:
         return "Increase"
     if value == "-1":
         return None
-    _LOGGER.warning(f"Unknown mixing valve request '{value}', please open ticket to maintainer")
+    _LOGGER.warning(
+        f"Unknown mixing valve request '{value}', please open ticket to maintainer"
+    )
     return None
 
 
@@ -266,6 +280,7 @@ def frozendataclass(cls):
             return dataclass(cls, frozen=True, kw_only=True)
         else:
             return dataclass(cls)
+
     if cls is None:
         # we are called with parens
         return wrapper_dataclass
@@ -324,6 +339,15 @@ class HeishaMonSwitchEntityDescription(
     payload_off: str = "0"
     retain: bool = False
     encoding: str = "utf-8"
+
+
+@frozendataclass
+class HeishaMonButtonEntityDescription(
+    HeishaMonEntityDescription, ButtonEntityDescription
+):
+    """Button entity description for HeishaMon."""
+
+    pass
 
 
 @frozendataclass
@@ -389,7 +413,7 @@ def read_demandcontrol(value: str) -> Optional[int]:
 
 
 def write_demandcontrol(value: int) -> str:
-    value = (value - 5) / 95 # 5% -> 100% to 0% -> 95% for remapping
+    value = (value - 5) / 95  # 5% -> 100% to 0% -> 95% for remapping
     return str(int(value * (234 - 43) + 43))
 
 
@@ -687,7 +711,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             initial_value=100,
         ),
         HeishaMonNumberEntityDescription(
-            heishamon_topic_id="SET36", # corresponds to TOP131
+            heishamon_topic_id="SET36",  # corresponds to TOP131
             key=f"{mqtt_prefix}main/Bivalent_Start_Temp",
             command_topic=f"{mqtt_prefix}commands/SetBivalentStartTemp",
             retain=True,
@@ -704,7 +728,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             initial_value=0,
         ),
         HeishaMonNumberEntityDescription(
-            heishamon_topic_id="SET37", # corresponds to TOP134
+            heishamon_topic_id="SET37",  # corresponds to TOP134
             key=f"{mqtt_prefix}main/Bivalent_Advanced_Start_Temp",
             command_topic=f"{mqtt_prefix}commands/SetBivalentAStartTemp",
             name="Aquarea Bivalent Advanced Start Temp",
@@ -720,7 +744,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             initial_value=0,
         ),
         HeishaMonNumberEntityDescription(
-            heishamon_topic_id="SET38", # corresponds to TOP135
+            heishamon_topic_id="SET38",  # corresponds to TOP135
             key=f"{mqtt_prefix}main/Bivalent_Advanced_Stop_Temp",
             command_topic=f"{mqtt_prefix}commands/SetBivalentAStopTemp",
             name="Aquarea Bivalent Advanced Stop Temp",
@@ -762,7 +786,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
         "Cool": {
             "Outside": [15, 30],
             "Target": [5, 20],
-        }
+        },
     }
 
     def dual_location(loc):
@@ -987,15 +1011,15 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             state=bit_to_bool,
             entity_registry_enabled_default=False,
         ),
-        HeishaMonSwitchEntityDescription( 
-            heishamon_topic_id="SetCompressorState", # depends on SET32 TOP122
+        HeishaMonSwitchEntityDescription(
+            heishamon_topic_id="SetCompressorState",  # depends on SET32 TOP122
             key=f"{mqtt_prefix}commands/SetCompressorState",
             command_topic=f"{mqtt_prefix}commands/SetCompressorState",
             name="Aquarea Set Compressor state",
-            retain=True,       # should be retained since the value is not provided by heat pump data
-            entity_category=EntityCategory.CONFIG, 
+            retain=True,  # should be retained since the value is not provided by heat pump data
+            entity_category=EntityCategory.CONFIG,
             state=bit_to_bool,
-            entity_registry_enabled_default=False, # hide by default since actual action depends on state of SET32=External_Compressor_Control (only if "ON", this switch has any effect) and on state of Pin3 of SW2 on Main PCB (Pin3=1 Switch Backup Heater OFF; Pin3=0 Switch Compressor OFF)
+            entity_registry_enabled_default=False,  # hide by default since actual action depends on state of SET32=External_Compressor_Control (only if "ON", this switch has any effect) and on state of Pin3 of SW2 on Main PCB (Pin3=1 Switch Backup Heater OFF; Pin3=0 Switch Compressor OFF)
         ),
         HeishaMonSwitchEntityDescription(
             heishamon_topic_id="SET33",  # corresponds to TOP120
@@ -1007,7 +1031,7 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             entity_registry_enabled_default=False,
         ),
         HeishaMonSwitchEntityDescription(
-            heishamon_topic_id="SET34", # corresponds to TOP129
+            heishamon_topic_id="SET34",  # corresponds to TOP129
             key=f"{mqtt_prefix}main/Bivalent_Control",
             command_topic=f"{mqtt_prefix}commands/SetBivalentControl",
             name="Aquarea Bivalent Control",
@@ -1219,17 +1243,20 @@ def read_heating_mode(value: str) -> Optional[str]:
         return "direct"
     return None
 
+
 def read_temp(value: str) -> Optional[Any]:
     v = int(value)
     if v == -128:
         return None
     return value
 
+
 def read_stats_json(field_name: str, json_doc: str) -> Optional[float]:
     field_value = json.loads(json_doc).get(field_name, None)
     if field_value:
         return float(field_value)
     return None
+
 
 def read_board_type(json_doc: str) -> Optional[str]:
     j = json.loads(json_doc)
@@ -1243,6 +1270,7 @@ def read_board_type(json_doc: str) -> Optional[str]:
             if float(j["free heap"]) > 65535:
                 return "ESP32"
     return None
+
 
 def ms_to_secs(value: Optional[float]) -> Optional[float]:
     if value:
@@ -1887,7 +1915,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Water Pressure",
             device_class=SensorDeviceClass.PRESSURE,
             native_unit_of_measurement="bar",
-            entity_registry_enabled_default=False, # K/L Series
+            entity_registry_enabled_default=False,  # K/L Series
             suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
@@ -1897,7 +1925,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Inlet 2 Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
-            entity_registry_enabled_default=False, # K/L Series
+            entity_registry_enabled_default=False,  # K/L Series
             suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
@@ -1907,7 +1935,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Economizer Outlet Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
-            entity_registry_enabled_default=False, # K/L Series
+            entity_registry_enabled_default=False,  # K/L Series
             suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
@@ -1917,7 +1945,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Remote control 2 thermostat temp",
             device_class=SensorDeviceClass.TEMPERATURE,
             native_unit_of_measurement="°C",
-            entity_registry_enabled_default=False, # K/L Series
+            entity_registry_enabled_default=False,  # K/L Series
             suggested_display_precision=1,
         ),
         HeishaMonSensorEntityDescription(
@@ -2152,5 +2180,21 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.ENUM,
             options=["Off", "Decrease", "Increase"],
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+    ]
+
+
+def build_buttons(
+    mqtt_prefix: str,
+) -> list[HeishaMonBinarySensorEntityDescription]:
+    return [
+        HeishaMonButtonEntityDescription(
+            heishamon_topic_id="Reboot",
+            key=f"{mqtt_prefix}ip",
+            name="Reboot",
+            device=DeviceType.HEISHAMON,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            device_class=ButtonDeviceClass.RESTART,
+            on_receive=update_device_ip,
         ),
     ]
