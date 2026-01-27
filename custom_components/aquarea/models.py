@@ -6,6 +6,7 @@
 #   [bytes, "#{model} #{power} #{phase_count} #{tcap}"]
 # }.to_h))') >> custom_components/aquarea/models.py
 
+# don't touch this, this is only valid for heishamon < 3.9
 HEATPUMP_MODELS ={
     "0": "WH-MDC05H3E5 5 1ph HP",
     "1": "WH-MDC07H3E5 7 1ph HP",
@@ -88,9 +89,9 @@ HEATPUMP_MODELS_39 ={
   "32 D4 0B 88 84 73 90 0C 85 84": "WH-MXC12J9E8 12 3ph T-CAP",
   "E2 CF 0B 75 09 12 D0 0C 06 11": "WH-ADC1216H6E5 12 1ph T-CAP",
   "42 D4 0B 83 71 42 D2 0C 46 55": "WH-ADC0309J3E5C 7 1ph HP - All-In-One Compact",
-  "C2 D3 0C 34 65 B2 D3 0B 95 65": "WH-MDC07J3E5 7 1ph HP (new version?)",
+  "C2 D3 0C 34 65 B2 D3 0B 95 65": "WH-MDC07J3E5 7 1ph HP (new version)",
   "C2 D3 0C 33 65 B2 D3 0B 94 65": "WH-MDC05J3E5 5 1ph HP (new version)",
-  "E2 CF 0B 83 05 12 D0 0D 92 05": "WH-UQ12HE8 12 3ph T-CAP - Super Quiet",
+  "E2 CF 0B 83 05 12 D0 0D 92 05": "WH-SQC12H9E8 12 3ph T-CAP - Super Quiet",
   "E2 CF 0C 78 09 12 D0 0B 06 11": "WH-SXC12H6E5 12 1ph T-CAP",
   "C2 D3 0C 35 65 B2 D3 0B 96 65": "WH-MDC09J3E5 9 1ph HP (new version?)",
   "32 D4 0B 99 77 62 90 0B 01 78": "WH-MXC09J3E5 9 1ph T-CAP",
@@ -111,9 +112,12 @@ HEATPUMP_MODELS_39 ={
   "E2 CF 0C 74 09 12 D0 0C 95 05": "WH-ADC0916H9E8 12 3ph T-CAP - All-In-One",
   "E2 D5 0B 34 99 83 92 0C 28 98": "WH-SDC0509L3E5 7 1 ph HP - split L-series 3kW elec heating",
   "E2 CF 0D 77 09 12 D0 0C 05 11": "WH-SXC09H3E5 9 1ph T-CAP",
+  "E2 CF 0B 44 34 12 D0 0C 34 35": "WH-MXC12H9E8 12 3ph T-CAP",
   "E2 D5 0C 67 00 83 92 0C 27 98": "WH-ADC0509L3E5AN 5 1ph HP - split L-series 3kW elec heating - AN",
   "E2 D5 0B 34 99 83 92 0C 27 98": "WH-SDC0509L3E5 5 1ph HP - split L-series 3kW elec heating",
-  "E2 D5 0C 67 00 83 92 0C 28 98": "WH-ADC0509L3E5AN+WH-WDG07LE5 7 1ph HP - split L-series 3kW elec heating - AN",
-  "E2 D5 0C 67 00 83 92 0C 29 98": "WH-ADC0509L3E5AN+WH-WDG09LE5 9 1ph HP - split L-series 3kW elec heating - AN",
-  "42 D4 0B 83 71 32 D2 0C 44 55": "WH-ADC0309J3E5C 3.2 1ph HP - All-In-One Compact"
+  "42 D4 0B 83 71 32 D2 0C 44 55": "WH-ADC0309J3E5C 3.2 1ph HP - All-In-One Compact",
+  "E2 CF 0C 74 09 12 D0 0E 94 05": "WH-ADC0916H9E8 9 3ph T-CAP - All-In-One",
+  "12 D7 0D 98 11 33 94 0C 83 10": "WH-ADC0316M9E8AN2 9 2ph T-CAP - M-series DHW 185l",
+  "E2 D5 0B 08 95 02 D6 0F 67 95": "WH-SDC0309K3E5 7 1ph HP - split K-series (sold in Poland)",
+  "E2 D5 0D 36 99 02 D6 10 66 95": "WH-ADC0309K3E5AN 5 1ph HP - All-In-One K-series - AN"
 }
