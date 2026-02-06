@@ -99,6 +99,7 @@ class HeishaMonDHW(WaterHeaterEntity):
         self._attr_operation_list = [STATE_OFF, STATE_SUPERECO, STATE_ECO, STATE_PERFORMANCE]
         self._desired_current_operation = STATE_OFF
         self._heat_delta = 0
+        self._operating_mode = OperatingMode(0)  # Initialize to empty mode until MQTT updates arrive
 
     async def async_set_temperature(self, **kwargs) -> None:
         temperature = kwargs.get("temperature")
@@ -212,10 +213,20 @@ class HeishaMonDHW(WaterHeaterEntity):
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        new_operating_mode = self._operating_mode | OperatingMode.DHW
-        _LOGGER.debug(
-                f"setting operating mode {new_operating_mode}"
+        # If operating mode is 0 (system is off), turn on main power first
+        if self._operating_mode == OperatingMode(0):
+            _LOGGER.debug("Operating mode is 0, turning on main power first")
+            await async_publish(
+                self.hass,
+                f"{self.discovery_prefix}commands/SetHeatpump",
+                "1",
+                0,
+                False,
+                "utf-8",
             )
+
+        new_operating_mode = self._operating_mode | OperatingMode.DHW
+        _LOGGER.debug(f"setting operating mode {new_operating_mode}")
         await async_publish(
                 self.hass,
                 f"{self.discovery_prefix}commands/SetOperationMode",
@@ -224,19 +235,38 @@ class HeishaMonDHW(WaterHeaterEntity):
                 False,
                 "utf-8",
         )
+        # Optimistically update operating mode
+        self._operating_mode = new_operating_mode
     async def async_turn_off(self, **kwargs: Any) -> None:
         new_operating_mode = self._operating_mode & ~OperatingMode.DHW
-        _LOGGER.debug(
-                f"setting operating mode {new_operating_mode}"
+
+        # Check if removing DHW leaves no valid mode (this happens when current mode is "DHW only")
+        if new_operating_mode == OperatingMode(0):
+            # Turn off the entire system via main power switch
+            _LOGGER.debug("Turning off DHW would leave no valid mode, turning off main power instead")
+            await async_publish(
+                self.hass,
+                f"{self.discovery_prefix}commands/SetHeatpump",
+                "0",
+                0,
+                False,
+                "utf-8",
             )
-        await async_publish(
+            # Optimistically update operating mode
+            self._operating_mode = OperatingMode(0)
+        else:
+            # Normal case: just remove DHW from the mode
+            _LOGGER.debug(f"setting operating mode {new_operating_mode}")
+            await async_publish(
                 self.hass,
                 f"{self.discovery_prefix}commands/SetOperationMode",
                 new_operating_mode.to_mqtt(),
                 0,
                 False,
                 "utf-8",
-        )
+            )
+            # Optimistically update operating mode
+            self._operating_mode = new_operating_mode
 
     @property
     def device_info(self):
