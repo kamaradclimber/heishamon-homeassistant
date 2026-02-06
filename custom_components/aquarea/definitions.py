@@ -78,7 +78,13 @@ class OperatingMode(Flag):
         }
 
     def __int__(self) -> int:
-        return self.modes_to_int()[self]
+        mode_mapping = self.modes_to_int()
+        if self not in mode_mapping:
+            raise ValueError(
+                f"Invalid operating mode {self} (value: {self.value}). "
+                f"Cannot convert to MQTT value. This may indicate an empty/uninitialized mode."
+            )
+        return mode_mapping[self]
 
     @staticmethod
     def from_str(str_repr: str) -> OperatingMode:
