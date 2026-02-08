@@ -272,6 +272,16 @@ def read_threeway_valve(value: str) -> Optional[str]:
         return None
 
 
+def read_twoway_valve(value: str) -> Optional[str]:
+    if value == "0":
+        return "Cooling"
+    elif value == "1":
+        return "Heating"
+    else:
+        _LOGGER.info(f"Reading unhandled value for TwoWay Valve state: '{value}'")
+        return None
+
+
 def first_positive(values) -> Optional[int]:
     for v in values:
         if v is not None and v >= 0:
@@ -1171,6 +1181,20 @@ def build_binary_sensors(
             entity_registry_enabled_default=True,
         ),
         HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="TOP123",
+            key=f"{mqtt_prefix}main/Z1_Pump_State",
+            name="Aquarea Zone 1 Pump State",
+            state=bit_to_bool,
+            device_class=BinarySensorDeviceClass.RUNNING,
+        ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="TOP124",
+            key=f"{mqtt_prefix}main/Z2_Pump_State",
+            name="Aquarea Zone 2 Pump State",
+            state=bit_to_bool,
+            device_class=BinarySensorDeviceClass.RUNNING,
+        ),
+        HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="OPT0",
             key=f"{mqtt_prefix}optional/Z1_Water_Pump",
             name="Aquarea Zone 1 water pump action request",
@@ -1405,6 +1429,14 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea 3-way Valve",
             state=read_threeway_valve,
             options=["Room", "Tank"],
+            device_class=SensorDeviceClass.ENUM,
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP125",
+            key=f"{mqtt_prefix}main/TwoWay_Valve_State",
+            name="Aquarea 2-way Valve",
+            state=read_twoway_valve,
+            options=["Cooling", "Heating"],
             device_class=SensorDeviceClass.ENUM,
         ),
         HeishaMonSensorEntityDescription(
