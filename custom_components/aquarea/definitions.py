@@ -1274,6 +1274,30 @@ def read_heating_mode(value: str) -> Optional[str]:
     return None
 
 
+def read_heating_control(value: str) -> Optional[str]:
+    if value == "0":
+        return "Comfort"
+    if value == "1":
+        return "Efficiency"
+    return None
+
+
+def read_smart_dhw(value: str) -> Optional[str]:
+    if value == "0":
+        return "Variable"
+    if value == "1":
+        return "Standard"
+    return None
+
+
+def read_quiet_mode_priority(value: str) -> Optional[str]:
+    if value == "0":
+        return "Sound"
+    if value == "1":
+        return "Capacity"
+    return None
+
+
 def read_temp(value: str) -> Optional[Any]:
     v = int(value)
     if v == -128:
@@ -2047,6 +2071,40 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             native_unit_of_measurement="min",
             entity_registry_enabled_default=True,
             suggested_display_precision=0,
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP139",
+            key=f"{mqtt_prefix}main/Heating_Control",
+            name="Aquarea Heating Control",
+            state=read_heating_control,
+            device_class=SensorDeviceClass.ENUM,
+            options=["Comfort", "Efficiency"],
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP140",
+            key=f"{mqtt_prefix}main/Smart_DHW",
+            name="Aquarea Smart DHW",
+            state=read_smart_dhw,
+            device_class=SensorDeviceClass.ENUM,
+            options=["Variable", "Standard"],
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP141",
+            key=f"{mqtt_prefix}main/Quiet_Mode_Priority",
+            name="Aquarea Quiet Mode Priority",
+            state=read_quiet_mode_priority,
+            device_class=SensorDeviceClass.ENUM,
+            options=["Sound", "Capacity"],
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP142",
+            key=f"{mqtt_prefix}main/Expansion_Valve",
+            name="Aquarea Expansion Valve",
+            native_unit_of_measurement="Steps",
+            state_class=SensorStateClass.MEASUREMENT,
+            state=int,
+            suggested_display_precision=0,
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="STAT1_rssi",
