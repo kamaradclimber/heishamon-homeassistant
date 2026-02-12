@@ -905,6 +905,36 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
             options=list(BIVALENT_MODES.values()),
         ),
         HeishaMonSelectEntityDescription(
+            heishamon_topic_id="SET39",  # corresponds to TOP139
+            key=f"{mqtt_prefix}main/Heating_Control",
+            command_topic=f"{mqtt_prefix}commands/SetHeatingControl",
+            name="Aquarea Heating Control",
+            entity_category=EntityCategory.CONFIG,
+            state=read_heating_control,
+            state_to_mqtt=heating_control_to_mqtt,
+            options=list(HEATING_CONTROL.values()),
+        ),
+        HeishaMonSelectEntityDescription(
+            heishamon_topic_id="SET40",  # corresponds to TOP140
+            key=f"{mqtt_prefix}main/Smart_DHW",
+            command_topic=f"{mqtt_prefix}commands/SetSmartDHW",
+            name="Aquarea Smart DHW",
+            entity_category=EntityCategory.CONFIG,
+            state=read_smart_dhw,
+            state_to_mqtt=smart_dhw_to_mqtt,
+            options=list(SMART_DHW.values()),
+        ),
+        HeishaMonSelectEntityDescription(
+            heishamon_topic_id="SET41",  # corresponds to TOP141
+            key=f"{mqtt_prefix}main/Quiet_Mode_Priority",
+            command_topic=f"{mqtt_prefix}commands/SetQuietModePriority",
+            name="Aquarea Quiet Mode Priority",
+            entity_category=EntityCategory.CONFIG,
+            state=read_quiet_mode_priority,
+            state_to_mqtt=quiet_mode_priority_to_mqtt,
+            options=list(QUIET_MODE_PRIORITY.values()),
+        ),
+        HeishaMonSelectEntityDescription(
             heishamon_topic_id="SetSmartGridMode",
             key=f"{mqtt_prefix}commands/SetSmartGridMode",
             command_topic=f"{mqtt_prefix}commands/SetSmartGridMode",
@@ -1274,28 +1304,46 @@ def read_heating_mode(value: str) -> Optional[str]:
     return None
 
 
+HEATING_CONTROL = {
+    "0": "Comfort",
+    "1": "Efficiency",
+}
+
+
 def read_heating_control(value: str) -> Optional[str]:
-    if value == "0":
-        return "Comfort"
-    if value == "1":
-        return "Efficiency"
-    return None
+    return HEATING_CONTROL.get(value, None)
+
+
+def heating_control_to_mqtt(value: str) -> Optional[str]:
+    return lookup_by_value(HEATING_CONTROL, value)
+
+
+SMART_DHW = {
+    "0": "Variable",
+    "1": "Standard",
+}
 
 
 def read_smart_dhw(value: str) -> Optional[str]:
-    if value == "0":
-        return "Variable"
-    if value == "1":
-        return "Standard"
-    return None
+    return SMART_DHW.get(value, None)
+
+
+def smart_dhw_to_mqtt(value: str) -> Optional[str]:
+    return lookup_by_value(SMART_DHW, value)
+
+
+QUIET_MODE_PRIORITY = {
+    "0": "Sound",
+    "1": "Capacity",
+}
 
 
 def read_quiet_mode_priority(value: str) -> Optional[str]:
-    if value == "0":
-        return "Sound"
-    if value == "1":
-        return "Capacity"
-    return None
+    return QUIET_MODE_PRIORITY.get(value, None)
+
+
+def quiet_mode_priority_to_mqtt(value: str) -> Optional[str]:
+    return lookup_by_value(QUIET_MODE_PRIORITY, value)
 
 
 def read_temp(value: str) -> Optional[Any]:
@@ -2078,7 +2126,8 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Heating Control",
             state=read_heating_control,
             device_class=SensorDeviceClass.ENUM,
-            options=["Comfort", "Efficiency"],
+            options=list(HEATING_CONTROL.values()),
+            entity_registry_enabled_default=False,  # deprecated, use SET39 select entity instead
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP140",
@@ -2086,7 +2135,8 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Smart DHW",
             state=read_smart_dhw,
             device_class=SensorDeviceClass.ENUM,
-            options=["Variable", "Standard"],
+            options=list(SMART_DHW.values()),
+            entity_registry_enabled_default=False,  # deprecated, use SET40 select entity instead
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP141",
@@ -2094,7 +2144,8 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             name="Aquarea Quiet Mode Priority",
             state=read_quiet_mode_priority,
             device_class=SensorDeviceClass.ENUM,
-            options=["Sound", "Capacity"],
+            options=list(QUIET_MODE_PRIORITY.values()),
+            entity_registry_enabled_default=False,  # deprecated, use SET41 select entity instead
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP142",
