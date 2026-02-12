@@ -1,13 +1,20 @@
 {
   "domain": "aquarea",
   "name": "HeishaMon",
-  "codeowners": ["@kamaradclimber"],
+  "codeowners": [
+    "@kamaradclimber"
+  ],
   "config_flow": true,
-  "dependencies": ["mqtt", "integration"],
+  "dependencies": [
+    "mqtt",
+    "integration"
+  ],
   "documentation": "https://github.com/kamaradclimber/heishamon-homeassistant",
   "integration_type": "hub",
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/kamaradclimber/heishamon-homeassistant/issues",
-  "mqtt": ["+/main/Heatpump_State"],
-  "version": "1.18.0"
+  "mqtt": [
+    "+/main/Heatpump_State"
+  ],
+  "version": "2.4.1"
 }
