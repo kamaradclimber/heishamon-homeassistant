@@ -18,6 +18,7 @@ from homeassistant.components.climate import ClimateEntityDescription
 from .definitions import OperatingMode
 from . import build_device_info
 from .const import DeviceType
+from .retry_mixin import CommandRetryMixin
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -117,7 +118,7 @@ class ZoneTemperatureMode(Enum):
     ROOM = 3  # ROOM temperature is the driver, you set it directly from 10:30 deg C
     NAN = 4  # if external thermostat is choosen you cannot drive the temperature at all
 
-class HeishaMonZoneClimate(ClimateEntity):
+class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
     """Representation of a HeishaMon climate entity that is updated via MQTT."""
 
     def __init__(
@@ -128,6 +129,7 @@ class HeishaMonZoneClimate(ClimateEntity):
         heater: bool,
     ) -> None:
         """Initialize the climate entity."""
+        super().__init__()
         self.heater = heater
         self.config_entry_entry_id = config_entry.entry_id
         self.entity_description = description
@@ -288,6 +290,13 @@ class HeishaMonZoneClimate(ClimateEntity):
             "utf-8",
         )
 
+        # Register command for retry if not confirmed
+        await self.register_command(
+            expected_value=temperature,
+            retry_callback=lambda: self.async_set_temperature(temperature=temperature),
+            tolerance=0.1,
+        )
+
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT events."""
         await super().async_added_to_hass()
@@ -369,6 +378,10 @@ class HeishaMonZoneClimate(ClimateEntity):
                     if self._attr_target_temperature < self._attr_min_temp or self._attr_target_temperature > self._attr_max_temp:
                         # when reaching that point, maybe we should set a wider range to avoid blocking user?
                         _LOGGER.warn(f"{self._climate_type()} Target temperature is not within expected range, this is suspicious. {self._attr_target_temperature} should be within [{self._attr_min_temp},{self._attr_max_temp}]")
+
+            # Verify if this confirms a pending command
+            self.verify_command_confirmation(self._attr_target_temperature)
+
             self.async_write_ha_state()
 
         if self.heater:
@@ -406,6 +419,10 @@ class HeishaMonZoneClimate(ClimateEntity):
             elif message.topic == f"{self.discovery_prefix}main/Operating_Mode_State":
                 self._operating_mode = OperatingMode.from_mqtt(message.payload)
             self._attr_hvac_mode = guess_hvac_mode()
+
+            # Verify if this confirms a pending HVAC mode change command
+            self.verify_command_confirmation(self._attr_hvac_mode)
+
             self.async_write_ha_state()
 
         await mqtt.async_subscribe(
@@ -466,6 +483,12 @@ class HeishaMonZoneClimate(ClimateEntity):
             )
         self._attr_hvac_mode = hvac_mode  # let's be optimistic
         self.async_write_ha_state()
+
+        # Register command for retry if not confirmed
+        await self.register_command(
+            expected_value=hvac_mode,
+            retry_callback=lambda: self.async_set_hvac_mode(hvac_mode),
+        )
 
     @property
     def device_info(self):

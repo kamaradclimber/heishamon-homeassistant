@@ -12,6 +12,7 @@ from homeassistant.util import slugify
 
 from .definitions import build_selects, HeishaMonSelectEntityDescription
 from . import build_device_info
+from .retry_mixin import CommandRetryMixin
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ async def async_setup_entry(
     )
 
 
-class HeishaMonMQTTSelect(SelectEntity):
+class HeishaMonMQTTSelect(CommandRetryMixin, SelectEntity):
     """Representation of a HeishaMon sensor that is updated via MQTT."""
 
     entity_description: HeishaMonSelectEntityDescription
@@ -46,6 +47,7 @@ class HeishaMonMQTTSelect(SelectEntity):
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize the sensor."""
+        super().__init__()
         self.entity_description = description
         self.config_entry_entry_id = config_entry.entry_id
         self.hass = hass
@@ -77,6 +79,12 @@ class HeishaMonMQTTSelect(SelectEntity):
             self.entity_description.encoding,
         )
 
+        # Register command for retry if not confirmed
+        await self.register_command(
+            expected_value=option,
+            retry_callback=lambda: self.async_select_option(option),
+        )
+
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT events."""
 
@@ -89,6 +97,9 @@ class HeishaMonMQTTSelect(SelectEntity):
                 )
             else:
                 self._attr_current_option = message.payload
+
+            # Verify if this confirms a pending command
+            self.verify_command_confirmation(self._attr_current_option)
 
             self.async_write_ha_state()
             if self.entity_description.on_receive is not None:
