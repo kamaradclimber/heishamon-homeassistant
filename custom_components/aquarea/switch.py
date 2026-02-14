@@ -12,6 +12,7 @@ from homeassistant.util import slugify
 
 from .definitions import build_switches, HeishaMonSwitchEntityDescription
 from . import build_device_info
+from .retry_mixin import CommandRetryMixin
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ async def async_setup_entry(
     )
 
 
-class HeishaMonMQTTSwitch(SwitchEntity):
+class HeishaMonMQTTSwitch(CommandRetryMixin, SwitchEntity):
     """Representation of a HeishaMon switch that is updated via MQTT."""
 
     entity_description: HeishaMonSwitchEntityDescription
@@ -46,6 +47,7 @@ class HeishaMonMQTTSwitch(SwitchEntity):
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize the switch."""
+        super().__init__()
         self.entity_description = description
         self.config_entry_entry_id = config_entry.entry_id
         self.hass = hass
@@ -74,6 +76,12 @@ class HeishaMonMQTTSwitch(SwitchEntity):
             self._state = True
             self.async_write_ha_state()
 
+        # Register command for retry if not confirmed
+        await self.register_command(
+            expected_value=True,
+            retry_callback=lambda: self.async_turn_on(),
+        )
+
     async def async_turn_off(self) -> None:
         _LOGGER.info(f"Turning off heatpump {self.entity_description.name}")
         await async_publish(
@@ -88,6 +96,12 @@ class HeishaMonMQTTSwitch(SwitchEntity):
             self._state = False
             self.async_write_ha_state()
 
+        # Register command for retry if not confirmed
+        await self.register_command(
+            expected_value=False,
+            retry_callback=lambda: self.async_turn_off(),
+        )
+
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT events."""
 
@@ -98,6 +112,9 @@ class HeishaMonMQTTSwitch(SwitchEntity):
                 self._attr_is_on = self.entity_description.state(message.payload)
             else:
                 self._attr_is_on = message.payload
+
+            # Verify if this confirms a pending command
+            self.verify_command_confirmation(self._attr_is_on)
 
             self.async_write_ha_state()
             if self.entity_description.on_receive is not None:

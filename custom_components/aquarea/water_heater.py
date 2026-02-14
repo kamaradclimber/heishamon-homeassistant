@@ -29,6 +29,7 @@ except ImportError:
 from .definitions import OperatingMode
 from . import build_device_info
 from .const import DeviceType
+from .retry_mixin import CommandRetryMixin
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ async def async_setup_entry(
 STATE_SUPERECO = "Super Eco"
 
 
-class HeishaMonDHW(WaterHeaterEntity):
+class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
     """Representation of a HeishaMon sensor that is updated via MQTT."""
 
     operation_modes_temps = {
@@ -74,6 +75,7 @@ class HeishaMonDHW(WaterHeaterEntity):
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize the water heater entity."""
+        super().__init__()
         self.config_entry_entry_id = config_entry.entry_id
         self.entity_description = description
         self.hass = hass
@@ -113,6 +115,13 @@ class HeishaMonDHW(WaterHeaterEntity):
             0,
             False,
             "utf-8",
+        )
+
+        # Register command for retry if not confirmed
+        await self.register_command(
+            expected_value=temperature,
+            retry_callback=lambda: self.async_set_temperature(temperature=temperature),
+            tolerance=0.1,
         )
 
     async def async_set_operation_mode(self, operation_mode: str):
@@ -161,6 +170,10 @@ class HeishaMonDHW(WaterHeaterEntity):
         def target_temperature_message_received(message):
             self._attr_target_temperature = float(message.payload)
             self.update_temperature_bounds()  # optimistic update
+
+            # Verify if this confirms a pending command
+            self.verify_command_confirmation(self._attr_target_temperature)
+
             found = False
             for state_name, values in HeishaMonDHW.operation_modes_temps.items():
                 if float(message.payload) in values[1]:
@@ -198,6 +211,11 @@ class HeishaMonDHW(WaterHeaterEntity):
         @callback
         def operating_mode_received(message):
             self._operating_mode = OperatingMode.from_mqtt(message.payload)
+
+            # Verify if this confirms a pending command (for turn_on/turn_off)
+            dhw_is_on = bool(self._operating_mode & OperatingMode.DHW)
+            self.verify_command_confirmation(dhw_is_on)
+
             if not (self._operating_mode & OperatingMode.DHW):
                 _LOGGER.debug("DHW is off")
                 self._attr_current_operation = STATE_OFF
@@ -237,6 +255,12 @@ class HeishaMonDHW(WaterHeaterEntity):
         )
         # Optimistically update operating mode
         self._operating_mode = new_operating_mode
+
+        # Register command for retry - expect DHW to be on (True)
+        await self.register_command(
+            expected_value=True,
+            retry_callback=lambda: self.async_turn_on(),
+        )
     async def async_turn_off(self, **kwargs: Any) -> None:
         new_operating_mode = self._operating_mode & ~OperatingMode.DHW
 
@@ -267,6 +291,12 @@ class HeishaMonDHW(WaterHeaterEntity):
             )
             # Optimistically update operating mode
             self._operating_mode = new_operating_mode
+
+        # Register command for retry - expect DHW to be off (False)
+        await self.register_command(
+            expected_value=False,
+            retry_callback=lambda: self.async_turn_off(),
+        )
 
     @property
     def device_info(self):
