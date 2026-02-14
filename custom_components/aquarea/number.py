@@ -12,6 +12,7 @@ from homeassistant.util import slugify
 
 from .definitions import build_numbers, HeishaMonNumberEntityDescription
 from . import build_device_info
+from .retry_mixin import CommandRetryMixin
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ async def async_setup_entry(
     )
 
 
-class HeishaMonMQTTNumber(NumberEntity):
+class HeishaMonMQTTNumber(CommandRetryMixin, NumberEntity):
     """Representation of a HeishaMon sensor that is updated via MQTT."""
 
     entity_description: HeishaMonNumberEntityDescription
@@ -46,6 +47,7 @@ class HeishaMonMQTTNumber(NumberEntity):
         config_entry: ConfigEntry,
     ) -> None:
         """Initialize the sensor."""
+        super().__init__()
         self.entity_description = description
         self.hass = hass
         self.discovery_prefix = config_entry.data[
@@ -87,6 +89,13 @@ class HeishaMonMQTTNumber(NumberEntity):
             self.entity_description.encoding,
         )
 
+        # Register command for retry if not confirmed
+        await self.register_command(
+            expected_value=value,
+            retry_callback=lambda: self.async_set_native_value(value),
+            tolerance=0.1,
+        )
+
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT events."""
 
@@ -101,6 +110,9 @@ class HeishaMonMQTTNumber(NumberEntity):
                 self._attr_native_value = self.entity_description.state(message.payload)
             else:
                 self._attr_native_value = message.payload
+
+            # Verify if this confirms a pending command
+            self.verify_command_confirmation(self._attr_native_value)
 
             self.async_write_ha_state()
 
