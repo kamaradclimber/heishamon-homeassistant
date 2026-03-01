@@ -39,6 +39,10 @@ if ! command -v jq &> /dev/null; then
     exit 1
 fi
 
+# Fetch latest tags from remote
+echo -e "\n${GREEN}Fetching latest tags from remote...${NC}"
+git fetch --tags --quiet
+
 # Get current version from manifest.json
 CURRENT_MANIFEST_VERSION=$(jq -r '.version' "$MANIFEST_FILE")
 echo -e "Current version in manifest.json: ${YELLOW}$CURRENT_MANIFEST_VERSION${NC}"
