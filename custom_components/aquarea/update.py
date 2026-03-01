@@ -229,35 +229,36 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         self._attr_in_progress = True
         self._attr_update_percentage = 0
         async with aiohttp.ClientSession() as session:
-            resp = await session.get(
-                f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.bin"
-            )
+            try:
+                url=f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.bin"
+                resp = await session.get(url)
 
-            if resp.status != 200:
-                _LOGGER.warn(
-                    f"Impossible to download version {version} from heishamon repository {HEISHAMON_REPOSITORY}"
-                )
-                return
+                if resp.status != 200:
+                    _LOGGER.warn(
+                            f"Impossible to download version {version} from heishamon repository {HEISHAMON_REPOSITORY}. Error was {resp.status}", extra={"url": url, "code": resp.status}
+                    )
+                    return
 
-            firmware_binary = await resp.read()
-            _LOGGER.info(f"Firmware is {len(firmware_binary)} bytes long")
-            self._attr_update_percentage = 10
-            resp = await session.get(
-                f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.md5"
-            )
+                firmware_binary = await resp.read()
+                _LOGGER.info(f"Firmware is {len(firmware_binary)} bytes long")
+                self._attr_update_percentage = 10
+                url=f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.md5"
+                resp = await session.get(url)
 
-            if resp.status != 200:
-                _LOGGER.warn(
-                    f"Impossible to fetch checksum of version #{version} from heishamon repository {HEISHAMON_REPOSITORY}"
-                )
-                return
-            checksum = (await resp.text()).strip()
-            self._attr_update_percentage = 20
-            _LOGGER.info(f"Downloaded binary and checksum {checksum} of version {version}")
+                if resp.status != 200:
+                    _LOGGER.warn(
+                        f"Impossible to fetch checksum of version {version} from heishamon repository {HEISHAMON_REPOSITORY}. Error was {resp.status}", extra={"url": url, "code": resp.status}
+                    )
+                    return
+                checksum = await resp.text()
+                self._attr_update_percentage = 20
+                _LOGGER.info(f"Downloaded binary and checksum {checksum} of version {version}")
 
-            while self._heishamon_ip is None:
-                _LOGGER.warn("Waiting for an mqtt message to get the ip address of heishamon")
-                await asyncio.sleep(1)
+                while self._heishamon_ip is None:
+                    _LOGGER.warn("Waiting for an mqtt message to get the ip address of heishamon")
+                    await asyncio.sleep(1)
+            except Exception as e:
+                _LOGGER.exception("Unexpected error occured")
 
         # This whole mechanic is made to call async_write_ha_state to make sure the entity state (especially the _attr_in_progress attribute is updated)
         # trying to call this method from a callback when posting the firmware update leads HA to crash the integration
