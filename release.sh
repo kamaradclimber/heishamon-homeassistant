@@ -121,5 +121,50 @@ gh release create "$NEW_VERSION" \
     --title "$NEW_VERSION" \
     --generate-notes
 
+RELEASE_URL=$(gh release view $NEW_VERSION --json url --jq '.url')
+
 echo -e "\n${GREEN}✓ Release $NEW_VERSION created successfully!${NC}"
-echo -e "View it at: $(gh release view $NEW_VERSION --json url --jq '.url')"
+echo -e "View it at: $RELEASE_URL"
+
+# Comment on linked issues and PRs
+echo -e "\n${GREEN}Finding and commenting on linked issues/PRs...${NC}"
+
+# Get all PR numbers from the release notes
+RELEASE_BODY=$(gh release view $NEW_VERSION --json body --jq '.body')
+PR_NUMBERS=$(echo "$RELEASE_BODY" | grep -oP '#\K\d+' | sort -u)
+
+if [ -z "$PR_NUMBERS" ]; then
+    echo -e "${YELLOW}No PRs found in release notes${NC}"
+else
+    # Track unique issues/PRs to comment on
+    declare -A COMMENTED
+
+    for PR_NUM in $PR_NUMBERS; do
+        # Comment on the PR itself if we haven't already
+        if [ -z "${COMMENTED[$PR_NUM]}" ]; then
+            echo -e "  Commenting on PR #${PR_NUM}..."
+            gh pr comment "$PR_NUM" --body "🎉 This has been included in release [$NEW_VERSION]($RELEASE_URL)" 2>/dev/null && {
+                echo -e "    ${GREEN}✓${NC} Commented on PR #${PR_NUM}"
+                COMMENTED[$PR_NUM]=1
+            } || echo -e "    ${YELLOW}⚠${NC} Could not comment on PR #${PR_NUM} (may be closed or inaccessible)"
+        fi
+
+        # Get linked issues from the PR
+        LINKED_ISSUES=$(gh pr view "$PR_NUM" --json closingIssuesReferences --jq '.closingIssuesReferences[].number' 2>/dev/null || echo "")
+
+        for ISSUE_NUM in $LINKED_ISSUES; do
+            if [ -z "${COMMENTED[$ISSUE_NUM]}" ]; then
+                echo -e "  Commenting on linked issue #${ISSUE_NUM}..."
+                gh issue comment "$ISSUE_NUM" --body "🎉 This has been resolved in release [$NEW_VERSION]($RELEASE_URL)" 2>/dev/null && {
+                    echo -e "    ${GREEN}✓${NC} Commented on issue #${ISSUE_NUM}"
+                    COMMENTED[$ISSUE_NUM]=1
+                } || echo -e "    ${YELLOW}⚠${NC} Could not comment on issue #${ISSUE_NUM}"
+            fi
+        done
+    done
+
+    COMMENT_COUNT=${#COMMENTED[@]}
+    if [ $COMMENT_COUNT -gt 0 ]; then
+        echo -e "\n${GREEN}✓ Commented on $COMMENT_COUNT issue(s)/PR(s)${NC}"
+    fi
+fi
