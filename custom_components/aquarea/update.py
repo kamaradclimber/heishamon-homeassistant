@@ -6,8 +6,8 @@ import json
 import aiohttp
 import datetime
 import asyncio
+import uuid
 from typing import Optional, Any
-from io import BufferedReader, BytesIO
 
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.components import mqtt
@@ -206,13 +206,14 @@ class HeishaMonMQTTUpdate(UpdateEntity):
             None: "UNKNOWN",
         }.get(self._model_type, None)
 
+    @property
     def model_to_file(self) -> str | None:
         return {
             "ESP32": "esp32",
             "ESP8266": "d1",
             None: "UNKNOWN",
         }.get(self._model_type, None)
-        
+
 
     def release_notes(self) -> str | None:
         return f"⚠️ Automated upgrades will fetch `{self.model_to_path}` binaries.\n\nBeware!\n\n" + str(self._release_notes)
@@ -250,17 +251,13 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                     f"Impossible to fetch checksum of version #{version} from heishamon repository {HEISHAMON_REPOSITORY}"
                 )
                 return
-            checksum = await resp.text()
+            checksum = (await resp.text()).strip()
             self._attr_update_percentage = 20
             _LOGGER.info(f"Downloaded binary and checksum {checksum} of version {version}")
 
             while self._heishamon_ip is None:
                 _LOGGER.warn("Waiting for an mqtt message to get the ip address of heishamon")
                 await asyncio.sleep(1)
-
-        def track_progress(current, total):
-            self._attr_update_percentage = 20 + int(current / total * 80)
-            _LOGGER.info(f"Currently read {current} out of {total}: {self._attr_update_percentage}%")
 
         # This whole mechanic is made to call async_write_ha_state to make sure the entity state (especially the _attr_in_progress attribute is updated)
         # trying to call this method from a callback when posting the firmware update leads HA to crash the integration
@@ -274,24 +271,37 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, stop_update_progress_tracking)
         self.hass.bus.async_listen_once("stop_heishamon_update_tracker", stop_update_progress_tracking)
 
-
         async with aiohttp.ClientSession() as session:
             _LOGGER.info(f"Starting upgrade of firmware to version {version} on {self._heishamon_ip}")
             to = aiohttp.ClientTimeout(total=300, connect=10)
             try:
-                with ProgressReader(firmware_binary, track_progress) as reader:
-                    resp = await session.post(
-                        f"http://{self._heishamon_ip}/firmware",
-                        data={
-                            'md5': checksum,
-                            # 'firmware': ('firmware.bin', firmware_binary, 'application/octet-stream')
-                            'firmware': reader
-
-                        },
-                        timeout=to
-                    )
-            except TimeoutError as e:
-                _LOGGER.error(f"Timeout while uploading new firmware")
+                boundary = uuid.uuid4().hex
+                filename = f"HeishaMon.ino.{self.model_to_file}-v{version}.bin"
+                body = (
+                    f"--{boundary}\r\n"
+                    f"Content-Type: application/octet-stream\r\n"
+                    f"Content-Disposition: form-data; name=\"firmware\"; filename=\"{filename}\"\r\n"
+                    f"Content-Length: {len(firmware_binary)}\r\n"
+                    f"\r\n"
+                ).encode() + firmware_binary + (
+                    f"\r\n"
+                    f"--{boundary}\r\n"
+                    f"Content-Disposition: form-data; name=\"md5\"\r\n"
+                    f"\r\n"
+                    f"{checksum}\r\n"
+                    f"--{boundary}--\r\n"
+                ).encode()
+                resp = await session.post(
+                    f"http://{self._heishamon_ip}/firmware",
+                    data=body,
+                    headers={'Content-Type': f'multipart/form-data; boundary={boundary}'},
+                    timeout=to
+                )
+            except (TimeoutError, asyncio.TimeoutError):
+                _LOGGER.info(f"Firmware upload complete, HeishaMon is rebooting (timeout is expected)")
+                return
+            except Exception as e:
+                _LOGGER.error(f"Unexpected error during firmware upload: {e}")
                 raise e
             finally:
                 self.hass.bus.fire("stop_heishamon_update_tracker")
@@ -299,17 +309,3 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 _LOGGER.warn(f"Impossible to perform firmware update to version {version}")
                 return
             _LOGGER.info(f"Finished uploading firmware. Heishamon should now be rebooting")
-
-class ProgressReader(BufferedReader):
-    def __init__(self, binary_data, read_callback=None):
-        self._read_callback = read_callback
-        super().__init__(raw=BytesIO(binary_data))
-        self.length = len(binary_data)
-
-    def read(self, size=None):
-        computed_size = size
-        if not computed_size:
-            computed_size = self.length - self.tell()
-        if self._read_callback:
-            self._read_callback(self.tell(), self.length)
-        return super(ProgressReader, self).read(size)
