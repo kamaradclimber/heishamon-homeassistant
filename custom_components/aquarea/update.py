@@ -199,16 +199,23 @@ class HeishaMonMQTTUpdate(UpdateEntity):
             self.async_write_ha_state()
 
     @property
-    def model_to_file(self) -> str | None:
+    def model_to_path(self) -> str | None:
         return {
             "ESP32": "model-type-large",
             "ESP8266": "model-type-small",
             None: "UNKNOWN",
         }.get(self._model_type, None)
+
+    def model_to_file(self) -> str | None:
+        return {
+            "ESP32": "esp32",
+            "ESP8266": "d1",
+            None: "UNKNOWN",
+        }.get(self._model_type, None)
         
 
     def release_notes(self) -> str | None:
-        return f"⚠️ Automated upgrades will fetch `{self.model_to_file}` binaries.\n\nBeware!\n\n" + str(self._release_notes)
+        return f"⚠️ Automated upgrades will fetch `{self.model_to_path}` binaries.\n\nBeware!\n\n" + str(self._release_notes)
 
     async def async_install(self, version: str | None, backup: bool, **kwargs: Any) -> None:
         if self._model_type is None:
@@ -222,7 +229,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         self._attr_update_percentage = 0
         async with aiohttp.ClientSession() as session:
             resp = await session.get(
-                f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_file}/HeishaMon.ino.d1-v{version}.bin"
+                f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.bin"
             )
 
             if resp.status != 200:
@@ -235,7 +242,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
             _LOGGER.info(f"Firmware is {len(firmware_binary)} bytes long")
             self._attr_update_percentage = 10
             resp = await session.get(
-                f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_file}/HeishaMon.ino.d1-v{version}.md5"
+                f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.md5"
             )
 
             if resp.status != 200:
