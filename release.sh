@@ -131,7 +131,8 @@ echo -e "\n${GREEN}Finding and commenting on linked issues/PRs...${NC}"
 
 # Get all PR numbers from the release notes
 RELEASE_BODY=$(gh release view $NEW_VERSION --json body --jq '.body')
-PR_NUMBERS=$(echo "$RELEASE_BODY" | grep -oP '#\K\d+' | sort -u)
+# Extract PR numbers from both #123 format and /pull/123 URL format
+PR_NUMBERS=$(echo "$RELEASE_BODY" | grep -oP '(#\K\d+|/pull/\K\d+)' | sort -u)
 
 if [ -z "$PR_NUMBERS" ]; then
     echo -e "${YELLOW}No PRs found in release notes${NC}"
