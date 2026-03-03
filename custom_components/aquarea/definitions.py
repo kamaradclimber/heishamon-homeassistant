@@ -829,6 +829,7 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
                             native_unit_of_measurement="°C",
                             # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
                             entity_registry_enabled_default=(action == "Heat"),
+                            state=float,
                             state_to_mqtt=write_curves_gen(zone_id, action, loc, point),
                         )
                     )
