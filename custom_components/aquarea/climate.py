@@ -440,9 +440,35 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         if hvac_mode == HVACMode.HEAT:
+            # If operating mode is 0 (system is off), turn on main power first
+            if self._operating_mode == OperatingMode(0):
+                _LOGGER.debug(
+                    f"{self._climate_type()} Operating mode is 0, turning on main power first for zone {self.zone_id}"
+                )
+                await async_publish(
+                    self.hass,
+                    f"{self.discovery_prefix}commands/SetHeatpump",
+                    "1",
+                    0,
+                    False,
+                    "utf-8",
+                )
             new_zone_state = self._zone_state | ZoneState.from_id(self.zone_id)
             new_operating_mode = self._operating_mode | OperatingMode.HEAT
         elif hvac_mode == HVACMode.COOL:
+            # If operating mode is 0 (system is off), turn on main power first
+            if self._operating_mode == OperatingMode(0):
+                _LOGGER.debug(
+                    f"{self._climate_type()} Operating mode is 0, turning on main power first for zone {self.zone_id}"
+                )
+                await async_publish(
+                    self.hass,
+                    f"{self.discovery_prefix}commands/SetHeatpump",
+                    "1",
+                    0,
+                    False,
+                    "utf-8",
+                )
             new_zone_state = self._zone_state | ZoneState.from_id(self.zone_id)
             new_operating_mode = self._operating_mode | OperatingMode.COOL
         elif hvac_mode == HVACMode.OFF:
@@ -458,17 +484,34 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
                 f"Mode {hvac_mode} has not been implemented by this entity"
             )
         if new_operating_mode != self._operating_mode:
-            _LOGGER.debug(
-                f"{self._climate_type()} Setting operation mode {new_operating_mode} for zone {self.zone_id}"
-            )
-            await async_publish(
-                self.hass,
-                f"{self.discovery_prefix}commands/SetOperationMode",
-                new_operating_mode.to_mqtt(),
-                0,
-                False,
-                "utf-8",
-            )
+            # Check if removing heat/cool leaves no valid mode (this happens when current mode is "Heat only" or "Cool only")
+            if new_operating_mode == OperatingMode(0):
+                # Turn off the entire system via main power switch
+                _LOGGER.debug(
+                    f"{self._climate_type()} Turning off zone {self.zone_id} would leave no valid mode, turning off main power instead"
+                )
+                await async_publish(
+                    self.hass,
+                    f"{self.discovery_prefix}commands/SetHeatpump",
+                    "0",
+                    0,
+                    False,
+                    "utf-8",
+                )
+                # Optimistically update operating mode
+                self._operating_mode = OperatingMode(0)
+            else:
+                _LOGGER.debug(
+                    f"{self._climate_type()} Setting operation mode {new_operating_mode} for zone {self.zone_id}"
+                )
+                await async_publish(
+                    self.hass,
+                    f"{self.discovery_prefix}commands/SetOperationMode",
+                    new_operating_mode.to_mqtt(),
+                    0,
+                    False,
+                    "utf-8",
+                )
         if new_zone_state not in [self._zone_state, ZoneState(0)]:
             _LOGGER.debug(
                 f"{self._climate_type()} Setting operation mode {new_zone_state} for zone {self.zone_id}"
