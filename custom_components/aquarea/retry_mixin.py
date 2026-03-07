@@ -18,6 +18,12 @@ class PendingCommand:
     retry_count: int
     retry_callback: Callable
     tolerance: Optional[float] = None
+    received_values: list[Any] = None
+
+    def __post_init__(self):
+        """Initialize mutable default values."""
+        if self.received_values is None:
+            self.received_values = []
 
 
 class CommandRetryMixin:
@@ -111,6 +117,8 @@ class CommandRetryMixin:
             )
             self._cancel_pending_command()
         else:
+            # Track non-matching value for diagnostic purposes
+            self._pending_command.received_values.append(received_value)
             _LOGGER.debug(
                 f"{self.name}: Received value {received_value} does not match expected {self._pending_command.expected_value}, "
                 f"waiting for confirmation or retry"
@@ -163,10 +171,18 @@ class CommandRetryMixin:
 
             # Check if we've exceeded max retries
             if self._pending_command.retry_count >= self.MAX_RETRIES:
-                _LOGGER.warning(
-                    f"{self.name}: Command failed after {self.MAX_RETRIES} retries "
-                    f"(expected value: {self._pending_command.expected_value})"
-                )
+                received_values = self._pending_command.received_values
+                if received_values:
+                    _LOGGER.warning(
+                        f"{self.name}: Command failed after {self.MAX_RETRIES} retries "
+                        f"(expected: {self._pending_command.expected_value}, "
+                        f"received {len(received_values)} messages with values: {received_values})"
+                    )
+                else:
+                    _LOGGER.warning(
+                        f"{self.name}: Command failed after {self.MAX_RETRIES} retries "
+                        f"(expected: {self._pending_command.expected_value}, no state updates received)"
+                    )
                 self._failed_commands += 1
                 self._cancel_pending_command()
                 return
