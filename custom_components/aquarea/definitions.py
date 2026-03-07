@@ -410,6 +410,10 @@ class HeishaMonNumberEntityDescription(
 def positive_to_bool(value: str) -> bool:
     return int(value) > 0
 
+def bool_to_bit(value: bool) -> str:
+    if value:
+        return "1"
+    return "0"
 
 def bit_to_bool(value: str) -> Optional[bool]:
     if value == "1":
@@ -1103,6 +1107,7 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             entity_category=EntityCategory.CONFIG,
             device=DeviceType.HEISHAMON,
             state=bit_to_bool,
+            state_to_mqtt=bool_to_bit,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
         HeishaMonSwitchEntityDescription(
@@ -1113,6 +1118,7 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             entity_category=EntityCategory.CONFIG,
             device=DeviceType.HEISHAMON,
             state=bit_to_bool,
+            state_to_mqtt=bool_to_bit,
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
         ),
     ]
