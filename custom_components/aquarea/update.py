@@ -230,7 +230,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         self._attr_update_percentage = 0
         async with aiohttp.ClientSession() as session:
             try:
-                url=f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.bin"
+                url=f"https://github.com/{HEISHAMON_REPOSITORY}/raw/main/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.bin"
                 resp = await session.get(url)
 
                 if resp.status != 200:
@@ -242,7 +242,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 firmware_binary = await resp.read()
                 _LOGGER.info(f"Firmware is {len(firmware_binary)} bytes long")
                 self._attr_update_percentage = 10
-                url=f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.md5"
+                url=f"https://github.com/{HEISHAMON_REPOSITORY}/raw/main/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.md5"
                 resp = await session.get(url)
 
                 if resp.status != 200:

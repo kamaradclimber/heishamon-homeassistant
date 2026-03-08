@@ -1,6 +1,6 @@
 # This file is updated using the following command
 
-# (echo -n "HEATPUMP_MODELS_39 =" ;curl -f -s https://raw.githubusercontent.com/heishamon/HeishaMon/master/HeatPumpType.md | grep "WH-" | ruby -r json -e 'puts(JSON.pretty_generate(STDIN.read.split("\n").map { |line|
+# (echo -n "HEATPUMP_MODELS_39 =" ;curl -f -s https://raw.githubusercontent.com/heishamon/HeishaMon/main/HeatPumpType.md | grep "WH-" | ruby -r json -e 'puts(JSON.pretty_generate(STDIN.read.split("\n").map { |line|
 #   _, id, bytes, idu, odu, kit, power, phase_count, tcap = line.split("|").map(&:strip);
 #   model = [idu, odu, kit].reject {|el| el == "Monoblock" }.first;
 #   [bytes, "#{model} #{power} #{phase_count} #{tcap}"]
