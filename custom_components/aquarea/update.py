@@ -29,7 +29,7 @@ from .const import DeviceType
 from .definitions import HeishaMonEntityDescription, frozendataclass, read_board_type
 
 _LOGGER = logging.getLogger(__name__)
-HEISHAMON_REPOSITORY = "Egyras/HeishaMon"
+HEISHAMON_REPOSITORY = "heishamon/HeishaMon"
 
 # async_setup_platform should be defined if one wants to support config via configuration.yaml
 
