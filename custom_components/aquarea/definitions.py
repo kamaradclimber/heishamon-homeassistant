@@ -419,6 +419,13 @@ def bit_to_bool(value: str) -> Optional[bool]:
     else:
         return None
 
+def relay_to_bool(value: str) -> Optional[bool]:
+    if value in ["1", "on", "enable", "true"]:
+        return True
+    elif value in ["0", "off", "disable", "false"]:
+        return False
+    return None
+
 
 def read_demandcontrol(value: str) -> Optional[int]:
     i = float(value)
@@ -1102,7 +1109,7 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             name="Relay 1",
             entity_category=EntityCategory.CONFIG,
             device=DeviceType.HEISHAMON,
-            state=bit_to_bool,
+            state=relay_to_bool,
             payload_on="on",
             payload_off="off",
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
@@ -1114,7 +1121,7 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             name="Relay 2",
             entity_category=EntityCategory.CONFIG,
             device=DeviceType.HEISHAMON,
-            state=bit_to_bool,
+            state=relay_to_bool,
             payload_on="on",
             payload_off="off",
             entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
