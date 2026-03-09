@@ -175,7 +175,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         async with aiohttp.ClientSession() as session:
             _LOGGER.info(f"Fetching https://api.github.com/repos/{HEISHAMON_REPOSITORY}/releases")
             resp = await session.get(
-                f"https://api.github.com/repos/{HEISHAMON_REPOSITORY}/releases"
+                f"https://api.github.com/repos/{HEISHAMON_REPOSITORY}/releases/latest"
             )
 
             if resp.status != 200:
@@ -190,8 +190,8 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 _LOGGER.warn(
                     f"Not a single release was found for heishamon repository {HEISHAMON_REPOSITORY}"
                 )
-
-            last_release = releases[0]
+            
+            last_release = await resp.json()
             self._attr_latest_version = re.sub(r"^v", "", last_release["tag_name"])
             self._attr_release_url = last_release["html_url"]
             self._release_notes = last_release["body"]
