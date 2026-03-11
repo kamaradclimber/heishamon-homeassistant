@@ -1,6 +1,6 @@
 # heishamon-homeassistant
 
-An integration for heatpumps handled by [heishamon](https://github.com/Egyras/HeishaMon).
+An integration for heatpumps handled by [heishamon](https://github.com/heishamon/HeishaMon).
 
 ## Installation
 

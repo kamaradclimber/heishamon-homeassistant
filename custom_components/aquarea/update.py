@@ -29,7 +29,7 @@ from .const import DeviceType
 from .definitions import HeishaMonEntityDescription, frozendataclass, read_board_type
 
 _LOGGER = logging.getLogger(__name__)
-HEISHAMON_REPOSITORY = "Egyras/HeishaMon"
+HEISHAMON_REPOSITORY = "heishamon/HeishaMon"
 
 # async_setup_platform should be defined if one wants to support config via configuration.yaml
 
@@ -175,7 +175,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         async with aiohttp.ClientSession() as session:
             _LOGGER.info(f"Fetching https://api.github.com/repos/{HEISHAMON_REPOSITORY}/releases")
             resp = await session.get(
-                f"https://api.github.com/repos/{HEISHAMON_REPOSITORY}/releases"
+                f"https://api.github.com/repos/{HEISHAMON_REPOSITORY}/releases/latest"
             )
 
             if resp.status != 200:
@@ -190,8 +190,8 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 _LOGGER.warn(
                     f"Not a single release was found for heishamon repository {HEISHAMON_REPOSITORY}"
                 )
-
-            last_release = releases[0]
+            
+            last_release = await resp.json()
             self._attr_latest_version = re.sub(r"^v", "", last_release["tag_name"])
             self._attr_release_url = last_release["html_url"]
             self._release_notes = last_release["body"]
@@ -230,7 +230,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         self._attr_update_percentage = 0
         async with aiohttp.ClientSession() as session:
             try:
-                url=f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.bin"
+                url=f"https://github.com/{HEISHAMON_REPOSITORY}/raw/refs/heads/main/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.bin"
                 resp = await session.get(url)
 
                 if resp.status != 200:
@@ -242,7 +242,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 firmware_binary = await resp.read()
                 _LOGGER.info(f"Firmware is {len(firmware_binary)} bytes long")
                 self._attr_update_percentage = 10
-                url=f"https://github.com/{HEISHAMON_REPOSITORY}/raw/master/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.md5"
+                url=f"https://github.com/{HEISHAMON_REPOSITORY}/raw/refs/heads/main/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.md5"
                 resp = await session.get(url)
 
                 if resp.status != 200:
