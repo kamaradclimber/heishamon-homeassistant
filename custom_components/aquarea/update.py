@@ -231,6 +231,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
         async with aiohttp.ClientSession() as session:
             try:
                 url=f"https://github.com/{HEISHAMON_REPOSITORY}/raw/refs/heads/main/binaries/{self.model_to_path}/HeishaMon.ino.{self.model_to_file}-v{version}.bin"
+                _LOGGER.debug(f"Will try to download url {url}")
                 resp = await session.get(url)
 
                 if resp.status != 200:
