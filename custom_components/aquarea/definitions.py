@@ -964,6 +964,18 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
             options=list(SMART_GRID_MODES_STRING.values()),
             entity_registry_enabled_default=False,  # comes from the optional PCB: disabled by default
         ),
+        HeishaMonSelectEntityDescription(
+            heishamon_topic_id="SET43",  # corresponds to TOP143
+            key=f"{mqtt_prefix}main/DHW_Sensor_Selection",
+            command_topic=f"{mqtt_prefix}main/SetDHWSensorSelection",
+            name="Aquarea DHW Sensor Selection",
+            entity_category=EntityCategory.CONFIG,
+            icon="mdi:thermometer-water",
+            state=read_dhw_sensor_selection,
+            state_to_mqtt=dhw_sensor_selection_to_mqtt,
+            options=list(DHW_SENSOR_SELECTION.values()),
+            entity_registry_enabled_default=False,  # only applicable to K/L series All-In-One units
+        ),
     ]
 
 
@@ -1368,6 +1380,20 @@ def read_quiet_mode_priority(value: str) -> Optional[str]:
 
 def quiet_mode_priority_to_mqtt(value: str) -> Optional[str]:
     return lookup_by_value(QUIET_MODE_PRIORITY, value)
+
+
+DHW_SENSOR_SELECTION = {
+    "0": "Top",
+    "1": "Center",
+}
+
+
+def read_dhw_sensor_selection(value: str) -> Optional[str]:
+    return DHW_SENSOR_SELECTION.get(value, None)
+
+
+def dhw_sensor_selection_to_mqtt(value: str) -> Optional[str]:
+    return lookup_by_value(DHW_SENSOR_SELECTION, value)
 
 
 def read_temp(value: str) -> Optional[Any]:
@@ -2182,6 +2208,15 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state=int,
             suggested_display_precision=0,
             entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        HeishaMonSensorEntityDescription(
+            heishamon_topic_id="TOP143",
+            key=f"{mqtt_prefix}main/DHW_Sensor_Selection",
+            name="Aquarea DHW Sensor Selection",
+            state=read_dhw_sensor_selection,
+            device_class=SensorDeviceClass.ENUM,
+            options=list(DHW_SENSOR_SELECTION.values()),
+            entity_registry_enabled_default=False,  # deprecated, use SET43 select entity instead
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="STAT1_rssi",
