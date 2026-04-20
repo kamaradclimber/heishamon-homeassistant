@@ -50,7 +50,7 @@ def build_device_info(device_type: DeviceType, mqtt_topic: str) -> dict:
     if device_type == DeviceType.HEATPUMP:
         return {
             "identifiers": {heatpump_id},
-            "name": "Aquarea HeatPump Indoor Unit",
+            "name": "Aquarea HeatPump",
             "manufacturer": "Aquarea",
             "via_device": heishamon_id,
         }
