@@ -157,6 +157,7 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
 
         self._zone_state = ZoneState(0)  # i.e None
         self._operating_mode = OperatingMode(0)  # i.e None
+        self._heatpump_state: bool | None = None
 
         self._sensor_mode = ZoneSensorMode.WATER
         self._climate_mode = ZoneClimateMode.DIRECT
@@ -397,6 +398,8 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
         )
 
         def guess_hvac_mode() -> HVACMode:
+            if self._heatpump_state is False:
+                return HVACMode.OFF
             if self.heater:
                 global_heating = OperatingMode.HEAT in self._operating_mode
                 zone_heating = ZoneState.from_id(self.zone_id) in self._zone_state
@@ -438,13 +441,53 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
             1,
         )
 
+        @callback
+        def heatpump_state_message_received(message):
+            self._heatpump_state = message.payload == "1"
+            self._attr_hvac_mode = guess_hvac_mode()
+            self.verify_command_confirmation(self._attr_hvac_mode)
+            self.async_write_ha_state()
+
+        await mqtt.async_subscribe(
+            self.hass,
+            f"{self.discovery_prefix}main/Heatpump_State",
+            heatpump_state_message_received,
+            1,
+        )
+
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
+        system_is_off = self._operating_mode == OperatingMode(0) or self._heatpump_state is False
+
         if hvac_mode == HVACMode.HEAT:
-            new_zone_state = self._zone_state | ZoneState.from_id(self.zone_id)
-            new_operating_mode = self._operating_mode | OperatingMode.HEAT
+            if system_is_off:
+                await async_publish(
+                    self.hass,
+                    f"{self.discovery_prefix}commands/SetHeatpump",
+                    "1",
+                    0,
+                    False,
+                    "utf-8",
+                )
+                new_zone_state = ZoneState.from_id(self.zone_id)
+                new_operating_mode = OperatingMode.HEAT
+            else:
+                new_zone_state = self._zone_state | ZoneState.from_id(self.zone_id)
+                new_operating_mode = self._operating_mode | OperatingMode.HEAT
         elif hvac_mode == HVACMode.COOL:
-            new_zone_state = self._zone_state | ZoneState.from_id(self.zone_id)
-            new_operating_mode = self._operating_mode | OperatingMode.COOL
+            if system_is_off:
+                await async_publish(
+                    self.hass,
+                    f"{self.discovery_prefix}commands/SetHeatpump",
+                    "1",
+                    0,
+                    False,
+                    "utf-8",
+                )
+                new_zone_state = ZoneState.from_id(self.zone_id)
+                new_operating_mode = OperatingMode.COOL
+            else:
+                new_zone_state = self._zone_state | ZoneState.from_id(self.zone_id)
+                new_operating_mode = self._operating_mode | OperatingMode.COOL
         elif hvac_mode == HVACMode.OFF:
             new_zone_state = self._zone_state & ~ZoneState.from_id(self.zone_id)
             new_operating_mode = self._operating_mode
@@ -454,10 +497,22 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
                 else:
                     new_operating_mode = self._operating_mode & ~OperatingMode.COOL
         else:
-            raise NotImplemented(
+            raise NotImplementedError(
                 f"Mode {hvac_mode} has not been implemented by this entity"
             )
-        if new_operating_mode != self._operating_mode:
+        if new_operating_mode == OperatingMode(0):
+            _LOGGER.debug(
+                f"{self._climate_type()} Turning off main heatpump power after disabling last active mode"
+            )
+            await async_publish(
+                self.hass,
+                f"{self.discovery_prefix}commands/SetHeatpump",
+                "0",
+                0,
+                False,
+                "utf-8",
+            )
+        elif new_operating_mode != self._operating_mode:
             _LOGGER.debug(
                 f"{self._climate_type()} Setting operation mode {new_operating_mode} for zone {self.zone_id}"
             )
@@ -481,6 +536,11 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
                 False,
                 "utf-8",
             )
+        self._operating_mode = new_operating_mode
+        if new_operating_mode == OperatingMode(0):
+            self._heatpump_state = False
+        elif system_is_off:
+            self._heatpump_state = True
         self._attr_hvac_mode = hvac_mode  # let's be optimistic
         self.async_write_ha_state()
 
