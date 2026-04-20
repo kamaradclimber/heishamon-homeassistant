@@ -2210,15 +2210,6 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
         HeishaMonSensorEntityDescription(
-            heishamon_topic_id="TOP143",
-            key=f"{mqtt_prefix}main/DHW_Sensor_Selection",
-            name="Aquarea DHW Sensor Selection",
-            state=read_dhw_sensor_selection,
-            device_class=SensorDeviceClass.ENUM,
-            options=list(DHW_SENSOR_SELECTION.values()),
-            entity_registry_enabled_default=False,  # deprecated, use SET43 select entity instead
-        ),
-        HeishaMonSensorEntityDescription(
             heishamon_topic_id="STAT1_rssi",
             key=f"{mqtt_prefix}stats",
             name="HeishaMon RSSI",
