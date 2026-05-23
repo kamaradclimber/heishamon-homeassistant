@@ -1,4 +1,5 @@
 """Support for HeishaMon controlled heatpumps through MQTT."""
+
 from __future__ import annotations
 import logging
 
@@ -10,7 +11,11 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
-from .definitions import build_switches, build_binary_sensors, HeishaMonBinarySensorEntityDescription
+from .definitions import (
+    build_switches,
+    build_binary_sensors,
+    HeishaMonBinarySensorEntityDescription,
+)
 from . import build_device_info
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,17 +46,20 @@ async def async_setup_entry(
         category = switch_description.entity_category
         if category == EntityCategory.CONFIG:
             category = EntityCategory.DIAGNOSTIC
-        readonly_switches.append(HeishaMonBinarySensor(
-            HeishaMonBinarySensorEntityDescription(
-                heishamon_topic_id=switch_description.heishamon_topic_id,
-                key=switch_description.key,
-                name=f"{switch_description.name} (readonly)",
-                entity_category=category,
-                device=switch_description.device,
-                state=switch_description.state,
-                device_class=switch_description.device_class,
-                entity_registry_enabled_default=False,
-            ), config_entry)
+        readonly_switches.append(
+            HeishaMonBinarySensor(
+                HeishaMonBinarySensorEntityDescription(
+                    heishamon_topic_id=switch_description.heishamon_topic_id,
+                    key=switch_description.key,
+                    name=f"{switch_description.name} (readonly)",
+                    entity_category=category,
+                    device=switch_description.device,
+                    state=switch_description.state,
+                    device_class=switch_description.device_class,
+                    entity_registry_enabled_default=False,
+                ),
+                config_entry,
+            )
         )
     async_add_entities(readonly_switches)
 
@@ -74,7 +82,7 @@ class HeishaMonBinarySensor(BinarySensorEntity):
         ]  # TODO: handle migration of entities
 
         slug = slugify(description.key.replace("/", "_"))
-        self.entity_id = f"sensor.{slug}"
+        self.entity_id = f"binary_sensor.{slug}"
         self._attr_unique_id = (
             f"{config_entry.entry_id}-{description.heishamon_topic_id}"
         )

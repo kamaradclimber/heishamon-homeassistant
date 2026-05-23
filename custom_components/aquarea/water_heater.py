@@ -18,13 +18,14 @@ from homeassistant.components.water_heater import (
     STATE_ECO,
     STATE_PERFORMANCE,
 )
+
 try:
     from homeassistant.components.water_heater import WaterHeaterEntityDescription
 except ImportError:
     # compatibility code for HA < 2025.1
     from homeassistant.components.water_heater import WaterHeaterEntityEntityDescription
-    WaterHeaterEntityDescription = WaterHeaterEntityEntityDescription
 
+    WaterHeaterEntityDescription = WaterHeaterEntityEntityDescription
 
 
 from .definitions import OperatingMode
@@ -85,7 +86,7 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
         ]  # TODO: handle migration of entities
 
         slug = slugify(self.entity_description.key.replace("/", "_"))
-        self.entity_id = f"climate.{slug}"
+        self.entity_id = f"water_heater.{slug}"
         self._attr_unique_id = f"{config_entry.entry_id}.water_heater"
 
         self._attr_temperature_unit = "°C"
@@ -99,10 +100,17 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
         self._attr_max_temp = 65
         self._attr_target_temperature_step = 1
         self._attr_precision = 1
-        self._attr_operation_list = [STATE_OFF, STATE_SUPERECO, STATE_ECO, STATE_PERFORMANCE]
+        self._attr_operation_list = [
+            STATE_OFF,
+            STATE_SUPERECO,
+            STATE_ECO,
+            STATE_PERFORMANCE,
+        ]
         self._desired_current_operation = STATE_OFF
         self._heat_delta = 0
-        self._operating_mode = OperatingMode(0)  # Initialize to empty mode until MQTT updates arrive
+        self._operating_mode = OperatingMode(
+            0
+        )  # Initialize to empty mode until MQTT updates arrive
         self._heatpump_state: bool | None = None
 
     async def _set_heatpump_state(self, should_be_on: bool) -> None:
@@ -159,7 +167,9 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
             self._attr_current_operation = STATE_OFF
             self.async_write_ha_state()
             return
-        if self._heatpump_state is False or not (self._operating_mode & OperatingMode.DHW):
+        if self._heatpump_state is False or not (
+            self._operating_mode & OperatingMode.DHW
+        ):
             await self.async_turn_on()
         # optimistic update
         self._attr_current_operation = operation_mode
@@ -245,7 +255,9 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
                     f"[DHW] Operating mode changed via MQTT from {previous_operating_mode} to {self._operating_mode}"
                 )
             else:
-                _LOGGER.debug(f"[DHW] Operating mode received via MQTT unchanged: {self._operating_mode}")
+                _LOGGER.debug(
+                    f"[DHW] Operating mode received via MQTT unchanged: {self._operating_mode}"
+                )
 
             # Verify if this confirms a pending command (for turn_on/turn_off)
             dhw_is_on = bool(self._operating_mode & OperatingMode.DHW)
@@ -257,8 +269,12 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
             elif not (self._operating_mode & OperatingMode.DHW):
                 _LOGGER.debug("DHW is off")
                 self._attr_current_operation = STATE_OFF
-            elif self._attr_current_operation == STATE_OFF: # DHW is on but it was off before
-                self._attr_current_operation = self._desired_current_operation or "unknown preset"
+            elif (
+                self._attr_current_operation == STATE_OFF
+            ):  # DHW is on but it was off before
+                self._attr_current_operation = (
+                    self._desired_current_operation or "unknown preset"
+                )
             self.async_write_ha_state()
 
         await mqtt.async_subscribe(
@@ -279,7 +295,9 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
                     f"to {'ON' if self._heatpump_state else 'OFF'}"
                 )
             else:
-                _LOGGER.debug(f"[DHW] Heatpump state received via MQTT unchanged: {'ON' if self._heatpump_state else 'OFF'}")
+                _LOGGER.debug(
+                    f"[DHW] Heatpump state received via MQTT unchanged: {'ON' if self._heatpump_state else 'OFF'}"
+                )
             if self._heatpump_state is False:
                 self.verify_command_confirmation(False)
                 self._attr_current_operation = STATE_OFF
@@ -306,7 +324,9 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
             retry_callback=lambda: self.async_turn_on(),
         )
 
-        system_is_off = self._operating_mode == OperatingMode(0) or self._heatpump_state is False
+        system_is_off = (
+            self._operating_mode == OperatingMode(0) or self._heatpump_state is False
+        )
 
         # If system appears off, turn on main power first
         if system_is_off:
@@ -320,12 +340,12 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
             new_operating_mode = self._operating_mode | OperatingMode.DHW
         _LOGGER.debug(f"[DHW] Setting operating mode to {new_operating_mode}")
         await async_publish(
-                self.hass,
-                f"{self.discovery_prefix}commands/SetOperationMode",
-                new_operating_mode.to_mqtt(),
-                0,
-                False,
-                "utf-8",
+            self.hass,
+            f"{self.discovery_prefix}commands/SetOperationMode",
+            new_operating_mode.to_mqtt(),
+            0,
+            False,
+            "utf-8",
         )
         # Optimistically update operating mode
         self._operating_mode = new_operating_mode
@@ -349,7 +369,9 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
         # Check if removing DHW leaves no valid mode (this happens when current mode is "DHW only")
         if new_operating_mode == OperatingMode(0):
             # Turn off the entire system via main power switch
-            _LOGGER.debug("[DHW] Turning off DHW would leave no valid mode, turning off main power")
+            _LOGGER.debug(
+                "[DHW] Turning off DHW would leave no valid mode, turning off main power"
+            )
             await self._set_heatpump_state(False)
             # Optimistically update operating mode
             self._operating_mode = OperatingMode(0)
