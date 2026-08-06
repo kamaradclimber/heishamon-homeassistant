@@ -1,12 +1,12 @@
 """Support for HeishaMon controlled heatpumps through MQTT."""
 from __future__ import annotations
+import inspect
 import logging
 from typing import Any, Optional
 from dataclasses import dataclass
 from collections.abc import Callable
 from datetime import timedelta
 
-from awesomeversion import AwesomeVersion
 from homeassistant.components import mqtt
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -17,10 +17,7 @@ from homeassistant.components.sensor import (
 from homeassistant.components.integration.const import METHOD_LEFT
 from homeassistant.components.integration.sensor import IntegrationSensor
 from homeassistant.helpers.entity import EntityCategory
-from homeassistant.const import (
-    UnitOfTime,
-    __version__ as HA_VERSION,
-)
+from homeassistant.const import UnitOfTime
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -234,10 +231,13 @@ def extract_sum(values):
 class EnergyIntegrationEntity(IntegrationSensor):
 
     def __init__(self, hass, **kwargs):
-        if AwesomeVersion(HA_VERSION) < AwesomeVersion("2025.8"):
-            super().__init__(**kwargs)
-        else:
-            super().__init__(hass, **kwargs)
+        # HA core removed the `hass` constructor argument from IntegrationSensor
+        # in 2026.8 (home-assistant/core#177596). Inspect the installed
+        # signature instead of comparing HA_VERSION so this keeps working both
+        # before and after that change, regardless of which side we're on.
+        if "hass" in inspect.signature(IntegrationSensor.__init__).parameters:
+            kwargs["hass"] = hass
+        super().__init__(**kwargs)
 
     @property
     def entity_category(self):
