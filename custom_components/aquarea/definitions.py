@@ -1037,6 +1037,15 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             state=bit_to_bool,
         ),
         HeishaMonSwitchEntityDescription(
+            heishamon_topic_id="SET47",  # corresponds to TOP68
+            key=f"{mqtt_prefix}main/Force_Heater_State",
+            command_topic=f"{mqtt_prefix}commands/SetForceHeater",
+            name="Aquarea Force Heater",
+            entity_category=EntityCategory.CONFIG,
+            device_class=BinarySensorDeviceClass.HEAT,
+            state=bit_to_bool,
+        ),
+        HeishaMonSwitchEntityDescription(
             heishamon_topic_id="SET24",  # corresponds to "TOP13"
             key=f"{mqtt_prefix}main/Main_Schedule_State",
             command_topic=f"{mqtt_prefix}commands/SetMainSchedule",
