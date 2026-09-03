@@ -5,6 +5,7 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 
 from .const import DOMAIN, DeviceType
 
@@ -21,42 +22,67 @@ PLATFORMS = [
 ]
 _LOGGER = logging.getLogger(__name__)
 
+DEFAULT_MQTT_TOPIC = "panasonic_heat_pump/"
+
+
+def _compute_identifiers(mqtt_topic: str) -> dict[DeviceType, tuple[str, str]]:
+    if mqtt_topic == DEFAULT_MQTT_TOPIC:  # backward compatibility
+        return {
+            DeviceType.HEATPUMP: (DOMAIN, "panasonic_heat_pump"),
+            DeviceType.HEISHAMON: (DOMAIN, "heishamon"),
+        }
+    return {
+        DeviceType.HEATPUMP: (DOMAIN, mqtt_topic),
+        DeviceType.HEISHAMON: (DOMAIN, f"heishamon-{mqtt_topic}"),
+    }
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the HeishaMon integration."""
+    mqtt_topic = entry.data["discovery_prefix"]
+    identifiers = _compute_identifiers(mqtt_topic)
+
+    device_registry = dr.async_get(hass)
+
+    heishamon_device = device_registry.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={identifiers[DeviceType.HEISHAMON]},
+        name="HeishaMon",
+    )
+    device_registry.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={identifiers[DeviceType.HEATPUMP]},
+        name="Aquarea HeatPump",
+        manufacturer="Aquarea",
+    )
+
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][entry.entry_id] = {"heishamon_device_id": heishamon_device.id}
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload the HeishaMon integration."""
-    # no data stored in hass.data for now
+    hass.data[DOMAIN].pop(entry.entry_id, None)
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
-DEFAULT_MQTT_TOPIC = "panasonic_heat_pump/"
-
-
-def build_device_info(device_type: DeviceType, mqtt_topic: str) -> dict:
-    """
-    This method returns the correct device based
-    """
-    if mqtt_topic == DEFAULT_MQTT_TOPIC:  # backward compatibility
-        heatpump_id = (DOMAIN, "panasonic_heat_pump")
-        heishamon_id = (DOMAIN, "heishamon")
-    else:
-        heatpump_id = (DOMAIN, mqtt_topic)
-        heishamon_id = (DOMAIN, f"heishamon-{mqtt_topic}")
+def build_device_info(hass: HomeAssistant, device_type: DeviceType, mqtt_topic: str, config_entry_id: str) -> dict:
+    """Return device info dict for the given device type."""
+    identifiers = _compute_identifiers(mqtt_topic)
     if device_type == DeviceType.HEATPUMP:
+        via_device_id = hass.data.get(DOMAIN, {}).get(config_entry_id, {}).get("heishamon_device_id")
         return {
-            "identifiers": {heatpump_id},
+            "identifiers": {identifiers[DeviceType.HEATPUMP]},
             "name": "Aquarea HeatPump",
             "manufacturer": "Aquarea",
-            "via_device": heishamon_id,
+            "via_device_id": via_device_id,
         }
     elif device_type == DeviceType.HEISHAMON:
         return {
-            "identifiers": {heishamon_id},
+            "identifiers": {identifiers[DeviceType.HEISHAMON]},
             "name": "HeishaMon",
         }
     assert False, f"{device_type} management has not been implemented"

@@ -103,4 +103,4 @@ class HeishaMonMQTTButton(ButtonEntity):
 
     @property
     def device_info(self):
-        return build_device_info(self.entity_description.device, self.discovery_prefix)
+        return build_device_info(self.hass, self.entity_description.device, self.discovery_prefix, self.config_entry_entry_id)

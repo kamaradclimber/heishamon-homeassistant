@@ -300,7 +300,7 @@ class MultiMQTTSensorEntity(SensorEntity):
 
     @property
     def device_info(self):
-        return build_device_info(DeviceType.HEATPUMP, self.discovery_prefix)
+        return build_device_info(self.hass, DeviceType.HEATPUMP, self.discovery_prefix, self.config_entry_entry_id)
 
 
 class S0Detector(SensorEntity):
@@ -390,7 +390,7 @@ class S0Detector(SensorEntity):
 
     @property
     def device_info(self):
-        return build_device_info(DeviceType.HEISHAMON, self.discovery_prefix)
+        return build_device_info(self.hass, DeviceType.HEISHAMON, self.discovery_prefix, self.config_entry_entry_id)
 
 
 class DallasListSensor(SensorEntity):
@@ -453,7 +453,7 @@ class DallasListSensor(SensorEntity):
 
     @property
     def device_info(self):
-        return build_device_info(DeviceType.HEISHAMON, self.discovery_prefix)
+        return build_device_info(self.hass, DeviceType.HEISHAMON, self.discovery_prefix, self.config_entry_entry_id)
 
 
 class HeishaMonSensor(SensorEntity):
@@ -507,4 +507,4 @@ class HeishaMonSensor(SensorEntity):
 
     @property
     def device_info(self):
-        return build_device_info(self.entity_description.device, self.discovery_prefix)
+        return build_device_info(self.hass, self.entity_description.device, self.discovery_prefix, self.config_entry_entry_id)

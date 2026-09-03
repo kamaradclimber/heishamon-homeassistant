@@ -573,4 +573,4 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
 
     @property
     def device_info(self):
-        return build_device_info(DeviceType.HEATPUMP, self.discovery_prefix)
+        return build_device_info(self.hass, DeviceType.HEATPUMP, self.discovery_prefix, self.config_entry_entry_id)
