@@ -78,7 +78,7 @@ def build_device_info(hass: HomeAssistant, device_type: DeviceType, mqtt_topic: 
             "identifiers": {identifiers[DeviceType.HEATPUMP]},
             "name": "Aquarea HeatPump",
             "manufacturer": "Aquarea",
-            "via_device_id": via_device_id,
+            "via_device": via_device_id,
         }
     elif device_type == DeviceType.HEISHAMON:
         return {
