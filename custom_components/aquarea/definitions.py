@@ -976,6 +976,28 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
             options=list(DHW_SENSOR_SELECTION.values()),
             entity_registry_enabled_default=False,  # only applicable to K/L series All-In-One units
         ),
+        HeishaMonSelectEntityDescription(
+            heishamon_topic_id="SET44", # corresponds to TOP58
+            key=f"{mqtt_prefix}main/DHW_Heater_State",
+            command_topic=f"{mqtt_prefix}main/SetDHWHeaterState",
+            name="Aquarea DHW Heater State",
+            entity_category=EntityCategory.CONFIG,
+            icon="mdi:thermometer-water",
+            state=read_heater_state,
+            state_to_mqtt=heater_state_to_mqtt,
+            options=list(HEATER_STATE.values()),
+        ),
+        HeishaMonSelectEntityDescription(
+            heishamon_topic_id="SET45", # corresponds to TOP59
+            key=f"{mqtt_prefix}main/Room_Heater_State",
+            command_topic=f"{mqtt_prefix}main/SetRoomHeaterState",
+            name="Aquarea Room Heater State",
+            entity_category=EntityCategory.CONFIG,
+            icon="mdi:thermometer-water",
+            state=read_heater_state,
+            state_to_mqtt=heater_state_to_mqtt,
+            options=list(HEATER_STATE.values()),
+        ),
     ]
 
 
@@ -1179,6 +1201,7 @@ def build_binary_sensors(
             name="Aquarea Quiet Mode Schedule",
             state=bit_to_bool,
         ),
+        # deprecated since we have a switch now
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP58",
             key=f"{mqtt_prefix}main/DHW_Heater_State",
@@ -1186,6 +1209,7 @@ def build_binary_sensors(
             state=bit_to_bool,
             device_class=BinarySensorDeviceClass.HEAT,
         ),
+        # deprecated since we have a switch now
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP59",
             key=f"{mqtt_prefix}main/Room_Heater_State",
@@ -1404,6 +1428,14 @@ def read_dhw_sensor_selection(value: str) -> Optional[str]:
 def dhw_sensor_selection_to_mqtt(value: str) -> Optional[str]:
     return lookup_by_value(DHW_SENSOR_SELECTION, value)
 
+HEATER_STATE = {
+    "0": "blocked",
+    "1": "free",
+}
+def read_heater_state(value: str) -> Optional[str]:
+    return HEATER_STATE.get(value, None)
+def heater_state_to_mqtt(value: str) -> Optional[str]:
+    return lookup_by_value(HEATER_STATE, value)
 
 def read_temp(value: str) -> Optional[Any]:
     v = int(value)
