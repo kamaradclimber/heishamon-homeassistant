@@ -363,7 +363,11 @@ class HeishaMonButtonEntityDescription(
 ):
     """Button entity description for HeishaMon."""
 
-    pass
+    command_topic: str = "void/topic"
+    qos: int = 0
+    retain: bool = False
+    encoding: str = "utf-8"
+    payload: str = "1"
 
 
 @frozendataclass
@@ -2436,5 +2440,13 @@ def build_buttons(
             entity_category=EntityCategory.DIAGNOSTIC,
             device_class=ButtonDeviceClass.RESTART,
             on_receive=update_device_ip,
+        ),
+        HeishaMonButtonEntityDescription(
+            heishamon_topic_id="SET48",
+            key=f"{mqtt_prefix}commands/SetReset",
+            command_topic=f"{mqtt_prefix}commands/SetReset",
+            name="Reset fault code",
+            device=DeviceType.HEISHAMON,
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
     ]

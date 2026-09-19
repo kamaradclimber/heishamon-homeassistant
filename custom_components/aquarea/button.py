@@ -63,6 +63,20 @@ class HeishaMonMQTTButton(ButtonEntity):
         self._inner_state = None
 
     async def async_press(self) -> None:
+        if self.entity_description.command_topic != "void/topic":
+            # regular code path
+            _LOGGER.info(f"Triggering on heatpump {self.entity_description.name}")
+            await async_publish(
+                self.hass,
+                self.entity_description.command_topic,
+                self.entity_description.payload,
+                self.entity_description.qos,
+                self.entity_description.retain,
+                self.entity_description.encoding,
+            )
+            return
+
+        # alternative code path for reboot management (which does not use mqtt message)
         while self._inner_state is None:
                 _LOGGER.warn("Waiting for an mqtt message to get the ip address of heishamon")
                 await asyncio.sleep(1)
