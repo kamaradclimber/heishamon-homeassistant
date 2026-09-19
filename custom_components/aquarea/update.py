@@ -146,7 +146,7 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                         # otherwise alpha are always considered late
                         self._attr_installed_version = None
                     else:
-                        self._attr_installed_version = field_value
+                        self._attr_installed_version = field_value.lstrip('v')
                 else:
                     self.stats_firmware_contain_version = False
             # we only write value when we know for sure how to get version
