@@ -967,7 +967,7 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
         HeishaMonSelectEntityDescription(
             heishamon_topic_id="SET43",  # corresponds to TOP143
             key=f"{mqtt_prefix}main/DHW_Sensor_Selection",
-            command_topic=f"{mqtt_prefix}main/SetDHWSensorSelection",
+            command_topic=f"{mqtt_prefix}commands/SetDHWSensorSelection",
             name="Aquarea DHW Sensor Selection",
             entity_category=EntityCategory.CONFIG,
             icon="mdi:thermometer-water",
@@ -979,7 +979,7 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
         HeishaMonSelectEntityDescription(
             heishamon_topic_id="SET44", # corresponds to TOP58
             key=f"{mqtt_prefix}main/DHW_Heater_State",
-            command_topic=f"{mqtt_prefix}main/SetDHWHeaterState",
+            command_topic=f"{mqtt_prefix}commands/SetDHWHeaterState",
             name="Aquarea DHW Heater State",
             entity_category=EntityCategory.CONFIG,
             icon="mdi:thermometer-water",
@@ -990,7 +990,7 @@ def build_selects(mqtt_prefix: str) -> list[HeishaMonSelectEntityDescription]:
         HeishaMonSelectEntityDescription(
             heishamon_topic_id="SET45", # corresponds to TOP59
             key=f"{mqtt_prefix}main/Room_Heater_State",
-            command_topic=f"{mqtt_prefix}main/SetRoomHeaterState",
+            command_topic=f"{mqtt_prefix}commands/SetRoomHeaterState",
             name="Aquarea Room Heater State",
             entity_category=EntityCategory.CONFIG,
             icon="mdi:thermometer-water",
