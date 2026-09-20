@@ -2446,7 +2446,6 @@ def build_buttons(
             key=f"{mqtt_prefix}commands/SetReset",
             command_topic=f"{mqtt_prefix}commands/SetReset",
             name="Reset fault code",
-            device=DeviceType.HEISHAMON,
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
     ]
