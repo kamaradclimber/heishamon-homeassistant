@@ -85,6 +85,20 @@ class HeishaMonMQTTSelect(CommandRetryMixin, SelectEntity):
             retry_callback=lambda: self.async_select_option(option),
         )
 
+    def _values_match(self, value1, value2, tolerance) -> bool:
+        if super()._values_match(value1, value2, tolerance):
+            return True
+        # several options can be sent with the same payload (e.g Auto(Heat) and
+        # Auto(Cool)), heishamon then reports whichever one is currently active
+        if self.entity_description.state_to_mqtt is None:
+            return False
+        try:
+            payload1 = self.entity_description.state_to_mqtt(value1)
+            payload2 = self.entity_description.state_to_mqtt(value2)
+        except Exception:
+            return False
+        return payload1 is not None and payload1 == payload2
+
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT events."""
 
