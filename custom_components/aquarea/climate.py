@@ -308,6 +308,14 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
             topic = f"{self.discovery_prefix}commands/SetZ{self.zone_id}HeatRequestTemperature"
         else:
             topic = f"{self.discovery_prefix}commands/SetZ{self.zone_id}CoolRequestTemperature"
+
+        # Register command for retry if not confirmed
+        await self.register_command(
+            expected_value=temperature,
+            retry_callback=lambda: self.async_set_temperature(temperature=temperature),
+            tolerance=0.1,
+        )
+
         await async_publish(
             self.hass,
             topic,
@@ -317,12 +325,6 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
             "utf-8",
         )
 
-        # Register command for retry if not confirmed
-        await self.register_command(
-            expected_value=temperature,
-            retry_callback=lambda: self.async_set_temperature(temperature=temperature),
-            tolerance=0.1,
-        )
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT events."""
@@ -404,12 +406,11 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
                 if self._attr_min_temp != self.UNDEFINED_VALUE and self._attr_max_temp != self.UNDEFINED_VALUE:
                     if self._attr_target_temperature < self._attr_min_temp or self._attr_target_temperature > self._attr_max_temp:
                         # when reaching that point, maybe we should set a wider range to avoid blocking user?
-                        _LOGGER.warn(f"{self._climate_type()} Target temperature is not within expected range, this is suspicious. {self._attr_target_temperature} should be within [{self._attr_min_temp},{self._attr_max_temp}]")
+                        _LOGGER.warning(f"{self._climate_type()} Target temperature is not within expected range, this is suspicious. {self._attr_target_temperature} should be within [{self._attr_min_temp},{self._attr_max_temp}]")
 
             # Verify if this confirms a pending command
-            self.verify_command_confirmation(self._attr_target_temperature)
-
-            self.async_write_ha_state()
+            if self.verify_command_confirmation(self._attr_target_temperature):
+                self.async_write_ha_state()
 
         if self.heater:
             topic = f"{self.discovery_prefix}main/Z{self.zone_id}_Heat_Request_Temp"
@@ -450,9 +451,8 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
             self._attr_hvac_mode = guess_hvac_mode()
 
             # Verify if this confirms a pending HVAC mode change command
-            self.verify_command_confirmation(self._attr_hvac_mode)
-
-            self.async_write_ha_state()
+            if self.verify_command_confirmation(self._attr_hvac_mode):
+                self.async_write_ha_state()
 
         await mqtt.async_subscribe(
             self.hass,
@@ -483,8 +483,8 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
                     f"{'ON' if self._heatpump_state else 'OFF'}"
                 )
             self._attr_hvac_mode = guess_hvac_mode()
-            self.verify_command_confirmation(self._attr_hvac_mode)
-            self.async_write_ha_state()
+            if self.verify_command_confirmation(self._attr_hvac_mode):
+                self.async_write_ha_state()
 
         await mqtt.async_subscribe(
             self.hass,
