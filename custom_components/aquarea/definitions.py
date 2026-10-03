@@ -105,7 +105,10 @@ class OperatingMode(Flag):
         return operating_mode
 
     def to_mqtt(self) -> str:
-        return str(int(self))
+        # heishamon reports Auto as 7/8 (TOP4) while cooling but only accepts 0-6
+        # to set it (SET9): Auto is 2 and Auto+DHW is 6 whatever the current state
+        value = int(self)
+        return str({7: 2, 8: 6}.get(value, value))
 
 
 def convert_pressure_to_kPa(str_repr: str) -> float:
@@ -113,7 +116,7 @@ def convert_pressure_to_kPa(str_repr: str) -> float:
 
 
 def operating_mode_to_state(str_repr: str):
-    return str(int(OperatingMode.from_str(str_repr)))
+    return OperatingMode.from_str(str_repr).to_mqtt()
 
 
 def read_enabled_disabled(value: str) -> Optional[bool]:
