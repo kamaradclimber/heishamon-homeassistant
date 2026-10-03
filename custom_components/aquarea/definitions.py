@@ -722,6 +722,20 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             state_to_mqtt=int,
         ),
         HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET46",  # corresponds to TOP78
+            key=f"{mqtt_prefix}main/Heater_On_Outdoor_Temp",
+            command_topic=f"{mqtt_prefix}commands/SetHeaterOnOutdoorTemp",
+            name="Aquarea Outdoor temperature backup heater power on",
+            entity_category=EntityCategory.CONFIG,
+            device_class=NumberDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="°C",
+            native_min_value=-15,
+            native_max_value=20,
+            native_step=1,
+            state=int,
+            state_to_mqtt=int,
+        ),
+        HeishaMonNumberEntityDescription(
             heishamon_topic_id="SetDemandControl",
             key=f"{mqtt_prefix}commands/SetDemandControl",
             command_topic=f"{mqtt_prefix}commands/SetDemandControl",
