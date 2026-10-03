@@ -1094,7 +1094,7 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             state=bit_to_bool,
         ),
         HeishaMonSwitchEntityDescription(
-            heishamon_topic_id="SET26",  # corresponds to "TOP108"
+            heishamon_topic_id="SET25",  # corresponds to TOP108
             key=f"{mqtt_prefix}main/Alt_External_Sensor",
             command_topic=f"{mqtt_prefix}commands/SetAltExternalSensor",
             name="Aquarea use external outdoor sensor",
@@ -1240,14 +1240,14 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}main/Internal_Heater_State",
             name="Aquarea Internal Heater State",
             state=bit_to_bool,
-            device_class=BinarySensorDeviceClass.HEAT,
+            device_class=BinarySensorDeviceClass.RUNNING,
         ),
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP61",
             key=f"{mqtt_prefix}main/External_Heater_State",
             name="Aquarea External Heater State",
             state=bit_to_bool,
-            device_class=BinarySensorDeviceClass.HEAT,
+            device_class=BinarySensorDeviceClass.RUNNING,
         ),
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP68",
