@@ -197,10 +197,10 @@ async def async_setup_entry(
 
 
 def compute_cop(values) -> Optional[float]:
-    # read defrost and cancel COP if defrost is on
-    if bit_to_bool(values[0]):
+    # Payload is a float; bit_to_bool() only accepts "0"/"1".
+    if values[0] in (1, 1.0) or bit_to_bool(values[0]):
         _LOGGER.debug("Defrost is in progress, cannot compute COP, it would not make sense")
-        return -1
+        return None
     values = values[1:]
     assert len(values) == 24
     production = extract_sum(values[18:21] + values[12:15] + values[0:3] + values[6:9])
@@ -210,10 +210,9 @@ def compute_cop(values) -> Optional[float]:
     if consumption == 0:
         return 0
     cop = production / consumption
-    if (
-        cop > 15
-    ):  # this value is obviously incorrect. We probably don't have all consumption yet
-        return 0
+    # < 0 or > 15 is not a COP. None keeps the last value.
+    if cop < 0 or cop > 15:
+        return None
     return round(cop, 2)
 
 
@@ -292,7 +291,10 @@ class MultiMQTTSensorEntity(SensorEntity):
             index = self.entity_description.topics.index(message.topic)
             self._received_values[index] = float(message.payload)
             assert self.compute_state is not None
-            self._attr_native_value = self.compute_state(self._received_values)
+            new_state = self.compute_state(self._received_values)
+            if new_state is None and self.compute_state is compute_cop:
+                return
+            self._attr_native_value = new_state
             self.async_write_ha_state()
 
         for topic in self.entity_description.topics or []:
