@@ -1357,14 +1357,22 @@ def build_binary_sensors(
     ]
 
 
+def _get_device_identifiers(device_info):
+    """Return device identifiers, supporting old and new Home Assistant versions."""
+    if device_info is None:
+        return None
+    if isinstance(device_info, dict):
+        # Home Assistant < 2026.11 represented DeviceInfo as a TypedDict.
+        return device_info.get("identifiers")
+    return device_info.identifiers
+
+
 def update_device_ip(
     hass: HomeAssistant, entity: SensorEntity, config_entry_id: str, ip: str
 ):
     _LOGGER.debug(f"Received ip address: {ip}")
     device_registry = dr.async_get(hass)
-    identifiers = None
-    if entity.device_info is not None and "identifiers" in entity.device_info:
-        identifiers = entity.device_info["identifiers"]
+    identifiers = _get_device_identifiers(entity.device_info)
     device_registry.async_get_or_create(
         config_entry_id=config_entry_id,
         identifiers=identifiers,
@@ -1378,9 +1386,7 @@ def update_device_model(
     _LOGGER.debug("Set model")
 
     device_registry = dr.async_get(hass)
-    identifiers = None
-    if entity.device_info is not None and "identifiers" in entity.device_info:
-        identifiers = entity.device_info["identifiers"]
+    identifiers = _get_device_identifiers(entity.device_info)
     device_registry.async_get_or_create(
         config_entry_id=config_entry_id, identifiers=identifiers, model=model
     )
