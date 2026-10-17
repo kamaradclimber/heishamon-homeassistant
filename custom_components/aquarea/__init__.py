@@ -6,6 +6,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import DOMAIN, DeviceType
 
@@ -69,22 +70,24 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
-def build_device_info(hass: HomeAssistant, device_type: DeviceType, mqtt_topic: str, config_entry_id: str) -> dict:
-    """Return device info dict for the given device type."""
+def build_device_info(hass: HomeAssistant, device_type: DeviceType, mqtt_topic: str, config_entry_id: str) -> DeviceInfo:
+    """Return device info for the given device type."""
     identifiers = _compute_identifiers(mqtt_topic)
     if device_type == DeviceType.HEATPUMP:
-        via_device_id = hass.data.get(DOMAIN, {}).get(config_entry_id, {}).get("heishamon_device_id")
-        return {
+        device_info_fields = {
             "identifiers": {identifiers[DeviceType.HEATPUMP]},
             "name": "Aquarea HeatPump",
             "manufacturer": "Aquarea",
-            "via_device_id": via_device_id,
         }
+        via_device_id = hass.data.get(DOMAIN, {}).get(config_entry_id, {}).get("heishamon_device_id")
+        if via_device_id is not None:
+            device_info_fields["via_device_id"] = via_device_id
+        return DeviceInfo(**device_info_fields)
     elif device_type == DeviceType.HEISHAMON:
-        return {
-            "identifiers": {identifiers[DeviceType.HEISHAMON]},
-            "name": "HeishaMon",
-        }
+        return DeviceInfo(
+            identifiers={identifiers[DeviceType.HEISHAMON]},
+            name="HeishaMon",
+        )
     assert False, f"{device_type} management has not been implemented"
 
 
