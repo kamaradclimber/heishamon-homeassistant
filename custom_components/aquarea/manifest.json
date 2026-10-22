@@ -19,5 +19,5 @@
   "mqtt": [
     "+/main/Heatpump_State"
   ],
-  "version": "2.11.6"
+  "version": "2.11.7"
 }
