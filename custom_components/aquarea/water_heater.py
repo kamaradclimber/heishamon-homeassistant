@@ -174,6 +174,14 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
         # optimistic update
         self._attr_current_operation = operation_mode
         self.async_write_ha_state()
+        # If we sent commands above, give HeishaMon time to process them and
+        # forward them to the heatpump on its CN-CNT serial bus, before sending
+        # the DHW temperature command. Otherwise both commands arrive on MQTT
+        # within a few ms and HeishaMon's reads *may* time out while it processes
+        # them back to back (see #417). The delay is unconditional: even when
+        # the system was already on, async_turn_on just published
+        # SetOperationMode.
+        await asyncio.sleep(1.0)
         temp = HeishaMonDHW.operation_modes_temps[operation_mode][0]
         if temp is None:
             _LOGGER.warn(
