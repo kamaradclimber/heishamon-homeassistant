@@ -100,14 +100,17 @@ class CommandRetryMixin:
         # Schedule retry with jitter
         await self._schedule_retry()
 
-    def verify_command_confirmation(self, received_value: Any) -> None:
+    def verify_command_confirmation(self, received_value: Any) -> bool:
         """Verify if received state update confirms our pending command.
 
         Args:
             received_value: The value received in the state update
+        Returns:
+            True, if received value is the one we were expecting (or if we were not expecting any value)
+            False, otherwise.
         """
         if self._pending_command is None:
-            return
+            return True
 
         # Check if values match (with tolerance for numeric values)
         if self._values_match(received_value, self._pending_command.expected_value, self._pending_command.tolerance):
@@ -116,6 +119,7 @@ class CommandRetryMixin:
                 f"received: {received_value}, retries: {self._pending_command.retry_count})"
             )
             self._cancel_pending_command()
+            return True
         else:
             # Track non-matching value for diagnostic purposes
             self._pending_command.received_values.append(received_value)
@@ -123,6 +127,7 @@ class CommandRetryMixin:
                 f"{self.name}: Received value {received_value} does not match expected {self._pending_command.expected_value}, "
                 f"waiting for confirmation or retry"
             )
+            return False
 
     def _values_match(self, value1: Any, value2: Any, tolerance: Optional[float]) -> bool:
         """Check if two values match, with optional tolerance for numeric values.
