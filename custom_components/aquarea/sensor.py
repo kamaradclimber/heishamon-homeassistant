@@ -234,12 +234,13 @@ class EnergyIntegrationEntity(IntegrationSensor):
         # in 2026.8 (home-assistant/core#177596). Inspect the installed
         # signature instead of comparing HA_VERSION so this keeps working both
         # before and after that change, regardless of which side we're on.
-        if "hass" in inspect.signature(IntegrationSensor.__init__).parameters:
+        parameters = inspect.signature(IntegrationSensor.__init__).parameters
+        if "hass" in parameters:
             kwargs["hass"] = hass
         # HA core 2026.11 added `device_class` as a required keyword argument
         # (home-assistant/core#174545). Same approach: pass it only when the
         # installed signature has it.
-        if "device_class" in inspect.signature(IntegrationSensor.__init__).parameters:
+        if "device_class" in parameters:
             kwargs.setdefault("device_class", SensorDeviceClass.ENERGY)
         super().__init__(**kwargs)
 
