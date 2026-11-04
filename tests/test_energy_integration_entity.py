@@ -8,10 +8,10 @@ from homeassistant.const import UnitOfTime
 from custom_components.aquarea.sensor import EnergyIntegrationEntity
 
 
-def test_energy_integration_entity_construction():
+async def test_energy_integration_entity_construction(hass):
     # Same arguments as async_setup_entry in sensor.py.
     entity = EnergyIntegrationEntity(
-        None,
+        hass,
         integration_method=METHOD_LEFT,
         name="Aquarea Heat Power Consumed Total",
         round_digits=3,
