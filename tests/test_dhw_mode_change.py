@@ -22,7 +22,7 @@ async def test_set_operation_mode_waits_between_commands(hass):
         "custom_components.aquarea.definitions", fromlist=["OperatingMode"]
     ).OperatingMode(0)
     entity._heat_delta = 0
-    entity._attr_target_temperature = None
+    entity._attr_native_target_temperature = None
     entity._attr_current_operation = None
 
     sleeps = []

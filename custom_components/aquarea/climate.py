@@ -122,6 +122,23 @@ class ZoneTemperatureMode(Enum):
 class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
     """Representation of a HeishaMon climate entity that is updated via MQTT."""
 
+    _attr_native_current_temperature: float | None = None
+    _attr_native_target_temperature: float | None = None
+
+    # Before HA 2026.11 the climate platform reads the non-native properties.
+    if not hasattr(ClimateEntity, "native_temperature_unit"):
+        @property
+        def temperature_unit(self) -> str:
+            return self._attr_native_temperature_unit
+
+        @property
+        def current_temperature(self) -> float | None:
+            return self._attr_native_current_temperature
+
+        @property
+        def target_temperature(self) -> float | None:
+            return self._attr_native_target_temperature
+
     def __init__(
         self,
         hass: HomeAssistant,
@@ -147,7 +164,7 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
         else:
             self._attr_unique_id = f"{config_entry.entry_id}-{self.zone_id}-cooling"
 
-        self._attr_temperature_unit = "°C"
+        self._attr_native_temperature_unit = "°C"
         self._enable_turn_on_off_backwards_compatibility = False
         self._attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TURN_OFF | ClimateEntityFeature.TURN_ON
         if self.heater:
@@ -384,7 +401,7 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
 
         @callback
         def current_temperature_message_received(message):
-            self._attr_current_temperature = float(message.payload)
+            self._attr_native_current_temperature = float(message.payload)
             self.async_write_ha_state()
 
         await mqtt.async_subscribe(
@@ -396,18 +413,19 @@ class HeishaMonZoneClimate(CommandRetryMixin, ClimateEntity):
 
         @callback
         def target_temperature_message_received(message):
-            self._attr_target_temperature = float(message.payload)
+            target_temperature = float(message.payload)
+            self._attr_native_target_temperature = target_temperature
             _LOGGER.debug(
-                f"{self._climate_type()} Received target temperature for {self.zone_id}: {self._attr_target_temperature}"
+                f"{self._climate_type()} Received target temperature for {self.zone_id}: {target_temperature}"
             )
             if not self._mode_guessed:
                 if self._attr_min_temp != self.UNDEFINED_VALUE and self._attr_max_temp != self.UNDEFINED_VALUE:
-                    if self._attr_target_temperature < self._attr_min_temp or self._attr_target_temperature > self._attr_max_temp:
+                    if target_temperature < self._attr_min_temp or target_temperature > self._attr_max_temp:
                         # when reaching that point, maybe we should set a wider range to avoid blocking user?
-                        _LOGGER.warn(f"{self._climate_type()} Target temperature is not within expected range, this is suspicious. {self._attr_target_temperature} should be within [{self._attr_min_temp},{self._attr_max_temp}]")
+                        _LOGGER.warn(f"{self._climate_type()} Target temperature is not within expected range, this is suspicious. {target_temperature} should be within [{self._attr_min_temp},{self._attr_max_temp}]")
 
             # Verify if this confirms a pending command
-            self.verify_command_confirmation(self._attr_target_temperature)
+            self.verify_command_confirmation(target_temperature)
 
             self.async_write_ha_state()
 
