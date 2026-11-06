@@ -61,6 +61,33 @@ STATE_SUPERECO = "Super Eco"
 class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
     """Representation of a HeishaMon sensor that is updated via MQTT."""
 
+    _attr_native_current_temperature: float | None = None
+    _attr_native_target_temperature: float | None = None
+    _attr_native_target_temperature_high: float | None = None
+    _attr_native_target_temperature_low: float | None = None
+
+    # Before HA 2026.11 the water heater platform reads the non-native properties.
+    if not hasattr(WaterHeaterEntity, "native_temperature_unit"):
+        @property
+        def temperature_unit(self) -> str:
+            return self._attr_native_temperature_unit
+
+        @property
+        def current_temperature(self) -> float | None:
+            return self._attr_native_current_temperature
+
+        @property
+        def target_temperature(self) -> float | None:
+            return self._attr_native_target_temperature
+
+        @property
+        def target_temperature_high(self) -> float | None:
+            return self._attr_native_target_temperature_high
+
+        @property
+        def target_temperature_low(self) -> float | None:
+            return self._attr_native_target_temperature_low
+
     operation_modes_temps = {
         STATE_SUPERECO: [42, range(37, 48)],
         STATE_ECO: [
@@ -89,7 +116,7 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
         self.entity_id = f"water_heater.{slug}"
         self._attr_unique_id = f"{config_entry.entry_id}.water_heater"
 
-        self._attr_temperature_unit = "°C"
+        self._attr_native_temperature_unit = "°C"
         self._attr_supported_features = (
             WaterHeaterEntityFeature.TARGET_TEMPERATURE
             | WaterHeaterEntityFeature.ON_OFF
@@ -191,10 +218,10 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
         await self.async_set_temperature(temperature=float(temp))
 
     def update_temperature_bounds(self) -> None:
-        if self._attr_target_temperature is not None:
-            self._attr_target_temperature_high = self._attr_target_temperature
-            self._attr_target_temperature_low = (
-                self._heat_delta + self._attr_target_temperature
+        if self._attr_native_target_temperature is not None:
+            self._attr_native_target_temperature_high = self._attr_native_target_temperature
+            self._attr_native_target_temperature_low = (
+                self._heat_delta + self._attr_native_target_temperature
             )
 
     async def async_added_to_hass(self) -> None:
@@ -202,7 +229,7 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
 
         @callback
         def current_temperature_message_received(message):
-            self._attr_current_temperature = float(message.payload)
+            self._attr_native_current_temperature = float(message.payload)
             self.async_write_ha_state()
 
         await mqtt.async_subscribe(
@@ -214,11 +241,12 @@ class HeishaMonDHW(CommandRetryMixin, WaterHeaterEntity):
 
         @callback
         def target_temperature_message_received(message):
-            self._attr_target_temperature = float(message.payload)
+            target_temperature = float(message.payload)
+            self._attr_native_target_temperature = target_temperature
             self.update_temperature_bounds()  # optimistic update
 
             # Verify if this confirms a pending command
-            self.verify_command_confirmation(self._attr_target_temperature)
+            self.verify_command_confirmation(target_temperature)
 
             found = False
             for state_name, values in HeishaMonDHW.operation_modes_temps.items():
