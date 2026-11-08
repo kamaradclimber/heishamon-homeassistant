@@ -322,7 +322,86 @@ rm -f "$NOTES_FILE"
 
 RELEASE_URL=$(gh release view "$NEW_VERSION" --repo "$OWNER_REPO" --json url --jq '.url')
 
-echo -e "\n${GREEN}✓ Release $NEW_VERSION created successfully!${NC}"
+# The installable asset (hacs.json "zip_release"/"filename") is published by a
+# workflow reacting to the "release" event. Users can only update once that
+# asset is attached: a missing asset means a 404 for every Home Assistant
+# user (see https://github.com/kamaradclimber/vigieau/issues/140), so wait for
+# the workflow and verify the asset before announcing the release or closing
+# issues. Repositories without zip_release skip this entirely.
+ZIP_ASSET=""
+if [ -f hacs.json ] && [ "$(jq -r '.zip_release // false' hacs.json)" = "true" ]; then
+    ZIP_ASSET=$(jq -r '.filename // empty' hacs.json)
+fi
+
+# Workflow triggered on the "release" event (e.g. .github/workflows/release.yml)
+RELEASE_WORKFLOW=""
+for f in .github/workflows/*.yml .github/workflows/*.yaml; do
+    if [ -f "$f" ] && grep -qE '^ *release:' "$f"; then
+        RELEASE_WORKFLOW=$(basename "$f")
+        break
+    fi
+done
+
+if [ -n "$ZIP_ASSET" ]; then
+    echo -e "\n${GREEN}Waiting for the release workflow to attach ${YELLOW}$ZIP_ASSET${NC}..."
+
+    RUN_ID=""
+    if [ -n "$RELEASE_WORKFLOW" ]; then
+        # The workflow run may not be registered yet, poll for up to a minute.
+        for _ in $(seq 1 30); do
+            RUN_ID=$(gh run list --repo "$OWNER_REPO" --workflow "$RELEASE_WORKFLOW" \
+                --event release --branch "$NEW_VERSION" --limit 1 \
+                --json databaseId --jq '.[0].databaseId // empty' 2>/dev/null || true)
+            [ -n "$RUN_ID" ] && break
+            sleep 2
+        done
+    fi
+
+    if [ -n "$RUN_ID" ]; then
+        echo -e "Watching workflow run ${YELLOW}$RUN_ID${NC}..."
+        if ! gh run watch "$RUN_ID" --repo "$OWNER_REPO" --exit-status --interval 10; then
+            echo -e "\n${RED}Error: the release workflow failed for $NEW_VERSION.${NC}"
+            echo "Assets were probably not published: Home Assistant updates will fail with a 404."
+            echo "Re-run it with: gh run rerun $RUN_ID --failed --repo $OWNER_REPO"
+            echo "No \"resolved in release\" comment was posted; the release stays published."
+            exit 1
+        fi
+    else
+        echo -e "${YELLOW}Warning: no ${RELEASE_WORKFLOW:-release} workflow run found for $NEW_VERSION, skipping the wait.${NC}"
+    fi
+
+    # Belt and braces: make sure the asset required by hacs.json is really
+    # attached (the API may lag a bit behind the workflow completion).
+    echo -e "\n${GREEN}Verifying release assets...${NC}"
+    ASSETS_OK=""
+    for _ in $(seq 1 10); do
+        if gh release view "$NEW_VERSION" --repo "$OWNER_REPO" --json assets \
+                --jq '.assets[].name' 2>/dev/null | grep -qx "$ZIP_ASSET"; then
+            ASSETS_OK=1
+            break
+        fi
+        sleep 3
+    done
+
+    if [ -z "$ASSETS_OK" ]; then
+        echo -e "${RED}Error: $ZIP_ASSET is missing from release $NEW_VERSION.${NC}"
+        echo "Home Assistant users would get a 404 when trying to update."
+        if [ -n "$RUN_ID" ]; then
+            echo "Re-run the workflow with: gh run rerun $RUN_ID --failed --repo $OWNER_REPO"
+        fi
+        echo "No \"resolved in release\" comment was posted; the release stays published."
+        exit 1
+    fi
+
+    if ! gh release view "$NEW_VERSION" --repo "$OWNER_REPO" --json assets \
+            --jq '.assets[].name' 2>/dev/null | grep -qx "$ZIP_ASSET.sigstore.json"; then
+        echo -e "${YELLOW}Warning: $ZIP_ASSET has no sigstore bundle (signing failed).${NC}"
+    fi
+
+    echo -e "\n${GREEN}✓ Release $NEW_VERSION created successfully, ${YELLOW}$ZIP_ASSET${NC}${GREEN} verified.${NC}"
+else
+    echo -e "\n${GREEN}✓ Release $NEW_VERSION created successfully.${NC}"
+fi
 echo -e "View it at: $RELEASE_URL"
 
 # Comment on linked issues and PRs
