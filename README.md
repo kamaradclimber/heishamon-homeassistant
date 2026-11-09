@@ -93,3 +93,7 @@ cards:
             $ex
             hass.states['number.panasonic_heat_pump_main_z1_heat_curve_target_low_temp'].state
 ```
+
+## Also look at
+
+https://github.com/waermewacht/integration is a great integration to provide in depth details about heatpump behavior, some health checks and allows to analyse heatpump performance. It detects heatpump using heishamon natively.
