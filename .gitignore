@@ -1,4 +1,4 @@
-custom_components/aquarea/__pycache__/
+__pycache__/
 
 # those files are ignored, they are added when running home assistant from this repository for quick testing
 home-assistant_v2.db*
