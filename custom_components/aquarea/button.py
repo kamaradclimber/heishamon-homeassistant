@@ -12,7 +12,8 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
-from .definitions import build_buttons, HeishaMonButtonEntityDescription
+from .definitions.buttons import build_buttons
+from .definitions.descriptions import HeishaMonButtonEntityDescription
 from . import build_device_info
 
 _LOGGER = logging.getLogger(__name__)

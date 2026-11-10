@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from custom_components.aquarea.const import DOMAIN
-from custom_components.aquarea.definitions import (
+from custom_components.aquarea.definitions.devices import (
     K_L_SERIES_ENTITY_TOPIC_IDS,
     enable_kl_entities,
     is_kl_series,

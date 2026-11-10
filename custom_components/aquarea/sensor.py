@@ -27,12 +27,12 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
 from .const import DeviceType
-from .definitions import (
-    build_sensors,
+from .definitions.descriptions import (
     HeishaMonSensorEntityDescription,
     MultiMQTTSensorEntityDescription,
-    bit_to_bool,
 )
+from .definitions.sensors import build_sensors
+from .definitions.values import bit_to_bool
 from . import build_device_info
 
 

@@ -4,6 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from homeassistant.components.water_heater.const import STATE_ECO
+from custom_components.aquarea.definitions.values import OperatingMode
 from custom_components.aquarea.water_heater import HeishaMonDHW
 
 
@@ -18,9 +19,7 @@ async def test_set_operation_mode_waits_between_commands(hass):
     entity.hass = hass
     entity.async_write_ha_state = lambda: None  # not added to hass
     entity._heatpump_state = None
-    entity._operating_mode = __import__(
-        "custom_components.aquarea.definitions", fromlist=["OperatingMode"]
-    ).OperatingMode(0)
+    entity._operating_mode = OperatingMode(0)
     entity._heat_delta = 0
     entity._attr_native_target_temperature = None
     entity._attr_current_operation = None

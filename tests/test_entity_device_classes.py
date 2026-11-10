@@ -3,10 +3,8 @@
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.switch import SwitchDeviceClass
 
-from custom_components.aquarea.definitions import (
-    build_binary_sensors,
-    build_switches,
-)
+from custom_components.aquarea.definitions.binary_sensors import build_binary_sensors
+from custom_components.aquarea.definitions.switches import build_switches
 
 MQTT_PREFIX = "panasonic_heat_pump/"
 

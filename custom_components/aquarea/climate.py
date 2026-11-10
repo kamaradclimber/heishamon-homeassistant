@@ -16,7 +16,7 @@ from homeassistant.util import slugify
 from homeassistant.helpers.storage import Store
 
 from homeassistant.components.climate import ClimateEntityDescription
-from .definitions import OperatingMode
+from .definitions.values import OperatingMode
 from . import build_device_info
 from .const import DeviceType
 from .retry_mixin import CommandRetryMixin

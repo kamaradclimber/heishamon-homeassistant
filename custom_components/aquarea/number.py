@@ -10,7 +10,8 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
-from .definitions import build_numbers, HeishaMonNumberEntityDescription
+from .definitions.descriptions import HeishaMonNumberEntityDescription
+from .definitions.numbers import build_numbers
 from . import build_device_info
 from .retry_mixin import CommandRetryMixin
 

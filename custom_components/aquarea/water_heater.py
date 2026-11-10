@@ -22,7 +22,7 @@ from homeassistant.components.water_heater import (
 from homeassistant.components.water_heater import WaterHeaterEntityDescription
 
 
-from .definitions import OperatingMode
+from .definitions.values import OperatingMode
 from . import build_device_info
 from .const import DeviceType
 from .retry_mixin import CommandRetryMixin

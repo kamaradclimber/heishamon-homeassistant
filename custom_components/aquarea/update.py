@@ -28,7 +28,8 @@ from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 
 from . import build_device_info
 from .const import DeviceType
-from .definitions import HeishaMonEntityDescription, read_board_type
+from .definitions.descriptions import HeishaMonEntityDescription
+from .definitions.values import read_board_type
 
 _LOGGER = logging.getLogger(__name__)
 HEISHAMON_REPOSITORY = "heishamon/HeishaMon"
