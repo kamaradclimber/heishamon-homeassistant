@@ -55,7 +55,7 @@ async def async_setup_entry(
                     entity_category=category,
                     device=switch_description.device,
                     state=switch_description.state,
-                    device_class=switch_description.device_class,
+                    device_class=switch_description.binary_sensor_device_class,
                     entity_registry_enabled_default=False,
                 ),
                 config_entry,

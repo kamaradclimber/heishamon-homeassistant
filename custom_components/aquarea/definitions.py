@@ -360,6 +360,9 @@ class HeishaMonSwitchEntityDescription(
     payload_off: str = "0"
     retain: bool = False
     encoding: str = "utf-8"
+    # device class used by the readonly binary sensor mirroring this switch.
+    # SwitchEntityDescription.device_class only supports SwitchDeviceClass.
+    binary_sensor_device_class: Optional[BinarySensorDeviceClass] = None
 
 
 @frozendataclass
@@ -1045,7 +1048,7 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             command_topic=f"{mqtt_prefix}commands/SetHeatpump",
             name="Aquarea Main Power",
             state=bit_to_bool,
-            device_class=BinarySensorDeviceClass.RUNNING,
+            binary_sensor_device_class=BinarySensorDeviceClass.RUNNING,
         ),
         HeishaMonSwitchEntityDescription(
             heishamon_topic_id="SET2",  # TOP19
@@ -1069,7 +1072,6 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             command_topic=f"{mqtt_prefix}commands/SetForceDefrost",
             name="Aquarea Defrost routine",
             entity_category=EntityCategory.CONFIG,
-            device_class=BinarySensorDeviceClass.HEAT,
             state=bit_to_bool,
         ),
         HeishaMonSwitchEntityDescription(
@@ -1078,7 +1080,7 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             command_topic=f"{mqtt_prefix}commands/SetForceSterilization",
             name="Aquarea Force Sterilization",
             entity_category=EntityCategory.CONFIG,
-            device_class=BinarySensorDeviceClass.RUNNING,
+            binary_sensor_device_class=BinarySensorDeviceClass.RUNNING,
             state=bit_to_bool,
         ),
         HeishaMonSwitchEntityDescription(
@@ -1087,7 +1089,6 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             command_topic=f"{mqtt_prefix}commands/SetForceHeater",
             name="Aquarea Force Heater",
             entity_category=EntityCategory.CONFIG,
-            device_class=BinarySensorDeviceClass.HEAT,
             state=bit_to_bool,
         ),
         HeishaMonSwitchEntityDescription(
@@ -1230,7 +1231,6 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}main/DHW_Heater_State",
             name="Aquarea Tank Heater Enabled",
             state=bit_to_bool,
-            device_class=BinarySensorDeviceClass.HEAT,
         ),
         # deprecated since we have a switch now
         HeishaMonBinarySensorEntityDescription(
@@ -1238,7 +1238,6 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}main/Room_Heater_State",
             name="Aquarea Room Heater Enabled",
             state=bit_to_bool,
-            device_class=BinarySensorDeviceClass.HEAT,
         ),
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP60",
@@ -1259,7 +1258,6 @@ def build_binary_sensors(
             key=f"{mqtt_prefix}main/Force_Heater_State",
             name="Aquarea Force heater status",
             state=bit_to_bool,
-            device_class=BinarySensorDeviceClass.HEAT,
         ),
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="TOP93",
