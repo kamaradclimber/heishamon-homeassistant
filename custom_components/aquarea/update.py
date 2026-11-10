@@ -20,6 +20,7 @@ from homeassistant.components.update import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
@@ -30,6 +31,45 @@ from .definitions import HeishaMonEntityDescription, frozendataclass, read_board
 
 _LOGGER = logging.getLogger(__name__)
 HEISHAMON_REPOSITORY = "heishamon/HeishaMon"
+
+
+def _firmware_http_error(
+    phase: str, status: int, reason: str, version: str
+) -> HomeAssistantError:
+    """Build an actionable error for an unsuccessful firmware HTTP request."""
+    status_detail = f" {reason}" if reason else ""
+    if phase == "upload" and status in (401, 403):
+        return HomeAssistantError(
+            f"HeishaMon rejected the firmware upload (HTTP {status}{status_detail}). "
+            "The integration does not send web/update credentials. If a password "
+            "is configured, update through the HeishaMon web UI instead."
+        )
+    if phase == "upload":
+        return HomeAssistantError(
+            f"HeishaMon returned HTTP {status}{status_detail} while uploading firmware "
+            f"version {version}."
+        )
+    return HomeAssistantError(
+        f"Could not {phase} firmware version {version}: HTTP {status}{status_detail}."
+    )
+
+
+def _firmware_upload_error(
+    status: int, reason: str, response_body: str, version: str
+) -> HomeAssistantError | None:
+    """Return an error reported by HeishaMon, if the upload failed."""
+    if status != 200:
+        return _firmware_http_error("upload", status, reason, version)
+
+    # HeishaMon can report a firmware failure in the response body with HTTP 200.
+    if "update failed" in response_body.lower():
+        detail = re.sub(r"<[^>]*>", " ", response_body)
+        detail = " ".join(detail.split())[:300]
+        return HomeAssistantError(
+            f"HeishaMon reported a firmware update failure: {detail}"
+        )
+    return None
+
 
 # async_setup_platform should be defined if one wants to support config via configuration.yaml
 
@@ -220,7 +260,10 @@ class HeishaMonMQTTUpdate(UpdateEntity):
 
     async def async_install(self, version: str | None, backup: bool, **kwargs: Any) -> None:
         if self._model_type is None:
-            raise Exception("Impossible to update automatically because we don't know the board version")
+            raise HomeAssistantError(
+                "Cannot install HeishaMon firmware automatically because the board "
+                "type is unknown."
+            )
         if version is None:
             version = self._attr_latest_version
             _LOGGER.info(f"Will install latest version ({version}) of the firmware")
@@ -235,10 +278,15 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 resp = await session.get(url)
 
                 if resp.status != 200:
-                    _LOGGER.warn(
-                            f"Impossible to download version {version} from heishamon repository {HEISHAMON_REPOSITORY}. Error was {resp.status}", extra={"url": url, "code": resp.status}
+                    _LOGGER.warning(
+                        "Could not download firmware version %s from %s (HTTP %s)",
+                        version,
+                        url,
+                        resp.status,
                     )
-                    return
+                    raise _firmware_http_error(
+                        "download", resp.status, resp.reason or "", version
+                    )
 
                 firmware_binary = await resp.read()
                 _LOGGER.info(f"Firmware is {len(firmware_binary)} bytes long")
@@ -247,10 +295,16 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 resp = await session.get(url)
 
                 if resp.status != 200:
-                    _LOGGER.warn(
-                        f"Impossible to fetch checksum of version {version} from heishamon repository {HEISHAMON_REPOSITORY}. Error was {resp.status}", extra={"url": url, "code": resp.status}
+                    _LOGGER.warning(
+                        "Could not download checksum for firmware version %s from "
+                        "%s (HTTP %s)",
+                        version,
+                        url,
+                        resp.status,
                     )
-                    return
+                    raise _firmware_http_error(
+                        "download checksum", resp.status, resp.reason or "", version
+                    )
                 checksum = await resp.text()
                 self._attr_update_percentage = 20
                 _LOGGER.info(f"Downloaded binary and checksum {checksum} of version {version}")
@@ -258,8 +312,13 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                 while self._heishamon_ip is None:
                     _LOGGER.warn("Waiting for an mqtt message to get the ip address of heishamon")
                     await asyncio.sleep(1)
+            except HomeAssistantError:
+                raise
             except Exception as e:
-                _LOGGER.exception("Unexpected error occured")
+                _LOGGER.exception("Unable to prepare firmware version %s", version)
+                raise HomeAssistantError(
+                    f"Could not prepare firmware version {version}: {e}"
+                ) from e
 
         # This whole mechanic is made to call async_write_ha_state to make sure the entity state (especially the _attr_in_progress attribute is updated)
         # trying to call this method from a callback when posting the firmware update leads HA to crash the integration
@@ -299,15 +358,26 @@ class HeishaMonMQTTUpdate(UpdateEntity):
                     headers={'Content-Type': f'multipart/form-data; boundary={boundary}'},
                     timeout=to
                 )
+                response_body = await resp.text()
             except (TimeoutError, asyncio.TimeoutError):
                 _LOGGER.info(f"Firmware upload complete, HeishaMon is rebooting (timeout is expected)")
                 return
             except Exception as e:
-                _LOGGER.error(f"Unexpected error during firmware upload: {e}")
-                raise e
+                _LOGGER.exception("Unable to upload firmware version %s", version)
+                raise HomeAssistantError(
+                    f"Could not upload firmware version {version} to HeishaMon at "
+                    f"{self._heishamon_ip}: {e}"
+                ) from e
             finally:
                 self.hass.bus.fire("stop_heishamon_update_tracker")
-            if resp.status != 200:
-                _LOGGER.warn(f"Impossible to perform firmware update to version {version}")
-                return
+            upload_error = _firmware_upload_error(
+                resp.status, resp.reason or "", response_body, version
+            )
+            if upload_error is not None:
+                _LOGGER.warning(
+                    "HeishaMon firmware upload failed for version %s: %s",
+                    version,
+                    upload_error,
+                )
+                raise upload_error
             _LOGGER.info(f"Finished uploading firmware. Heishamon should now be rebooting")
