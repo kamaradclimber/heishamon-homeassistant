@@ -10,7 +10,6 @@ from dataclasses import dataclass
 from typing import Optional, TypeVar, Any
 import logging
 
-from homeassistant.const import MAJOR_VERSION
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
@@ -294,23 +293,7 @@ def first_positive(values) -> Optional[int]:
     return None
 
 
-# TODO(kamaradclimber): this decorator can be simply replaced by @dataclass(frozen=True, kw_only=True) when we stop supporting HA < 2024.1
-def frozendataclass(cls):
-    def wrapper_dataclass(cls):
-        if MAJOR_VERSION > 2023:
-            return dataclass(cls, frozen=True, kw_only=True)
-        else:
-            return dataclass(cls)
-
-    if cls is None:
-        # we are called with parens
-        return wrapper_dataclass
-
-    # we are called without parens
-    return wrapper_dataclass(cls)
-
-
-@frozendataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonEntityDescription:
     heishamon_topic_id: str | None = None
 
@@ -324,7 +307,7 @@ class HeishaMonEntityDescription:
     on_receive: Callable | None = None
 
 
-@frozendataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonSensorEntityDescription(
     HeishaMonEntityDescription, SensorEntityDescription
 ):
@@ -333,7 +316,7 @@ class HeishaMonSensorEntityDescription(
     pass
 
 
-@frozendataclass
+@dataclass(frozen=True, kw_only=True)
 class MultiMQTTSensorEntityDescription(SensorEntityDescription):
     topics: list[str] | None = None
     # this callable will receive a list with as many entries as topics
@@ -348,7 +331,7 @@ class MultiMQTTSensorEntityDescription(SensorEntityDescription):
     heishamon_topic_id: Optional[str] = None
 
 
-@frozendataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonSwitchEntityDescription(
     HeishaMonEntityDescription, SwitchEntityDescription
 ):
@@ -365,7 +348,7 @@ class HeishaMonSwitchEntityDescription(
     binary_sensor_device_class: Optional[BinarySensorDeviceClass] = None
 
 
-@frozendataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonButtonEntityDescription(
     HeishaMonEntityDescription, ButtonEntityDescription
 ):
@@ -378,7 +361,7 @@ class HeishaMonButtonEntityDescription(
     payload: str = "1"
 
 
-@frozendataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonBinarySensorEntityDescription(
     HeishaMonEntityDescription, BinarySensorEntityDescription
 ):
@@ -387,7 +370,7 @@ class HeishaMonBinarySensorEntityDescription(
     pass
 
 
-@frozendataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonSelectEntityDescription(
     HeishaMonEntityDescription, SelectEntityDescription
 ):
@@ -401,7 +384,7 @@ class HeishaMonSelectEntityDescription(
     state_to_mqtt: Optional[Callable] = None
 
 
-@frozendataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonNumberEntityDescription(
     HeishaMonEntityDescription, NumberEntityDescription
 ):

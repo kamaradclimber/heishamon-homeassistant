@@ -7,6 +7,7 @@ import aiohttp
 import datetime
 import asyncio
 import uuid
+from dataclasses import dataclass
 from typing import Optional, Any
 
 from homeassistant.helpers.event import async_track_time_interval
@@ -27,7 +28,7 @@ from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 
 from . import build_device_info
 from .const import DeviceType
-from .definitions import HeishaMonEntityDescription, frozendataclass, read_board_type
+from .definitions import HeishaMonEntityDescription, read_board_type
 
 _LOGGER = logging.getLogger(__name__)
 HEISHAMON_REPOSITORY = "heishamon/HeishaMon"
@@ -102,7 +103,7 @@ async def async_update_progress_tracking(update_entity) -> None:
     update_entity.async_write_ha_state()
 
 
-@frozendataclass
+@dataclass(frozen=True, kw_only=True)
 class HeishaMonUpdateEntityDescription(
     HeishaMonEntityDescription, UpdateEntityDescription
 ):
