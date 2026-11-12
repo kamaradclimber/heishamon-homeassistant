@@ -1,0 +1,40 @@
+name: Sync heat pump models
+
+on:
+  schedule:
+    - cron: "23 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-heatpump-models
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sync model list
+        run: python scripts/sync_heatpump_models.py
+
+      - name: Create or update pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: automation/sync-heatpump-models
+          commit-message: "Sync heat pump models from HeishaMon"
+          title: "Sync heat pump models from HeishaMon"
+          body: |
+            Updates `HEATPUMP_MODELS_39` from HeishaMon's `HeatPumpType.md`.
+
+            This pull request was opened automatically. Please review the model changes before merging.
