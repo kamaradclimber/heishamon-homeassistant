@@ -256,7 +256,36 @@ class EnergyIntegrationEntity(IntegrationSensor):
     def device_class(self):
         return SensorDeviceClass.ENERGY
 
-class MultiMQTTSensorEntity(SensorEntity):
+class HeishaMonAvailability:
+    """Unavailable while HeishaMon is offline (its MQTT last will on LWT).
+
+    Without it, a power sensor keeps its last value while HeishaMon is gone,
+    and the energy totals (IntegrationSensor with max_sub_interval) keep
+    adding that power until the next message. Unavailable stops them.
+    """
+
+    _heishamon_online = True
+
+    async def _async_subscribe_lwt(self) -> None:
+        @callback
+        def lwt_received(message):
+            online = message.payload != "Offline"
+            if online != self._heishamon_online:
+                self._heishamon_online = online
+                self.async_write_ha_state()
+
+        self.async_on_remove(
+            await mqtt.async_subscribe(
+                self.hass, f"{self.discovery_prefix}LWT", lwt_received, 1
+            )
+        )
+
+    @property
+    def available(self) -> bool:
+        return self._heishamon_online
+
+
+class MultiMQTTSensorEntity(HeishaMonAvailability, SensorEntity):
     def __init__(
         self,
         hass: HomeAssistant,
@@ -309,6 +338,7 @@ class MultiMQTTSensorEntity(SensorEntity):
 
         for topic in self.entity_description.topics or []:
             await mqtt.async_subscribe(self.hass, topic, message_received, 1)
+        await self._async_subscribe_lwt()
 
     @property
     def device_info(self):
@@ -515,7 +545,7 @@ class ModelCatalogLastRefreshSensor(SensorEntity):
         )
 
 
-class HeishaMonSensor(SensorEntity):
+class HeishaMonSensor(HeishaMonAvailability, SensorEntity):
     """Representation of a HeishaMon sensor that is updated via MQTT."""
 
     entity_description: HeishaMonSensorEntityDescription
@@ -577,6 +607,7 @@ class HeishaMonSensor(SensorEntity):
         await mqtt.async_subscribe(
             self.hass, self.entity_description.key, message_received, 1
         )
+        await self._async_subscribe_lwt()
 
     @callback
     def _refresh_heatpump_model(self) -> None:
