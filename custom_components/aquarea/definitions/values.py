@@ -325,11 +325,14 @@ def read_quiet_mode(value: str) -> str:
     return value
 
 
-def read_heatpump_model(value: str) -> str:
+def read_heatpump_model(
+    value: str, models_39: dict[str, str] | None = None
+) -> str:
     if len(value) < 8:
-        # heishamon < 3.9
+        # HeishaMon < 3.9 uses a numeric model identifier.
         return HEATPUMP_MODELS.get(value, "Unknown model for HeishaMon")
-    return HEATPUMP_MODELS_39.get(value, "Unknown model for HeishaMon")
+    model_catalog = HEATPUMP_MODELS_39 if models_39 is None else models_39
+    return model_catalog.get(value, "Unknown model for HeishaMon")
 
 
 def read_solar_mode(value: str) -> str:
