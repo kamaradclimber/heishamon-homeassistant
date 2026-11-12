@@ -9,6 +9,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import DOMAIN, DeviceType
+from .model_catalog import ModelCatalog
 
 PLATFORMS = [
     Platform.SENSOR,
@@ -40,6 +41,12 @@ def _compute_identifiers(mqtt_topic: str) -> dict[DeviceType, tuple[str, str]]:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the HeishaMon integration."""
+    domain_data = hass.data.setdefault(DOMAIN, {})
+    catalog = domain_data.get("model_catalog")
+    if catalog is None:
+        catalog = domain_data["model_catalog"] = ModelCatalog(hass)
+    await catalog.async_load()
+
     mqtt_topic = entry.data["discovery_prefix"]
     identifiers = _compute_identifiers(mqtt_topic)
 

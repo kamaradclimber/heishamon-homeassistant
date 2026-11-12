@@ -15,6 +15,8 @@ Just make sure you have an MQTT integration configured. Heishamon mqtt messages 
 
 ℹ️ By default, all sensors related to less common setups (cooling, buffer, solar or pool) are disabled by default. They can easily enabled when looking at the "Aquarea HeatPump Indoor Unit" device under "entities not shown".
 
+To recognize models recently added upstream, use **Refresh heat pump models** on the HeishaMon device in Home Assistant. Refreshing is manual, takes effect immediately, and is retained across Home Assistant restarts.
+
 ## Alternatives
 
 If you own Panasonic CZ-TAW1 module and have access to Panasonic smart cloud: use [https://github.com/cjaliaga/home-assistant-aquarea](https://github.com/wpatrik14/home-assistant-aquarea) or https://github.com/ronhks/panasonic-aquarea-smart-cloud-mqtt.

@@ -9,11 +9,15 @@ from homeassistant.components.mqtt.client import async_publish
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import slugify
 
 from .definitions.buttons import build_buttons
 from .definitions.descriptions import HeishaMonButtonEntityDescription
+from .const import DOMAIN, DeviceType
+from .model_catalog import ModelCatalog, ModelRefreshError
 from . import build_device_info
 
 _LOGGER = logging.getLogger(__name__)
@@ -32,9 +36,48 @@ async def async_setup_entry(
     ]  # TODO: handle migration of entities
     _LOGGER.debug(f"Starting bootstrap of button with prefix '{discovery_prefix}'")
     async_add_entities(
-        HeishaMonMQTTButton(hass, description, config_entry)
-        for description in build_buttons(discovery_prefix)
+        [
+            *(
+                HeishaMonMQTTButton(hass, description, config_entry)
+                for description in build_buttons(discovery_prefix)
+            ),
+            RefreshHeatpumpModelsButton(hass, config_entry),
+        ]
     )
+
+
+class RefreshHeatpumpModelsButton(ButtonEntity):
+    """Button to manually refresh model definitions from HeishaMon upstream."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_icon = "mdi:database-refresh"
+    _attr_name = "Refresh heat pump models"
+
+    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry) -> None:
+        self.hass = hass
+        self.config_entry_entry_id = config_entry.entry_id
+        self.discovery_prefix = config_entry.data["discovery_prefix"]
+        self._attr_unique_id = f"{config_entry.entry_id}-refresh-heatpump-models"
+        self.entity_id = f"button.{slugify(self._attr_unique_id)}"
+
+    async def async_press(self) -> None:
+        """Fetch the latest upstream list after explicit user action."""
+        catalog: ModelCatalog = self.hass.data[DOMAIN]["model_catalog"]
+        try:
+            count = await catalog.async_refresh()
+        except ModelRefreshError as err:
+            _LOGGER.error("Could not refresh heat pump models: %s", err)
+            raise HomeAssistantError(str(err)) from err
+        _LOGGER.info("Refreshed %d heat pump model signatures", count)
+
+    @property
+    def device_info(self):
+        return build_device_info(
+            self.hass,
+            DeviceType.HEISHAMON,
+            self.discovery_prefix,
+            self.config_entry_entry_id,
+        )
 
 
 class HeishaMonMQTTButton(ButtonEntity):
