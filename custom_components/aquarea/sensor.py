@@ -259,9 +259,10 @@ class EnergyIntegrationEntity(IntegrationSensor):
 class HeishaMonAvailability:
     """Unavailable while HeishaMon is offline (its MQTT last will on LWT).
 
-    Without it, a power sensor keeps its last value while HeishaMon is gone,
-    and the energy totals (IntegrationSensor with max_sub_interval) keep
-    adding that power until the next message. Unavailable stops them.
+    Only measurement sensors follow it: stale totals and enums are more useful
+    if they remain visible. A stale power measurement, however, would keep the
+    energy totals (IntegrationSensor with max_sub_interval) accumulating until
+    it becomes unavailable.
     """
 
     _heishamon_online = True
@@ -338,7 +339,8 @@ class MultiMQTTSensorEntity(HeishaMonAvailability, SensorEntity):
 
         for topic in self.entity_description.topics or []:
             await mqtt.async_subscribe(self.hass, topic, message_received, 1)
-        await self._async_subscribe_lwt()
+        if self.entity_description.state_class == SensorStateClass.MEASUREMENT:
+            await self._async_subscribe_lwt()
 
     @property
     def device_info(self):
@@ -607,7 +609,8 @@ class HeishaMonSensor(HeishaMonAvailability, SensorEntity):
         await mqtt.async_subscribe(
             self.hass, self.entity_description.key, message_received, 1
         )
-        await self._async_subscribe_lwt()
+        if self.entity_description.state_class == SensorStateClass.MEASUREMENT:
+            await self._async_subscribe_lwt()
 
     @callback
     def _refresh_heatpump_model(self) -> None:

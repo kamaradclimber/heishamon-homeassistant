@@ -3,7 +3,7 @@ the energy totals (IntegrationSensor) stop instead of adding the last power."""
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 
 from custom_components.aquarea.const import DeviceType
 from custom_components.aquarea.definitions.descriptions import (
@@ -20,6 +20,7 @@ async def test_sensor_follows_heishamon_lwt(hass):
         name="Heat power consumption",
         native_unit_of_measurement="W",
         device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
         device=DeviceType.HEATPUMP,
     )
     entity = HeishaMonSensor(hass, description, config_entry)
