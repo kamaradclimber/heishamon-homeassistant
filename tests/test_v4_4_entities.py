@@ -1,6 +1,7 @@
 """Tests for HeishaMon 4.4.0 readback entities (TOP170-TOP198)."""
 
 from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.helpers.entity import EntityCategory
 
 from custom_components.aquarea.definitions.binary_sensors import build_binary_sensors
 from custom_components.aquarea.definitions.descriptions import (
@@ -136,6 +137,13 @@ def test_v4_4_installer_and_sg_ready_entities_are_disabled_by_default():
         assert descriptions[topic_id].entity_registry_enabled_default is False
     for topic_id in {"TOP180", "TOP181", "TOP197", "TOP198"}:
         assert descriptions[topic_id].entity_registry_enabled_default is True
+
+
+def test_v4_4_read_only_entities_use_supported_categories():
+    descriptions = _descriptions_by_topic()
+
+    for topic_id in NEW_TOPIC_IDS:
+        assert descriptions[topic_id].entity_category != EntityCategory.CONFIG
 
 
 def test_v4_4_energy_settings_use_kilowatts():

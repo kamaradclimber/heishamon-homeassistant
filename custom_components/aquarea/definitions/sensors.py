@@ -834,7 +834,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=int,
             suggested_display_precision=1,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
         ),
         HeishaMonSensorEntityDescription(
@@ -846,7 +846,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=int,
             suggested_display_precision=0,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
         ),
         HeishaMonSensorEntityDescription(
@@ -858,7 +858,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=int,
             suggested_display_precision=0,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
         ),
         HeishaMonSensorEntityDescription(
@@ -870,7 +870,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=int,
             suggested_display_precision=0,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
         ),
         HeishaMonSensorEntityDescription(
@@ -882,7 +882,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=int,
             suggested_display_precision=0,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
         ),
         HeishaMonSensorEntityDescription(
@@ -894,7 +894,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=int,
             suggested_display_precision=0,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
         ),
         HeishaMonSensorEntityDescription(
@@ -906,7 +906,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=float,
             suggested_display_precision=1,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
         ),
         HeishaMonSensorEntityDescription(
@@ -918,7 +918,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=float,
             suggested_display_precision=1,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
         ),
         HeishaMonSensorEntityDescription(
@@ -928,7 +928,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.ENUM,
             state=read_bivalent_operating_mode,
             options=list(BIVALENT_OPERATING_MODES.values()),
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
         HeishaMonSensorEntityDescription(
             heishamon_topic_id="TOP182",
@@ -937,7 +937,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.ENUM,
             state=read_extra_pump_use,
             options=list(EXTRA_PUMP_USE.values()),
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
         ),
         HeishaMonSensorEntityDescription(
@@ -947,7 +947,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             device_class=SensorDeviceClass.ENUM,
             state=read_heating_control,
             options=list(HEATING_CONTROL.values()),
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
         ),
         HeishaMonSensorEntityDescription(
@@ -959,7 +959,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=float,
             suggested_display_precision=1,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # less common external control setup
         ),
         HeishaMonSensorEntityDescription(
@@ -971,7 +971,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=float,
             suggested_display_precision=1,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # less common external control setup
         ),
         HeishaMonSensorEntityDescription(
@@ -983,7 +983,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=float,
             suggested_display_precision=1,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # less common external control setup
         ),
         HeishaMonSensorEntityDescription(
@@ -995,7 +995,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=float,
             suggested_display_precision=1,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # less common external control setup
         ),
         HeishaMonSensorEntityDescription(
@@ -1007,7 +1007,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=float,
             suggested_display_precision=1,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # less common external control setup
         ),
         HeishaMonSensorEntityDescription(
@@ -1019,7 +1019,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=float,
             suggested_display_precision=1,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # less common external control setup
         ),
         HeishaMonSensorEntityDescription(
@@ -1031,7 +1031,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=float,
             suggested_display_precision=1,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # less common external control setup
         ),
         HeishaMonSensorEntityDescription(
@@ -1043,7 +1043,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=int,
             suggested_display_precision=0,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # less common external control setup
         ),
         HeishaMonSensorEntityDescription(
@@ -1055,7 +1055,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=int,
             suggested_display_precision=0,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # less common external control setup
         ),
         HeishaMonSensorEntityDescription(
@@ -1067,7 +1067,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=float,
             suggested_display_precision=1,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
         ),
         HeishaMonSensorEntityDescription(
@@ -1079,7 +1079,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=float,
             suggested_display_precision=1,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
         ),
         HeishaMonSensorEntityDescription(
@@ -1091,7 +1091,7 @@ def build_sensors(mqtt_prefix: str) -> list[HeishaMonSensorEntityDescription]:
             state_class=SensorStateClass.MEASUREMENT,
             state=float,
             suggested_display_precision=1,
-            entity_category=EntityCategory.CONFIG,
+            entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
         ),
         HeishaMonSensorEntityDescription(
