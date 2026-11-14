@@ -126,6 +126,28 @@ def read_operating_mode_state(value: str) -> str:
     return str(mode)
 
 
+BIVALENT_OPERATING_MODES = {
+    "0": "Auto",
+    "1": "SG ready",
+    "2": "Intelligent",
+}
+
+
+def read_bivalent_operating_mode(value: str) -> Optional[str]:
+    return BIVALENT_OPERATING_MODES.get(value, None)
+
+
+EXTRA_PUMP_USE = {
+    "0": "Not used",
+    "1": "Heating",
+    "2": "DHW",
+}
+
+
+def read_extra_pump_use(value: str) -> Optional[str]:
+    return EXTRA_PUMP_USE.get(value, None)
+
+
 PUMP_FLOWRATE_MODE = {
     "0": "DeltaT",
     "1": "Maximum flow",
@@ -323,6 +345,16 @@ def read_quiet_mode(value: str) -> str:
     elif value == "0":
         return "Off"
     return value
+
+
+HEAT_PUMP_TYPES = {
+    "0": "Standard",
+    "1": "T-CAP",
+}
+
+
+def read_heat_pump_type(value: str) -> Optional[str]:
+    return HEAT_PUMP_TYPES.get(value, None)
 
 
 def read_heatpump_model(

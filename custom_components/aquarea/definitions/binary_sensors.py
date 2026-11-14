@@ -117,6 +117,38 @@ def build_binary_sensors(
             state=bit_to_bool,
             device_class=BinarySensorDeviceClass.RUNNING,
         ),
+        # HeishaMon >= 4.4.0 installer boolean readbacks.
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="TOP170",
+            key=f"{mqtt_prefix}main/Static_Pressure",
+            name="Aquarea Static pressure",
+            state=read_enabled_disabled,
+            entity_category=EntityCategory.CONFIG,
+            entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
+        ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="TOP179",
+            key=f"{mqtt_prefix}main/Anti_Stick_Mode",
+            name="Aquarea Anti-stick mode",
+            state=read_enabled_disabled,
+            entity_category=EntityCategory.CONFIG,
+            entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
+        ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="TOP181",
+            key=f"{mqtt_prefix}main/Bivalent_External_Pump",
+            name="Aquarea Bivalent external pump",
+            state=bit_to_bool,
+            entity_category=EntityCategory.CONFIG,
+        ),
+        HeishaMonBinarySensorEntityDescription(
+            heishamon_topic_id="TOP194",
+            key=f"{mqtt_prefix}main/Defrost_Signal",
+            name="Aquarea Defrost signal",
+            state=bit_to_bool,
+            entity_category=EntityCategory.CONFIG,
+            entity_registry_enabled_default=False,  # HeishaMon 4.4+ installer topic group is off by default
+        ),
         HeishaMonBinarySensorEntityDescription(
             heishamon_topic_id="OPT0",
             key=f"{mqtt_prefix}optional/Z1_Water_Pump",

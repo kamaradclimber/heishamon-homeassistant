@@ -17,6 +17,27 @@ Just make sure you have an MQTT integration configured. Heishamon mqtt messages 
 
 To recognize models recently added upstream, use **Refresh heat pump models** on the HeishaMon device in Home Assistant. Refreshing is manual, takes effect immediately, and is retained across Home Assistant restarts.
 
+### HeishaMon 4.4 and topic groups
+
+HeishaMon 4.4 introduced topic groups and turns the **Installer settings** group off by default. This affects both values that already existed and new installer readbacks such as static pressure, sensor offsets and efficiency stage times:
+
+- `Aquarea Max pump duty configured`
+- `Aquarea Buffer tank` / `Buffer_Installed`
+- `Aquarea DHW Installed`
+- `Aquarea Pump flowrate mode` / `Aquarea Pump Flowrate Mode`
+- `Aquarea Liquid Type`
+- `Aquarea use external outdoor sensor`
+- `Aquarea anti freeze mode`
+- `Aquarea Zone 1/2 sensor setting`
+- `Aquarea Heating Control`
+- `Aquarea Quiet Mode Priority`
+- `Aquarea DHW Sensor Selection`
+
+If you use any of these, enable **Settings → Topic groups → Installer settings** in HeishaMon after updating. While the group is off, those topics are not published and their Home Assistant entities stop updating. Values retained on the MQTT broker may remain visible until they are replaced or removed.
+
+The new installer entities are disabled by default in Home Assistant as well. Enable the topic group first, then enable the entities you need. The new SG Ready entities are also disabled by default because they only apply to less common external-control setups.
+
+
 ## Alternatives
 
 If you own Panasonic CZ-TAW1 module and have access to Panasonic smart cloud: use [https://github.com/cjaliaga/home-assistant-aquarea](https://github.com/wpatrik14/home-assistant-aquarea) or https://github.com/ronhks/panasonic-aquarea-smart-cloud-mqtt.
