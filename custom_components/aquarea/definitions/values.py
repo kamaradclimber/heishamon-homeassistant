@@ -148,6 +148,58 @@ def read_extra_pump_use(value: str) -> Optional[str]:
     return EXTRA_PUMP_USE.get(value, None)
 
 
+DHW_CAPACITY_MODES = {
+    "0": "Standard",
+    "1": "Variable",
+}
+
+
+def read_dhw_capacity_mode(value: str) -> Optional[str]:
+    return DHW_CAPACITY_MODES.get(value, None)
+
+
+# TOP146 publishes the raw configuration byte
+ZONE_CONFIGURATIONS = {
+    "21": "One zone, zone 1 room",
+    "25": "One zone, zone 1 pool",
+    "22": "Two zones, zone 2 room",
+    "38": "Two zones, zone 2 pool",
+}
+
+
+def read_zone_configuration(value: str) -> Optional[str]:
+    return ZONE_CONFIGURATIONS.get(value, None)
+
+
+def read_heater_capacity(value: str) -> Optional[int]:
+    """TOP147 is 3, 6 or 9 kW, or -1 when the heat pump does not report it."""
+    try:
+        capacity = int(value)
+    except ValueError:
+        return None
+    return capacity if capacity > 0 else None
+
+
+DHW_HEATER_TYPES = {
+    "0": "Internal",
+    "1": "External",
+}
+
+
+def read_dhw_heater_type(value: str) -> Optional[str]:
+    return DHW_HEATER_TYPES.get(value, None)
+
+
+HEAT_COOL_SWITCH_STATES = {
+    "0": "Heat",
+    "1": "Cool",
+}
+
+
+def read_heat_cool_switch_state(value: str) -> Optional[str]:
+    return HEAT_COOL_SWITCH_STATES.get(value, None)
+
+
 PUMP_FLOWRATE_MODE = {
     "0": "DeltaT",
     "1": "Maximum flow",

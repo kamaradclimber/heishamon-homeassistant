@@ -309,6 +309,96 @@ def build_numbers(mqtt_prefix: str) -> list[HeishaMonNumberEntityDescription]:
             entity_registry_enabled_default=True,
             initial_value=0,
         ),
+        HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET49",  # corresponds to TOP70
+            key=f"{mqtt_prefix}main/Sterilization_Temp",
+            command_topic=f"{mqtt_prefix}commands/SetSterilizationTemp",
+            name="Aquarea Sterilization temperature",
+            entity_category=EntityCategory.CONFIG,
+            device_class=NumberDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="°C",
+            native_min_value=55,
+            native_max_value=75,
+            native_step=1,
+            state=int,
+            state_to_mqtt=int,
+            entity_registry_enabled_default=False,  # needs a DHW tank; marked experimental in HeishaMon
+        ),
+        HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET50",  # corresponds to TOP71
+            key=f"{mqtt_prefix}main/Sterilization_Max_Time",
+            command_topic=f"{mqtt_prefix}commands/SetSterilizationMaxTime",
+            name="Aquarea Sterilization maximum time",
+            entity_category=EntityCategory.CONFIG,
+            device_class=NumberDeviceClass.DURATION,
+            native_unit_of_measurement="min",
+            native_min_value=5,
+            native_max_value=60,
+            native_step=5,
+            state=int,
+            state_to_mqtt=int,
+            entity_registry_enabled_default=False,  # needs a DHW tank; marked experimental in HeishaMon
+        ),
+        HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET51",  # corresponds to TOP79
+            key=f"{mqtt_prefix}main/Heat_To_Cool_Temp",
+            command_topic=f"{mqtt_prefix}commands/SetHeatToCoolTemp",
+            name="Aquarea Outdoor temperature heat->cool threshold",  # when in "auto" mode
+            entity_category=EntityCategory.CONFIG,
+            device_class=NumberDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="°C",
+            native_min_value=11,
+            native_max_value=25,
+            native_step=1,
+            state=int,
+            state_to_mqtt=int,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET52",  # corresponds to TOP80
+            key=f"{mqtt_prefix}main/Cool_To_Heat_Temp",
+            command_topic=f"{mqtt_prefix}commands/SetCoolToHeatTemp",
+            name="Aquarea Outdoor temperature cool->heat threshold",  # when in "auto" mode
+            entity_category=EntityCategory.CONFIG,
+            device_class=NumberDeviceClass.TEMPERATURE,
+            native_unit_of_measurement="°C",
+            native_min_value=5,
+            native_max_value=24,  # remote: 5 °C up to (heat->cool - 1 °C); SM p.110 says 5-14 °C, Service Cloud 5-25 °C
+            native_step=1,
+            state=int,
+            state_to_mqtt=int,
+            entity_registry_enabled_default=False,  # by default we hide all options related to less common setup (cooling, buffer, solar and pool)
+        ),
+        HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET53",  # corresponds to TOP158
+            key=f"{mqtt_prefix}main/Room_Operation_Max_Time",
+            command_topic=f"{mqtt_prefix}commands/SetRoomOperationMaxTime",
+            name="Aquarea Room operation maximum time",
+            entity_category=EntityCategory.CONFIG,
+            device_class=NumberDeviceClass.DURATION,
+            native_unit_of_measurement="min",
+            native_min_value=30,
+            native_max_value=600,
+            native_step=30,
+            state=int,
+            state_to_mqtt=int,
+            entity_registry_enabled_default=False,  # only used with a DHW tank
+        ),
+        HeishaMonNumberEntityDescription(
+            heishamon_topic_id="SET54",  # corresponds to TOP159
+            key=f"{mqtt_prefix}main/DHW_Heatup_Max_Time",
+            command_topic=f"{mqtt_prefix}commands/SetDHWHeatupMaxTime",
+            name="Aquarea DHW heat-up maximum time",
+            entity_category=EntityCategory.CONFIG,
+            device_class=NumberDeviceClass.DURATION,
+            native_unit_of_measurement="min",
+            native_min_value=5,
+            native_max_value=240,
+            native_step=1,
+            state=int,
+            state_to_mqtt=int,
+            entity_registry_enabled_default=False,  # only used with a DHW tank
+        ),
     ]
     topic_ids = {
         "1 Heat Target High": "TOP29",

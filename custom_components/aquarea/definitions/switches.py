@@ -62,6 +62,14 @@ def build_switches(mqtt_prefix: str) -> list[HeishaMonSwitchEntityDescription]:
             state=bit_to_bool,
         ),
         HeishaMonSwitchEntityDescription(
+            heishamon_topic_id="SET55",  # corresponds to TOP3
+            key=f"{mqtt_prefix}main/Quiet_Mode_Schedule",
+            command_topic=f"{mqtt_prefix}commands/SetQuietModeSchedule",
+            name="Aquarea Quiet Mode Schedule",
+            entity_category=EntityCategory.CONFIG,
+            state=bit_to_bool,
+        ),
+        HeishaMonSwitchEntityDescription(
             heishamon_topic_id="SET24",  # corresponds to "TOP13"
             key=f"{mqtt_prefix}main/Main_Schedule_State",
             command_topic=f"{mqtt_prefix}commands/SetMainSchedule",
